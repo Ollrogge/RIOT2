@@ -1,0 +1,4 @@
+#ifndef PSA_CRYPTO_SIZES_H
+#define PSA_CRYPTO_SIZES_H
+
+#endif /* PSA_CRYPTO_SIZES_H */
