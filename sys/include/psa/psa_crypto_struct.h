@@ -1,10 +1,17 @@
 #ifndef PSA_CRYPTO_STRUCT_H
 #define PSA_CRYPTO_STRUCT_H
 
+#include "psa/psa_crypto_types.h"
+
+#include "hashes/md5.h"
+#include "hashes/sha1.h"
+#include "hashes/sha224.h"
+#include "hashes/sha256.h"
 
 struct psa_hash_operation_s
 {
     psa_algorithm_t alg;
+    uint8_t suspended;
     union
     {
         unsigned dummy; /* Make the union non-empty even with no supported algorithms. */

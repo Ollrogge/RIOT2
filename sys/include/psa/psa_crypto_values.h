@@ -3,6 +3,25 @@
 
 #include "psa_crypto_types.h"
 
+/** Vendor-defined algorithm flag.
+ *
+ * Algorithms defined by this standard will never have the #PSA_ALG_VENDOR_FLAG
+ * bit set. Vendors who define additional algorithms must use an encoding with
+ * the #PSA_ALG_VENDOR_FLAG bit set and should respect the bitwise structure
+ * used by standard encodings whenever practical.
+ */
+#define PSA_ALG_VENDOR_FLAG                     ((psa_algorithm_t)0x80000000)
+
+#define PSA_ALG_CATEGORY_MASK                   ((psa_algorithm_t)0x7f000000)
+#define PSA_ALG_CATEGORY_HASH                   ((psa_algorithm_t)0x02000000)
+#define PSA_ALG_CATEGORY_MAC                    ((psa_algorithm_t)0x03000000)
+#define PSA_ALG_CATEGORY_CIPHER                 ((psa_algorithm_t)0x04000000)
+#define PSA_ALG_CATEGORY_AEAD                   ((psa_algorithm_t)0x05000000)
+#define PSA_ALG_CATEGORY_SIGN                   ((psa_algorithm_t)0x06000000)
+#define PSA_ALG_CATEGORY_ASYMMETRIC_ENCRYPTION  ((psa_algorithm_t)0x07000000)
+#define PSA_ALG_CATEGORY_KEY_DERIVATION         ((psa_algorithm_t)0x08000000)
+#define PSA_ALG_CATEGORY_KEY_AGREEMENT          ((psa_algorithm_t)0x09000000)
+
 #define PSA_AEAD_DECRYPT_OUTPUT_MAX_SIZE(ciphertext_length) \
 /* implementation-defined value */
 #define PSA_AEAD_DECRYPT_OUTPUT_SIZE(key_type, alg, ciphertext_length) \
@@ -32,24 +51,6 @@
 #define PSA_ALG_AEAD_WITH_SHORTENED_TAG(aead_alg, tag_length) \
 /* specification-defined value */
 
-#define PSA_ALG_ANY_HASH ((psa_algorithm_t)0x020000ff)
-#define PSA_ALG_CBC_MAC ((psa_algorithm_t)0x03c00100)
-#define PSA_ALG_CBC_NO_PADDING ((psa_algorithm_t)0x04404000)
-#define PSA_ALG_CBC_PKCS7 ((psa_algorithm_t)0x04404100)
-#define PSA_ALG_CCM ((psa_algorithm_t)0x05500100)
-#define PSA_ALG_CFB ((psa_algorithm_t)0x04c01100)
-#define PSA_ALG_CHACHA20_POLY1305 ((psa_algorithm_t)0x05100500)
-#define PSA_ALG_CMAC ((psa_algorithm_t)0x03c00200)
-#define PSA_ALG_CTR ((psa_algorithm_t)0x04c01000)
-#define PSA_ALG_DETERMINISTIC_ECDSA(hash_alg) /* specification-defined value */
-#define PSA_ALG_ECB_NO_PADDING ((psa_algorithm_t)0x04404400)
-#define PSA_ALG_ECDH ((psa_algorithm_t)0x09020000)
-#define PSA_ALG_ECDSA(hash_alg) /* specification-defined value */
-#define PSA_ALG_ECDSA_ANY ((psa_algorithm_t) 0x06000600)
-#define PSA_ALG_FFDH ((psa_algorithm_t)0x09010000)
-#define PSA_ALG_FULL_LENGTH_MAC(mac_alg) /* specification-defined value */
-#define PSA_ALG_GCM ((psa_algorithm_t)0x05500200)
-
 #define PSA_ALG_GET_HASH(alg) /* specification-defined value */
 #define PSA_ALG_HKDF(hash_alg) /* specification-defined value */
 #define PSA_ALG_HMAC(hash_alg) /* specification-defined value */
@@ -62,7 +63,10 @@
 #define PSA_ALG_IS_ECDH(alg) /* specification-defined value */
 #define PSA_ALG_IS_ECDSA(alg) /* specification-defined value */
 #define PSA_ALG_IS_FFDH(alg) /* specification-defined value */
-#define PSA_ALG_IS_HASH(alg) /* specification-defined value */
+
+#define PSA_ALG_IS_HASH(alg) \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_HASH)
+
 #define PSA_ALG_IS_HASH_AND_SIGN(alg) /* specification-defined value */
 #define PSA_ALG_IS_HKDF(alg) /* specification-defined value */
 #define PSA_ALG_IS_HMAC(alg) /* specification-defined value */
@@ -86,35 +90,62 @@
 /* specification-defined value */
 #define PSA_ALG_KEY_AGREEMENT_GET_BASE(alg) /* specification-defined value */
 #define PSA_ALG_KEY_AGREEMENT_GET_KDF(alg) /* specification-defined value */
-#define PSA_ALG_MD2 ((psa_algorithm_t)0x02000001)
-#define PSA_ALG_MD4 ((psa_algorithm_t)0x02000002)
-#define PSA_ALG_MD5 ((psa_algorithm_t)0x02000003)
-#define PSA_ALG_NONE ((psa_algorithm_t)0)
-#define PSA_ALG_OFB ((psa_algorithm_t)0x04c01200)
-#define PSA_ALG_RIPEMD160 ((psa_algorithm_t)0x02000004)
-#define PSA_ALG_RSA_OAEP(hash_alg) /* specification-defined value */
-#define PSA_ALG_RSA_PKCS1V15_CRYPT ((psa_algorithm_t)0x07000200)
-#define PSA_ALG_RSA_PKCS1V15_SIGN(hash_alg) /* specification-defined value */
-#define PSA_ALG_RSA_PKCS1V15_SIGN_RAW ((psa_algorithm_t) 0x06000200)
-#define PSA_ALG_RSA_PSS(hash_alg) /* specification-defined value */
-#define PSA_ALG_SHA3_224 ((psa_algorithm_t)0x02000010)
-#define PSA_ALG_SHA3_256 ((psa_algorithm_t)0x02000011)
-#define PSA_ALG_SHA3_384 ((psa_algorithm_t)0x02000012)
-#define PSA_ALG_SHA3_512 ((psa_algorithm_t)0x02000013)
-#define PSA_ALG_SHA_1 ((psa_algorithm_t)0x02000005)
-#define PSA_ALG_SHA_224 ((psa_algorithm_t)0x02000008)
-#define PSA_ALG_SHA_256 ((psa_algorithm_t)0x02000009)
-#define PSA_ALG_SHA_384 ((psa_algorithm_t)0x0200000a)
-#define PSA_ALG_SHA_512 ((psa_algorithm_t)0x0200000b)
+
+#define PSA_ALG_NONE        ((psa_algorithm_t)0)
+#define PSA_ALG_MD2         ((psa_algorithm_t)0x02000001)
+#define PSA_ALG_MD4         ((psa_algorithm_t)0x02000002)
+#define PSA_ALG_MD5         ((psa_algorithm_t)0x02000003)
+#define PSA_ALG_RIPEMD160   ((psa_algorithm_t)0x02000004)
+#define PSA_ALG_SHA_1       ((psa_algorithm_t)0x02000005)
+#define PSA_ALG_SHA_224     ((psa_algorithm_t)0x02000008)
+#define PSA_ALG_SHA_256     ((psa_algorithm_t)0x02000009)
+#define PSA_ALG_SHA_384     ((psa_algorithm_t)0x0200000a)
+#define PSA_ALG_SHA_512     ((psa_algorithm_t)0x0200000b)
 #define PSA_ALG_SHA_512_224 ((psa_algorithm_t)0x0200000c)
 #define PSA_ALG_SHA_512_256 ((psa_algorithm_t)0x0200000d)
-#define PSA_ALG_SM3 ((psa_algorithm_t)0x02000014)
-#define PSA_ALG_STREAM_CIPHER ((psa_algorithm_t)0x04800100)
+#define PSA_ALG_SHA3_224    ((psa_algorithm_t)0x02000010)
+#define PSA_ALG_SHA3_256    ((psa_algorithm_t)0x02000011)
+#define PSA_ALG_SHA3_384    ((psa_algorithm_t)0x02000012)
+#define PSA_ALG_SHA3_512    ((psa_algorithm_t)0x02000013)
+#define PSA_ALG_SM3         ((psa_algorithm_t)0x02000014)
+#define PSA_ALG_ANY_HASH    ((psa_algorithm_t)0x020000ff)
+
+#define PSA_ALG_CBC_MAC     ((psa_algorithm_t)0x03c00100)
+#define PSA_ALG_CMAC        ((psa_algorithm_t)0x03c00200)
+
+#define PSA_ALG_CBC_NO_PADDING  ((psa_algorithm_t)0x04404000)
+#define PSA_ALG_CBC_PKCS7       ((psa_algorithm_t)0x04404100)
+#define PSA_ALG_ECB_NO_PADDING  ((psa_algorithm_t)0x04404400)
+#define PSA_ALG_XTS             ((psa_algorithm_t)0x0440ff00)
+#define PSA_ALG_CTR             ((psa_algorithm_t)0x04c01000)
+#define PSA_ALG_CFB             ((psa_algorithm_t)0x04c01100)
+#define PSA_ALG_OFB             ((psa_algorithm_t)0x04c01200)
+#define PSA_ALG_STREAM_CIPHER   ((psa_algorithm_t)0x04800100)
+
+#define PSA_ALG_CHACHA20_POLY1305   ((psa_algorithm_t)0x05100500)
+#define PSA_ALG_CCM                 ((psa_algorithm_t)0x05500100)
+#define PSA_ALG_GCM                 ((psa_algorithm_t)0x05500200)
+
+#define PSA_ALG_RSA_PKCS1V15_SIGN_RAW   ((psa_algorithm_t) 0x06000200)
+#define PSA_ALG_ECDSA_ANY               ((psa_algorithm_t) 0x06000600)
+
+#define PSA_ALG_RSA_PKCS1V15_CRYPT ((psa_algorithm_t)0x07000200)
+#define PSA_ALG_FFDH ((psa_algorithm_t)0x09010000)
+#define PSA_ALG_ECDH ((psa_algorithm_t)0x09020000)
+
+#define PSA_ALG_DETERMINISTIC_ECDSA(hash_alg) /* specification-defined value */
+#define PSA_ALG_ECDSA(hash_alg) /* specification-defined value */
+#define PSA_ALG_FULL_LENGTH_MAC(mac_alg) /* specification-defined value */
+#define PSA_ALG_RSA_OAEP(hash_alg) /* specification-defined value */
+#define PSA_ALG_RSA_PKCS1V15_SIGN(hash_alg) /* specification-defined value */
+#define PSA_ALG_RSA_PSS(hash_alg) /* specification-defined value */
+
+
 #define PSA_ALG_TLS12_PRF(hash_alg) /* specification-defined value */
 #define PSA_ALG_TLS12_PSK_TO_MS(hash_alg) /* specification-defined value */
 #define PSA_ALG_TRUNCATED_MAC(mac_alg, mac_length) \
 /* specification-defined value */
-#define PSA_ALG_XTS ((psa_algorithm_t)0x0440ff00)
+
 
 #define PSA_ASYMMETRIC_DECRYPT_OUTPUT_MAX_SIZE \
 /* implementation-defined value */
@@ -137,7 +168,8 @@
 #define PSA_CIPHER_FINISH_OUTPUT_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_FINISH_OUTPUT_SIZE(key_type, alg) \
 /* implementation-defined value */
-#define PSA_CIPHER_IV_LENGTH(key_type, alg) /* implementation-defined value#define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
+#define PSA_CIPHER_IV_LENGTH(key_type, alg) /* implementation-defined value */
+#define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_OPERATION_INIT /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_MAX_SIZE(input_length) \
 /* implementation-defined value */
@@ -186,9 +218,7 @@
 /* implementation-defined value */
 
 #define PSA_HASH_BLOCK_LENGTH(alg) /* implementation-defined value */
-#define PSA_HASH_LENGTH(alg) /* implementation-defined value */
 #define PSA_HASH_MAX_SIZE /* implementation-defined value */
-#define PSA_HASH_OPERATION_INIT /* implementation-defined value */
 #define PSA_HASH_SUSPEND_ALGORITHM_FIELD_LENGTH ((size_t)4)
 #define PSA_HASH_SUSPEND_HASH_STATE_FIELD_LENGTH(alg) \
 /* specification-defined value */
