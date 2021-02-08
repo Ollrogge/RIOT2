@@ -90,7 +90,17 @@ config HAS_CPU_NRF52
     help
         Indicates that the current cpu is 'nrf52'.
 
+## The crypto implementations define their own structure
+config MOD_PERIPH_HASH_SHA1
+    depends on HAS_CPU_NRF52
+    select HAVE_OWN_HASH_CTX
+
+config MOD_PERIPH_HASH_SHA256
+    depends on HAS_CPU_NRF52
+    select HAVE_OWN_HASH_CTX
+
 rsource "periph/Kconfig"
 rsource "vectors/Kconfig"
+rsource "cryptocell_lib/Kconfig"
 
 source "$(RIOTCPU)/nrf5x_common/Kconfig"
