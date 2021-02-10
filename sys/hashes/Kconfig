@@ -5,7 +5,34 @@
 # directory for more details.
 #
 
+menu "Hashes"
+    depends on TEST_KCONFIG
+
+config MODULE_HASHES_MD5
+    bool "MD5 hashing support"
+    select MODULE_HASHES
+
+config MODULE_HASHES_SHA1
+    bool "SHA-1 hashing support"
+    select MODULE_HASHES
+
+config MODULE_HASHES_SHA224
+    bool "SHA-224 hashing support"
+    select MODULE_HASHES
+    select MODULE_HASHES_SHA2XX_COMMON
+
+config MODULE_HASHES_SHA256
+    bool "SHA-256 hashing support"
+    select MODULE_HASHES
+    select MODULE_HASHES_SHA2XX_COMMON
+
 config MODULE_HASHES
     bool "Hash algorithms"
-    depends on TEST_KCONFIG
     select MODULE_CRYPTO
+
+config MODULE_HASHES_SHA2XX_COMMON
+    bool
+    help
+        Base module for sha2xx implementations.
+
+endmenu # Hashes

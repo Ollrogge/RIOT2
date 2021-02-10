@@ -1,0 +1,57 @@
+# Copyright (c) 2021 HAW Hamburg
+#
+# This file is subject to the terms and conditions of the GNU Lesser
+# General Public License v2.1. See the file LICENSE in the top level
+# directory for more details.
+#
+menu "PSA Crypto"
+    depends on TEST_KCONFIG
+
+menuconfig MODULE_PSA_CRYPTO
+    bool "PSA Crypto API Hash Implementation"
+
+if MODULE_PSA_CRYPTO
+
+choice HASHES_MD5_IMPLEMENTATION
+    bool "MD5"
+    default MODULE_HASHES_SW_MD5
+
+config MODULE_HASHES_SW_MD5
+    bool "Software implemented"
+    select MODULE_HASHES_MD5
+
+endchoice
+
+choice HASHES_SHA1_IMPLEMENTATION
+    bool "SHA-1"
+    default MODULE_HASHES_SW_SHA1
+
+config MODULE_HASHES_SW_SHA1
+    bool "Software implemented"
+    select MODULE_HASHES_SHA1
+
+endchoice
+
+choice HASHES_SHA224_IMPLEMENTATION
+    bool "SHA-224"
+    default MODULE_HASHES_SW_SHA224
+
+config MODULE_HASHES_SW_SHA224
+    bool "Software implemented"
+    select MODULE_HASHES_SHA224
+
+endchoice
+
+choice HASHES_SHA256_IMPLEMENTATION
+    bool "SHA-256"
+    default MODULE_HASHES_SW_SHA256
+
+config MODULE_HASHES_SW_SHA256
+    bool "Software implemented"
+    select MODULE_HASHES_SHA256
+
+endchoice
+
+endif # MODULE_PSA_CRYPTO
+
+endmenu # PSA_Crypto
