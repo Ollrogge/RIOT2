@@ -67,6 +67,19 @@ config HAS_VDD_LC_FILTER_REG1
     help
         Indicates that a board is equipped with an external LC filter circuit
         attached to the CPUs voltage regulator stage 1.
+config HAS_BLE_NORDIC_SOFTDEVICE
+    bool
+    help
+        Indicates that Nordic SoftDevice support in RIOT has been verified on the
+        current platform.
+
+config MODULE_CPU_COMMON
+    bool
+    default y
+    depends on CPU_COMMON_NRF5X
+    depends on TEST_KCONFIG
+
+rsource "periph/Kconfig"
 
 
 config MODULE_CPU_COMMON
