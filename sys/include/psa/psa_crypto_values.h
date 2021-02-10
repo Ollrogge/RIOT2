@@ -66,6 +66,8 @@
 
 #define PSA_ALG_IS_HASH(alg) \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_HASH)
+#define PSA_ALG_HMAC_GET_HASH(hmac_alg)                             \
+    (PSA_ALG_CATEGORY_HASH | ((hmac_alg) & PSA_ALG_HASH_MASK))
 
 #define PSA_ALG_IS_HASH_AND_SIGN(alg) /* specification-defined value */
 #define PSA_ALG_IS_HKDF(alg) /* specification-defined value */
@@ -91,6 +93,7 @@
 #define PSA_ALG_KEY_AGREEMENT_GET_BASE(alg) /* specification-defined value */
 #define PSA_ALG_KEY_AGREEMENT_GET_KDF(alg) /* specification-defined value */
 
+#define PSA_ALG_HASH_MASK   ((psa_algorithm_t)0x000000ff)
 #define PSA_ALG_NONE        ((psa_algorithm_t)0)
 #define PSA_ALG_MD2         ((psa_algorithm_t)0x02000001)
 #define PSA_ALG_MD4         ((psa_algorithm_t)0x02000002)

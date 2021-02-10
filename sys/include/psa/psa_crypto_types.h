@@ -2,7 +2,6 @@
 #define PSA_CRYPTO_TYPES_H
 
 #include <stdint.h>
-#include "psa/psa_crypto_struct.h"
 
 typedef /* implementation-defined type */ uint32_t psa_aead_operation_t;
 typedef uint32_t psa_algorithm_t;
