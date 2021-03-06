@@ -230,7 +230,7 @@
 #define PSA_HASH_SUSPEND_OUTPUT_MAX_SIZE /* implementation-defined value */
 #define PSA_HASH_SUSPEND_OUTPUT_SIZE(alg) /* specification-defined value */
 
-#define PSA_KEY_ATTRIBUTES_INIT /* implementation-defined value */
+//#define PSA_KEY_ATTRIBUTES_INIT /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_CONTEXT /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_INFO /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_LABEL /* implementation-defined value */
@@ -270,16 +270,42 @@
 #define PSA_KEY_TYPE_DH_KEY_PAIR(group) /* specification-defined value */
 #define PSA_KEY_TYPE_DH_PUBLIC_KEY(group) /* specification-defined value */
 #define PSA_KEY_TYPE_ECC_GET_FAMILY(type) /* specification-defined value */
-#define PSA_KEY_TYPE_ECC_KEY_PAIR(curve) /* specification-defined value */
-#define PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve) /* specification-defined value */
+
+#define PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE            ((psa_key_type_t)0x4100)
+#define PSA_KEY_TYPE_ECC_KEY_PAIR_BASE              ((psa_key_type_t)0x7100)
+#define PSA_KEY_TYPE_ECC_CURVE_MASK                 ((psa_key_type_t)0x00ff)
+
+/** Elliptic curve key pair. */
+#define PSA_KEY_TYPE_ECC_KEY_PAIR(curve)         \
+    (PSA_KEY_TYPE_ECC_KEY_PAIR_BASE | (curve))
+
+/** Elliptic curve public key. */
+#define PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve)              \
+    (PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE | (curve))
+
+/** Whether a key type is an elliptic curve key (pair or public-only). */
+#define PSA_KEY_TYPE_IS_ECC(type)                                       \
+    ((PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) &                        \
+      ~PSA_KEY_TYPE_ECC_CURVE_MASK) == PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
+
+/** Whether a key type is an elliptic curve key pair. */
+#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type)                               \
+    (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
+     PSA_KEY_TYPE_ECC_KEY_PAIR_BASE)
+
+/** Whether a key type is an elliptic curve public key. */
+#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)                            \
+    (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
+     PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
+
 #define PSA_KEY_TYPE_HMAC ((psa_key_type_t)0x1100)
 #define PSA_KEY_TYPE_IS_ASYMMETRIC(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_KEY_PAIR(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_PUBLIC_KEY(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_ECC(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type) /* specification-defined value */
+//#define PSA_KEY_TYPE_IS_ECC(type) /* specification-defined value */
+//#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type) /* specification-defined value */
+//#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_KEY_PAIR(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_RSA(type) /* specification-defined value */

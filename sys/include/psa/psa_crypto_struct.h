@@ -3,14 +3,16 @@
 
 #include "psa/psa_crypto_types.h"
 
-#if defined(HAVE_OWN_HASH_CTX)
+#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
 #include "hash_hwctx.h"
 #endif
+
 #include "hashes/md5.h"
 #include "hashes/sha1.h"
 #include "hashes/sha224.h"
 #include "hashes/sha256.h"
-// #endif
+
+#include "kernel_defines.h"
 
 struct psa_hash_operation_s
 {
@@ -19,22 +21,35 @@ struct psa_hash_operation_s
     union
     {
         unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-#if defined(HAVE_OWN_HASH_CTX)
-        hash_hwctx_t hwctx;
-#else
-        #if defined(MODULE_HASHES_SW_MD5)
-                md5_ctx_t md5;
+
+        #if IS_ACTIVE(CONFIG_HASHES_MD5)
+                #if defined(CONFIG_MOD_PERIPH_HASH_MD5)
+                        md5_hwctx_t md5;
+                #else
+                        md5_ctx_t md5;
+                #endif
         #endif
-        #if defined(MODULE_HASHES_SW_SHA1)
-                sha1_context sha1;
+        #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+                #if defined(CONFIG_MOD_PERIPH_HASH_SHA1) 
+                        sha1_hwctx_t sha1;
+                #else
+                        sha1_context sha1;
+                #endif
         #endif
-        #if defined(MODULE_HASHES_SW_SHA224)
-                sha224_context_t sha224;
+        #if IS_ACTIVE(CONFIG_HASHES_SHA224)
+                #if defined(CONFIG_MOD_PERIPH_HASH_SHA224) 
+                        sha224_hwctx_t sha224;
+                #else
+                        sha224_context_t sha224;
+                #endif
         #endif
-        #if defined(MODULE_HASHES_SW_SHA256)
-                sha256_context_t sha256;
+        #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+                #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
+                        sha256_hwctx_t sha256;
+                #else
+                        sha256_context_t sha256;
+                #endif
         #endif
-#endif /* CONFIG_HAVE_OWN_HASH_CTX */
     } ctx;
 };
 
@@ -42,6 +57,23 @@ struct psa_hash_operation_s
 static inline struct psa_hash_operation_s psa_hash_operation_init( void )
 {
     const struct psa_hash_operation_s v = PSA_HASH_OPERATION_INIT;
+    return( v );
+}
+
+struct psa_key_attributes_s
+{
+    psa_algorithm_t alg;
+    union
+    {
+        unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
+    } ctx;
+};
+
+#define PSA_KEY_ATTRIBUTES_INIT {0, {0}}//{PSA_CORE_KEY_ATTRIBUTES_INIT, NULL, 0}
+
+static inline struct psa_key_attributes_s psa_key_attributes_init( void )
+{
+    const struct psa_key_attributes_s v = PSA_KEY_ATTRIBUTES_INIT;
     return( v );
 }
 
