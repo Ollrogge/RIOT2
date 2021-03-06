@@ -2,6 +2,8 @@
 #include "psa/crypto.h"
 #include "psa_crypto_driver_wrapper.h"
 
+#include "kernel_defines.h"
+
 uint8_t lib_initialized = 0;
 
 /* constant-time buffer comparison */
@@ -472,36 +474,36 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
 #endif
 
         switch(alg) {
-    #if defined(MODULE_HASHES_MD5)
+    #if IS_ACTIVE(CONFIG_HASHES_MD5)
             case PSA_ALG_MD5:
-            #if defined(HASHES_HW_MD5)
+            #if defined(CONFIG_MOD_PERIPH_HASH_MD5)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
             #else
                 md5_init(&(operation->ctx.md5));
             #endif
                 break;
     #endif
-    #if defined(MODULE_HASHES_SHA1)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
             case PSA_ALG_SHA_1:
-            #if defined(HASHES_HW_SHA1)
+            #if defined(CONFIG_MOD_PERIPH_HASH_SHA1)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
             #else
                 sha1_init(&(operation->ctx.sha1));
             #endif
                 break;
     #endif
-    #if defined(MODULE_HASHES_SHA224)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA224)
             case PSA_ALG_SHA_224:
-            #if defined(HASHES_HW_SHA224)
+            #if defined(CONFIG_MOD_PERIPH_HASH_SHA224)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
             #else
                 sha224_init(&(operation->ctx.sha224));
             #endif
                 break;
     #endif
-    #if defined(MODULE_HASHES_SHA256)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
             case PSA_ALG_SHA_256:
-            #if defined(HASHES_HW_SHA256)
+            #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
             #else
             puts("SHA256 SW");
@@ -692,7 +694,7 @@ psa_status_t psa_hash_compare(psa_algorithm_t alg,
 {
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-
+    printf("File: %s, Line: %d\n", __FILE__, __LINE__);
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
         return status;
@@ -718,7 +720,7 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
 {
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-
+    printf("File: %s, Line: %d\n", __FILE__, __LINE__);
     *hash_length = hash_size;
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
@@ -745,11 +747,6 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     (void) data;
     (void) data_length;
     (void) key;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_key_attributes_t psa_key_attributes_init(void)
-{
     return PSA_ERROR_NOT_SUPPORTED;
 }
 

@@ -12,45 +12,66 @@ menuconfig MODULE_PSA_CRYPTO
 
 if MODULE_PSA_CRYPTO
 
-choice HASHES_MD5_IMPLEMENTATION
+menuconfig HASHES_MD5
     bool "MD5"
-    default MODULE_HASHES_SW_MD5
+
+if HASHES_MD5
+
+config MOD_PERIPH_HASH_MD5
+    bool "Hardware accelerated"
+    depends on HAS_HW_HASH_MD5
 
 config MODULE_HASHES_SW_MD5
     bool "Software implemented"
     select MODULE_HASHES_MD5
 
-endchoice
+endif # HASHES_MD5
 
-choice HASHES_SHA1_IMPLEMENTATION
+menuconfig HASHES_SHA1
     bool "SHA-1"
-    default MODULE_HASHES_SW_SHA1
+    
+if HASHES_SHA1
+
+config MOD_PERIPH_HASH_SHA1
+    bool "Hardware accelerated"
+    depends on HAS_HW_HASH_SHA1
+    select MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
 
 config MODULE_HASHES_SW_SHA1
     bool "Software implemented"
     select MODULE_HASHES_SHA1
 
-endchoice
+endif # HASHES_SHA1
 
-choice HASHES_SHA224_IMPLEMENTATION
+menuconfig HASHES_SHA224
     bool "SHA-224"
-    default MODULE_HASHES_SW_SHA224
+    
+if HASHES_SHA224
+
+config MOD_PERIPH_HASH_SHA224
+    bool "Hardware accelerated"
+    depends on HAS_HW_HASH_SHA224
 
 config MODULE_HASHES_SW_SHA224
     bool "Software implemented"
     select MODULE_HASHES_SHA224
 
-endchoice
+endif # HASHES_SHA224
 
-choice HASHES_SHA256_IMPLEMENTATION
+menuconfig HASHES_SHA256
     bool "SHA-256"
-    default MODULE_HASHES_SW_SHA256
+    
+if HASHES_SHA256
+
+config MOD_PERIPH_HASH_SHA256
+    bool "Hardware accelerated"
+    depends on HAS_HW_HASH_SHA256
 
 config MODULE_HASHES_SW_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
 
-endchoice
+endif # HASHES_SHA256
 
 endif # MODULE_PSA_CRYPTO
 
