@@ -33,7 +33,7 @@ extern void CRYPTOCELL_IRQHandler(void);
 /* This function must be defined to use the CryptoCell module on the NRF52840 board */
 void isr_cryptocell(void)
 {
-    CRYPTOCELL_IRQHandler();
+    // CRYPTOCELL_IRQHandler();
 }
 
 void cryptocell_setup(void)

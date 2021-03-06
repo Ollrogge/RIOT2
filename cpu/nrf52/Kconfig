@@ -17,10 +17,10 @@ config CPU_FAM_NRF52
     select HAS_CORTEXM_MPU
     select HAS_CPU_NRF52
     select HAS_PERIPH_I2C_RECONFIGURE
-    #select HAS_HW_HASH_MD5
-    #select HAS_HW_HASH_SHA1
-    #select HAS_HW_HASH_SHA224
-    #select HAS_HW_HASH_SHA256
+    select HAS_HW_HASH_MD5
+    select HAS_HW_HASH_SHA1
+    select HAS_HW_HASH_SHA224
+    select HAS_HW_HASH_SHA256
 
 ## CPU Models
 config CPU_MODEL_NRF52805XXAA
@@ -94,10 +94,9 @@ config HAS_CPU_NRF52
     help
         Indicates that the current cpu is 'nrf52'.
 
-## The crypto implementations define their own structure
-#config MOD_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
-#    depends on HAS_CPU_NRF52
-#    select HAVE_OWN_HASH_CTX
+config MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
+    bool
+    depends on HAS_CPU_NRF52
 
 rsource "periph/Kconfig"
 rsource "vectors/Kconfig"
