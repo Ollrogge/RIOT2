@@ -483,7 +483,7 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
             #endif
                 break;
     #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1) || defined(MODULE_HASHES_SW_SHA1)
             case PSA_ALG_SHA_1:
             #if defined(CONFIG_MOD_PERIPH_HASH_SHA1)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
@@ -501,12 +501,11 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
             #endif
                 break;
     #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256) || defined(MODULE_HASHES_SW_SHA256)
             case PSA_ALG_SHA_256:
             #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
             #else
-            puts("SHA256 SW");
                 sha256_init(&(operation->ctx.sha256));
             #endif
                 break;
@@ -694,7 +693,7 @@ psa_status_t psa_hash_compare(psa_algorithm_t alg,
 {
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    printf("File: %s, Line: %d\n", __FILE__, __LINE__);
+
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
         return status;
@@ -720,7 +719,7 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
 {
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    printf("File: %s, Line: %d\n", __FILE__, __LINE__);
+
     *hash_length = hash_size;
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {

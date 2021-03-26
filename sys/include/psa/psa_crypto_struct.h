@@ -29,7 +29,7 @@ struct psa_hash_operation_s
                         md5_ctx_t md5;
                 #endif
         #endif
-        #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+        #if IS_ACTIVE(CONFIG_HASHES_SHA1) || defined(MODULE_HASHES_SW_SHA1)
                 #if defined(CONFIG_MOD_PERIPH_HASH_SHA1) 
                         sha1_hwctx_t sha1;
                 #else
@@ -43,7 +43,7 @@ struct psa_hash_operation_s
                         sha224_context_t sha224;
                 #endif
         #endif
-        #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+        #if IS_ACTIVE(CONFIG_HASHES_SHA256) || defined(MODULE_HASHES_SW_SHA256)
                 #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
                         sha256_hwctx_t sha256;
                 #else
