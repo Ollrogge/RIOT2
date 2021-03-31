@@ -200,6 +200,9 @@ endif
 ifneq (,$(filter ztimer_core,$(USEMODULE)))
     DIRS += ztimer
 endif
+ifneq (,$(filter psa_crypto,$(USEMODULE)))
+    DIRS += psa_crypto
+endif
 ifneq (,$(filter ztimer_xtimer_compat,$(USEMODULE)))
   FILTER += xtimer
 endif

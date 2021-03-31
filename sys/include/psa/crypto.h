@@ -5,7 +5,7 @@
 #include "psa_crypto_sizes.h"
 #include "psa_crypto_struct.h"
 #include "psa_crypto_values.h"
-#include "psa/psa_crypto_types.h"
+#include "psa_crypto_types.h"
 
 /**
  * The major version of this implementation of the PSA Crypto API
