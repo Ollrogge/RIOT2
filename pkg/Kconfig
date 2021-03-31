@@ -60,5 +60,6 @@ rsource "uwb-dw1000/Kconfig"
 rsource "uzlib/Kconfig"
 rsource "wakaama/Kconfig"
 rsource "yxml/Kconfig"
+rsource "psa_arch_tests/Kconfig"
 
 endmenu # Packages

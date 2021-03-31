@@ -1,0 +1,25 @@
+From 7932d8a6f68a89c444b081fb710000abe6986f93 Mon Sep 17 00:00:00 2001
+From: Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+Date: Wed, 31 Mar 2021 17:13:02 +0300
+Subject: [PATCH 4/4] Cast unused variable to void
+
+---
+ api-tests/val/nspe/val_peripherals.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/api-tests/val/nspe/val_peripherals.c b/api-tests/val/nspe/val_peripherals.c
+index 40388c1..535f7cb 100644
+--- a/api-tests/val/nspe/val_peripherals.c
++++ b/api-tests/val/nspe/val_peripherals.c
+@@ -175,6 +175,8 @@ val_status_t val_wd_reprogram_timer(wd_timeout_type_t timeout_type)
+     {
+         return status;
+     }
++#else
++    (void) timeout_type;
+ #endif
+ 
+     return status;
+-- 
+2.31.0
+

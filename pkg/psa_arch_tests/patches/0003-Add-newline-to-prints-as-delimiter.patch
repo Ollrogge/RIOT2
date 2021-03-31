@@ -1,0 +1,27 @@
+From 2c8d71400de0358660b393ddc5abdb1a30f4c25b Mon Sep 17 00:00:00 2001
+From: Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+Date: Wed, 31 Mar 2021 17:12:17 +0300
+Subject: [PATCH 3/4] Add newline to prints as delimiter
+
+---
+ api-tests/val/nspe/val_dispatcher.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/api-tests/val/nspe/val_dispatcher.c b/api-tests/val/nspe/val_dispatcher.c
+index 6819260..9db9305 100644
+--- a/api-tests/val/nspe/val_dispatcher.c
++++ b/api-tests/val/nspe/val_dispatcher.c
+@@ -36,8 +36,8 @@ addr_t          g_test_info_addr;
+ static void val_print_api_version(void)
+ {
+ #ifdef CRYPTO
+-    val_print(PRINT_ALWAYS, " %d.", PSA_CRYPTO_API_VERSION_MAJOR);
+-    val_print(PRINT_ALWAYS, "%d", PSA_CRYPTO_API_VERSION_MINOR);
++    val_print(PRINT_ALWAYS, " %d.\n", PSA_CRYPTO_API_VERSION_MAJOR);
++    val_print(PRINT_ALWAYS, "%d\n", PSA_CRYPTO_API_VERSION_MINOR);
+ #endif
+ #ifdef INTERNAL_TRUSTED_STORAGE
+     val_print(PRINT_ALWAYS, " %d.", PSA_ITS_API_VERSION_MAJOR);
+-- 
+2.31.0
+

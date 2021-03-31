@@ -1,0 +1,1 @@
+DIRS += $(RIOTPKG)/psa_arch_tests/contrib

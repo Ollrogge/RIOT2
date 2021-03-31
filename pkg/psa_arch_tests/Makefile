@@ -1,13 +1,13 @@
-PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/psa-arch-tests
-PKG_NAME=psa-arch-tests
+#PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/psa-arch-tests
+PKG_NAME=psa_arch_tests
 PKG_URL=https://github.com/ARM-software/psa-arch-tests
-PKG_VERSION=d15ee41bfd7e6e568e3b7bd0f42ea97c687d3389
+PKG_VERSION=d4b75cc0a8e3df96c2240d7f28d2aac4b0def0f8
 PKG_LICENSE=Apache-2.0
-PKG_TEST_NAME=psa_arch_tests
 
 include $(RIOTBASE)/pkg/pkg.mk
 
-CFLAGS += -specs=nosys.specs -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# TODO: pass CFLAGS during build (right now they still have to be patched into GNUARM.cmake in psa-arch-tests repo)
+RIOT_CFLAGS= -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 .PHONY: all..cmake_version_supported
 
@@ -25,23 +25,25 @@ endif
 all: psa_arch_tests
 
 psa_arch_tests: $(PKG_BUILD_DIR)/Makefile
-# 	$(MAKE) -C $(PKG_BUILD_DIR)
-# 	cp $(PKG_BUILD_DIR)/libcryptoauth.a $(BINDIR)/$(PKG_NAME).a
+	env -u CC -u CFLAGS \
+ 	$(MAKE) -C $(PKG_BUILD_DIR)
 
 $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
-	cd $(RIOTBASE)/build/pkg/psa-arch-tests/api-tests && \
-	mkdir BUILD && cd BUILD && \
-	cmake ../ \
+	cp -r tgt_dev_apis_riot $(PKG_SOURCE_DIR)/api-tests/platform/targets && \
+	cp $(BINDIR)/riotbuild/riotbuild.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
+	cp $(RIOTBASE)/tests/psa_crypto/testsuite.db $(PKG_SOURCE_DIR)/api-tests/dev_apis/crypto && \
+	env -u CC -u CFLAGS cmake \
 		  -G"Unix Makefiles" \
+		  -H$(PKG_SOURCE_DIR)/api-tests \
+		  -B$(PKG_BUILD_DIR) \
 		  -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_FILE) \
+		  -DCFLAGS="$(RIOT_CFLAGS)" \
 		  -Wno-dev \
 		  -DTARGET=tgt_dev_apis_riot \
 		  -DCPU_ARCH=$(THIS_ARCH) \
 		  -DSUITE=CRYPTO \
-		  -DPSA_INCLUDE_PATHS="$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include" \
-		  -DPSA_CRYPTO_LIB_FILENAME=$(RIOTBASE)/tests/psa_crypto/libpsacrypto.a \
-		  -DWATCHDOG_AVAILABLE=0 \
-	&& cmake --build .
+		  -DPSA_INCLUDE_PATHS="$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(BINDIR)/riotbuild;$(RIOTPKG)/psa_arch_tests/tgt_dev_apis_riot/nspe" \
+		  -DWATCHDOG_AVAILABLE=0
 
 $(TOOLCHAIN_FILE): git-download
 	$(RIOTTOOLS)/cmake/generate-xcompile-toolchain.sh > $(TOOLCHAIN_FILE)
