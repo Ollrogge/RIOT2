@@ -28,6 +28,7 @@
 #define _PAL_CRYPTO_CONFIG_H_
 
 #include "riotbuild.h"
+#include "autoconf.h"
 
 /**
  * \def ARCH_TEST_RSA
@@ -231,16 +232,19 @@
  * Comment macros to disable the types
  */
 
-#ifdef MODULE_HASHES_MD5
+#ifdef CONFIG_HASHES_MD5
 #define ARCH_TEST_MD5
 #endif
-#ifdef MODULE_HASHES_SHA1
+
+#ifdef CONFIG_HASHES_SHA1
 #define ARCH_TEST_SHA1
 #endif
-#ifdef MODULE_HASHES_SHA224
+
+#ifdef CONFIG_HASHES_SHA224
 #define ARCH_TEST_SHA224
 #endif
-#ifdef MODULE_HASHES_SHA256
+
+#ifdef CONFIG_HASHES_SHA256
 #define ARCH_TEST_SHA256
 #endif
 

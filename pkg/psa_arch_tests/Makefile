@@ -31,6 +31,7 @@ psa_arch_tests: $(PKG_BUILD_DIR)/Makefile
 $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 	cp -r tgt_dev_apis_riot $(PKG_SOURCE_DIR)/api-tests/platform/targets && \
 	cp $(BINDIR)/riotbuild/riotbuild.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
+	cp $(BINDIR)/generated/autoconf.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
 	cp $(RIOTBASE)/tests/psa_crypto/testsuite.db $(PKG_SOURCE_DIR)/api-tests/dev_apis/crypto && \
 	env -u CC -u CFLAGS cmake \
 		  -G"Unix Makefiles" \
@@ -42,7 +43,7 @@ $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 		  -DTARGET=tgt_dev_apis_riot \
 		  -DCPU_ARCH=$(THIS_ARCH) \
 		  -DSUITE=CRYPTO \
-		  -DPSA_INCLUDE_PATHS="$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(BINDIR)/riotbuild;$(RIOTPKG)/psa_arch_tests/tgt_dev_apis_riot/nspe" \
+		  -DPSA_INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include" \
 		  -DWATCHDOG_AVAILABLE=0
 
 $(TOOLCHAIN_FILE): git-download
