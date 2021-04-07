@@ -98,6 +98,18 @@ config MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
     bool
     depends on HAS_CPU_NRF52
 
+config MOD_PERIPH_HASH_MD5
+    depends on HAS_CPU_NRF52
+
+config MOD_PERIPH_HASH_SHA1
+    depends on HAS_CPU_NRF52
+
+config MOD_PERIPH_HASH_SHA224
+    depends on HAS_CPU_NRF52
+
+config MOD_PERIPH_HASH_SHA256
+    depends on HAS_CPU_NRF52
+
 rsource "periph/Kconfig"
 rsource "vectors/Kconfig"
 rsource "cryptocell_lib/Kconfig"

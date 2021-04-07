@@ -50,8 +50,8 @@ void cryptocell_setup(void)
     if (ret != SA_SILIB_RET_OK) {
         printf("SaSi_LibInit failed: 0x%x\n", ret);
     }
-
-    ret = CRYS_RndInit(rndState_ptr, rndWorkBuff_ptr);
+    // TODO: debug, runs into hardfault
+    //ret = CRYS_RndInit(rndState_ptr, rndWorkBuff_ptr);
     if (ret != SA_SILIB_RET_OK) {
         printf("CRYS_RndInit failed: 0x%x\n", ret);
     }

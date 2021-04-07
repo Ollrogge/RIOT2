@@ -21,10 +21,20 @@
 #include "cpu.h"
 #include "board.h"
 
+#if IS_ACTIVE(CONFIG_MOD_LIB_CRYPTOCELL)
+#include "armcc_setup.h"
+#endif
+
 void board_init(void)
 {
     /* initialize the boards LEDs */
     LED_PORT->DIRSET = (LED_MASK);
     LED_PORT->OUTSET = (LED_MASK);
 
+    /* initialize the CPU */
+    cpu_init();
+
+#if IS_ACTIVE(CONFIG_MOD_LIB_CRYPTOCELL)
+    cryptocell_setup();
+#endif
 }

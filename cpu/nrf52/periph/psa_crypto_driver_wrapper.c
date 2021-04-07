@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "kernel_defines.h"
 #include "psa_crypto_driver_wrapper.h"
 #include "psa/psa_crypto_struct.h"
 
@@ -33,26 +34,25 @@ static psa_status_t cc310_to_psa_error(CRYSError_t error)
 psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
-    puts("Setup PSA HW accelerated implementation\n");
     int ret = 0;
     
     switch(alg) {
-#if defined(CONFIG_MOD_PERIPH_HASH_MD5)
+#if IS_ACTIVE(CONFIG_MOD_PERIPH_HASH_MD5)
         case PSA_ALG_MD5:
             ret = CRYS_HASH_Init(&operation->ctx.md5, CRYS_HASH_MD5_mode);
             break;
 #endif
-#if defined(CONFIG_MOD_PERIPH_HASH_SHA1)
+#if IS_ACTIVE(CONFIG_MOD_PERIPH_HASH_SHA1)
         case PSA_ALG_SHA_1:
             ret = CRYS_HASH_Init(&operation->ctx.sha1, CRYS_HASH_SHA1_mode);
             break;
 #endif
-#if defined(CONFIG_MOD_PERIPH_HASH_SHA224)
+#if IS_ACTIVE(CONFIG_MOD_PERIPH_HASH_SHA224)
         case PSA_ALG_SHA_224:
             ret = CRYS_HASH_Init(&operation->ctx.sha224, CRYS_HASH_SHA224_mode);
             break;
 #endif
-#if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
+#if IS_ACTIVE(CONFIG_MOD_PERIPH_HASH_SHA256)
         case PSA_ALG_SHA_256:
             ret = CRYS_HASH_Init(&operation->ctx.sha256, CRYS_HASH_SHA256_mode);
             break;
