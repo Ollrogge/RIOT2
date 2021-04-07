@@ -483,7 +483,7 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
             #endif
                 break;
     #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA1) || defined(MODULE_HASHES_SW_SHA1)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
             case PSA_ALG_SHA_1:
             #if defined(CONFIG_MOD_PERIPH_HASH_SHA1)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
@@ -501,7 +501,7 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
             #endif
                 break;
     #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA256) || defined(MODULE_HASHES_SW_SHA256)
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
             case PSA_ALG_SHA_256:
             #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
                 status = psa_driver_wrapper_hash_setup(operation, alg);
@@ -536,6 +536,12 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
         return PSA_ERROR_BAD_STATE;
     }
 
+#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
+    psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+#else
     switch(operation->alg) {
 #if defined(MODULE_HASHES_SW_MD5)
         case PSA_ALG_MD5:
@@ -562,6 +568,7 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
             (void) input_length;
             return PSA_ERROR_NOT_SUPPORTED;
     }
+#endif /* MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER */
 
     return PSA_SUCCESS;
 }
@@ -576,13 +583,18 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
         (operation->suspended == 1)) {
         return PSA_ERROR_BAD_STATE;
     }
-
     uint8_t actual_hash_length = PSA_HASH_LENGTH(operation->alg);
     
     if (hash_size < actual_hash_length) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
+#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
+    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash);  
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+#else
     switch(operation->alg) {
 #if defined(MODULE_HASHES_SW_MD5)
         case PSA_ALG_MD5:
@@ -608,6 +620,7 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
             (void) hash;
             return PSA_ERROR_NOT_SUPPORTED;
     }
+#endif /* MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER */
 
     *hash_length = actual_hash_length;
 

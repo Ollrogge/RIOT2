@@ -24,6 +24,7 @@ choice HASHES_MD5_IMPLEMENTATION
 config MOD_PERIPH_HASH_MD5
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_MD5
+    select MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
 
 config MODULE_HASHES_SW_MD5
     bool "Software implemented"
@@ -67,6 +68,7 @@ choice HASHES_224_IMPLEMENTATION
 config MOD_PERIPH_HASH_SHA224
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA224
+    select MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
 
 config MODULE_HASHES_SW_SHA224
     bool "Software implemented"
@@ -88,6 +90,7 @@ choice HASHES_256_IMPLEMENTATION
 config MOD_PERIPH_HASH_SHA256
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA256
+    select MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
 
 config MODULE_HASHES_SW_SHA256
     bool "Software implemented"
