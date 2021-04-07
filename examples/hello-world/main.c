@@ -21,8 +21,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "psa/crypto.h"
+#include <stdlib.h>
 
+#include "hashes/sha256.h"
 #include "cryptocell_util.h"
 #include "cryptocell_incl/crys_hash.h"
 #include "cryptocell_incl/crys_hash_error.h"
