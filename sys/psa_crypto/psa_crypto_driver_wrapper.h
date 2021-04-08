@@ -1,3 +1,6 @@
+#ifndef PSA_CRYPTO_DRIVER_WRAPPER_H
+#define PSA_CRYPTO_DRIVER_WRAPPER_H 
+
 #include <stdlib.h>
 #include "psa/psa_crypto_values.h"
 #include "psa/psa_crypto_types.h"
@@ -11,3 +14,5 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
 
 psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash);
+
+#endif

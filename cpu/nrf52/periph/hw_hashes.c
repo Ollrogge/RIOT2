@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "kernel_defines.h"
-#include "psa_crypto_driver_wrapper.h"
-#include "psa/psa_crypto_struct.h"
+#include "psa/crypto.h"
 
 #include "cryptocell_util.h"
 #include "cryptocell_incl/crys_hash.h"
@@ -31,7 +30,7 @@ static psa_status_t cc310_to_psa_error(CRYSError_t error)
     }
 }
 
-psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
+psa_status_t cc_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
     int ret = 0;
@@ -68,7 +67,7 @@ psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
+psa_status_t cc_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
@@ -129,7 +128,7 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
+psa_status_t cc_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash)
 {
     int ret = 0;
@@ -138,7 +137,7 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
         #if defined(CONFIG_MOD_PERIPH_HASH_MD5)
                 case PSA_ALG_MD5:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Finish(&operation->ctx.md5, (uint32_t*)hash);
+                    ret = CRYS_HASH_Finish(&operation->ctx.md5, (uint32_t*) hash);
                     cryptocell_disable();
                     break;
         #endif
