@@ -33,7 +33,7 @@ extern void CRYPTOCELL_IRQHandler(void);
 /* This function must be defined to use the CryptoCell module on the NRF52840 board */
 void isr_cryptocell(void)
 {
-    // CRYPTOCELL_IRQHandler();
+    CRYPTOCELL_IRQHandler();
 }
 
 void cryptocell_setup(void)
@@ -50,8 +50,8 @@ void cryptocell_setup(void)
     if (ret != SA_SILIB_RET_OK) {
         printf("SaSi_LibInit failed: 0x%x\n", ret);
     }
-    // TODO: debug, runs into hardfault
-    //ret = CRYS_RndInit(rndState_ptr, rndWorkBuff_ptr);
+
+    ret = CRYS_RndInit(rndState_ptr, rndWorkBuff_ptr);
     if (ret != SA_SILIB_RET_OK) {
         printf("CRYS_RndInit failed: 0x%x\n", ret);
     }
