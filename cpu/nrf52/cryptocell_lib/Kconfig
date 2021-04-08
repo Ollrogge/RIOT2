@@ -7,6 +7,6 @@
 
 config MOD_LIB_CRYPTOCELL
     bool
-    default y if MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER 
+    default y if MODULE_PERIPH_HW_HASHES 
     depends on CPU_FAM_NRF52
     depends on TEST_KCONFIG

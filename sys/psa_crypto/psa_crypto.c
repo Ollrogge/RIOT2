@@ -469,52 +469,39 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
-    int status = PSA_SUCCESS;
-#endif
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+    psa_status_t status = psa_driver_wrapper_hash_setup(operation, alg);
 
+    if (status == PSA_ERROR_NOT_SUPPORTED) {
+#endif
         switch(alg) {
-    #if IS_ACTIVE(CONFIG_HASHES_MD5)
+        #if defined(MODULE_HASHES_SW_MD5)
             case PSA_ALG_MD5:
-            #if defined(CONFIG_MOD_PERIPH_HASH_MD5)
-                status = psa_driver_wrapper_hash_setup(operation, alg);
-            #else
                 md5_init(&(operation->ctx.md5));
-            #endif
                 break;
-    #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA1)
             case PSA_ALG_SHA_1:
-            #if defined(CONFIG_MOD_PERIPH_HASH_SHA1)
-                status = psa_driver_wrapper_hash_setup(operation, alg);
-            #else
                 sha1_init(&(operation->ctx.sha1));
-            #endif
                 break;
-    #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA224)
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA224)
             case PSA_ALG_SHA_224:
-            #if defined(CONFIG_MOD_PERIPH_HASH_SHA224)
-                status = psa_driver_wrapper_hash_setup(operation, alg);
-            #else
                 sha224_init(&(operation->ctx.sha224));
-            #endif
                 break;
-    #endif
-    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA256)
             case PSA_ALG_SHA_256:
-            #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
-                status = psa_driver_wrapper_hash_setup(operation, alg);
-            #else
                 sha256_init(&(operation->ctx.sha256));
-            #endif
                 break;
-    #endif  
+        #endif  
             default:
                 return PSA_ERROR_NOT_SUPPORTED;
         }
 
-#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+    }
+
     if (status != PSA_SUCCESS) {
         return status;
     }
@@ -536,39 +523,47 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
         return PSA_ERROR_BAD_STATE;
     }
 
-#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
     psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
+
+    if (status == PSA_ERROR_NOT_SUPPORTED) {
+#endif
+
+        switch(operation->alg) {
+        #if defined(MODULE_HASHES_SW_MD5)
+            case PSA_ALG_MD5:
+                md5_update(&(operation->ctx.md5), input, input_length);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA1)
+            case PSA_ALG_SHA_1:
+                sha1_update(&(operation->ctx.sha1), input, input_length);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA224)
+            case PSA_ALG_SHA_224:
+                sha224_update(&(operation->ctx.sha224), input, input_length);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA256)
+            case PSA_ALG_SHA_256:
+                sha256_update(&(operation->ctx.sha256), input, input_length);
+                break;
+        #endif  
+            default:
+                (void) input;
+                (void) input_length;
+                return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+    }
+
     if (status != PSA_SUCCESS) {
+        psa_hash_abort(operation);
         return status;
     }
-#else
-    switch(operation->alg) {
-#if defined(MODULE_HASHES_SW_MD5)
-        case PSA_ALG_MD5:
-            md5_update(&(operation->ctx.md5), input, input_length);
-            break;
 #endif
-#if defined(MODULE_HASHES_SW_SHA1)
-        case PSA_ALG_SHA_1:
-            sha1_update(&(operation->ctx.sha1), input, input_length);
-            break;
-#endif
-#if defined(MODULE_HASHES_SW_SHA224)
-        case PSA_ALG_SHA_224:
-            sha224_update(&(operation->ctx.sha224), input, input_length);
-            break;
-#endif
-#if defined(MODULE_HASHES_SW_SHA256)
-        case PSA_ALG_SHA_256:
-            sha256_update(&(operation->ctx.sha256), input, input_length);
-            break;
-#endif  
-        default:
-            (void) input;
-            (void) input_length;
-            return PSA_ERROR_NOT_SUPPORTED;
-    }
-#endif /* MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER */
 
     return PSA_SUCCESS;
 }
@@ -589,38 +584,46 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
-    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash);  
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash);
+
+    if (status == PSA_ERROR_NOT_SUPPORTED) {
+#endif
+
+        switch(operation->alg) {
+        #if defined(MODULE_HASHES_SW_MD5)
+            case PSA_ALG_MD5:
+                md5_final(&(operation->ctx.md5), hash);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA1)
+            case PSA_ALG_SHA_1:
+                sha1_final(&(operation->ctx.sha1), hash);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA224)
+            case PSA_ALG_SHA_224:
+                sha224_final(&(operation->ctx.sha224), hash);
+                break;
+        #endif
+        #if defined(MODULE_HASHES_SW_SHA256)
+            case PSA_ALG_SHA_256:
+                sha256_final(&(operation->ctx.sha256), hash);
+                break;
+        #endif  
+            default:
+                (void) hash;
+                return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+    }
+
     if (status != PSA_SUCCESS) {
+        psa_hash_abort(operation);
         return status;
     }
-#else
-    switch(operation->alg) {
-#if defined(MODULE_HASHES_SW_MD5)
-        case PSA_ALG_MD5:
-            md5_final(&(operation->ctx.md5), hash);
-            break;
 #endif
-#if defined(MODULE_HASHES_SW_SHA1)
-        case PSA_ALG_SHA_1:
-            sha1_final(&(operation->ctx.sha1), hash);
-            break;
-#endif
-#if defined(MODULE_HASHES_SW_SHA224)
-        case PSA_ALG_SHA_224:
-            sha224_final(&(operation->ctx.sha224), hash);
-            break;
-#endif
-#if defined(MODULE_HASHES_SW_SHA256)
-        case PSA_ALG_SHA_256:
-            sha256_final(&(operation->ctx.sha256), hash);
-            break;
-#endif  
-        default:
-            (void) hash;
-            return PSA_ERROR_NOT_SUPPORTED;
-    }
-#endif /* MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER */
 
     *hash_length = actual_hash_length;
 

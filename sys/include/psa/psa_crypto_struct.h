@@ -3,7 +3,7 @@
 
 #include "psa/psa_crypto_types.h"
 
-#if defined(MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER)
+#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
 #include "hash_hwctx.h"
 #endif
 

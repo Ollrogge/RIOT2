@@ -94,7 +94,7 @@ config HAS_CPU_NRF52
     help
         Indicates that the current cpu is 'nrf52'.
 
-config MODULE_PERIPH_PSA_CRYPTO_DRIVER_WRAPPER
+config MODULE_PERIPH_HW_HASHES
     bool
     depends on HAS_CPU_NRF52
 
