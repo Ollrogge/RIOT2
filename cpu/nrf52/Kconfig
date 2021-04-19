@@ -17,7 +17,6 @@ config CPU_FAM_NRF52
     select HAS_CORTEXM_MPU
     select HAS_CPU_NRF52
     select HAS_PERIPH_I2C_RECONFIGURE
-    select HAS_HW_HASH_MD5
     select HAS_HW_HASH_SHA1
     select HAS_HW_HASH_SHA224
     select HAS_HW_HASH_SHA256
@@ -88,24 +87,48 @@ config CPU_MODEL
 config CPU
     default "nrf52" if CPU_FAM_NRF52
 
+config HW_HASHES_ENABLED
+    bool
+    depends on HAS_CPU_NRF52
+    select MODULE_PERIPH_CC_HW_HASHES
+
+config HW_HASH_SHA1
+    depends on HAS_CPU_NRF52
+    select CC_HASH_SHA1
+
+config HW_HASH_SHA224
+    depends on HAS_CPU_NRF52
+    select CC_HASH_SHA224
+
+config HW_HASH_SHA256
+    depends on HAS_CPU_NRF52
+    select CC_HASH_SHA256
+
 ## Definition of specific features
 config HAS_CPU_NRF52
     bool
     help
         Indicates that the current cpu is 'nrf52'.
 
-config MODULE_PERIPH_HW_HASHES
+config MODULE_PERIPH_CC_HW_HASHES
     bool
-    depends on HAS_CPU_NRF52
+    help
+        Use CryptoCell Hardware Driver
 
-config MOD_PERIPH_HASH_MD5
-    depends on HAS_CPU_NRF52
+config CC_HASH_SHA1
+    bool
+    help
+        Indicates that CryptoCell driver is active for SHA-1.
 
-config MOD_PERIPH_HASH_SHA1
-    depends on HAS_CPU_NRF52
+config CC_HASH_SHA224
+    bool
+    help
+        Indicates that CryptoCell driver is active for SHA-1.
 
-config MOD_PERIPH_HASH_SHA224
-    depends on HAS_CPU_NRF52
+config CC_HASH_SHA256
+    bool
+    help
+        Indicates that CryptoCell driver is active for SHA-1.
 
 config MOD_PERIPH_HASH_SHA256
     depends on HAS_CPU_NRF52
@@ -113,6 +136,5 @@ config MOD_PERIPH_HASH_SHA256
 rsource "periph/Kconfig"
 rsource "vectors/Kconfig"
 rsource "cryptocell_lib/Kconfig"
-rsource "vectors/Kconfig"
 
 source "$(RIOTCPU)/nrf5x_common/Kconfig"
