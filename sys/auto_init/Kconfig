@@ -18,5 +18,6 @@ if MODULE_AUTO_INIT
 
 rsource "screen/Kconfig"
 rsource "multimedia/Kconfig"
+rsource "security/Kconfig"
 
 endif # MODULE_AUTO_INIT

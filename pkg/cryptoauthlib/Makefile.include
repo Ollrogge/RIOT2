@@ -6,6 +6,11 @@ INCLUDES += -I$(PKG_SOURCE_DIR)/lib
 INCLUDES += -I$(PKG_SOURCE_DIR)/app
 INCLUDES += -I$(RIOTPKG)/cryptoauthlib/include
 
+ifneq (,$(filter cryptoauthlib_hashes, $(USEMODULE)))
+  DIRS += $(RIOTPKG)/cryptoauthlib/hashes
+  INCLUDES += -I$(RIOTPKG)/cryptoauthlib/hashes/include
+endif
+
 DIRS += $(RIOTPKG)/cryptoauthlib/contrib
 ARCHIVES += $(BINDIR)/cryptoauthlib.a
 
