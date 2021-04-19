@@ -6,6 +6,9 @@
 #include "cryptocell_incl/crys_hash.h"
 #include "cryptocell_incl/crys_hash_error.h"
 
+#define ENABLE_DEBUG    (0)
+#include "debug.h"
+
 #define CC310_MAX_HASH_INPUT_BLOCK       (0xFFF0)
 
 static psa_status_t cc310_to_psa_error(CRYSError_t error)
@@ -33,22 +36,22 @@ static psa_status_t cc310_to_psa_error(CRYSError_t error)
 psa_status_t cc_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
+    DEBUG("Cryptocell Setup\n");
     int ret = 0;
-    
     switch(alg) {
 #if IS_ACTIVE(CONFIG_CC_HASH_SHA1)
         case PSA_ALG_SHA_1:
-            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_sha1, CRYS_HASH_SHA1_mode);
+            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_ctx, CRYS_HASH_SHA1_mode);
             break;
 #endif
 #if IS_ACTIVE(CONFIG_CC_HASH_SHA224)
         case PSA_ALG_SHA_224:
-            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_sha224, CRYS_HASH_SHA224_mode);
+            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_ctx, CRYS_HASH_SHA224_mode);
             break;
 #endif
 #if IS_ACTIVE(CONFIG_CC_HASH_SHA256)
         case PSA_ALG_SHA_256:
-            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_sha256, CRYS_HASH_SHA256_mode);
+            ret = CRYS_HASH_Init(&operation->hw_ctx.cc_ctx, CRYS_HASH_SHA256_mode);
             break;
 #endif
         default:
@@ -69,7 +72,6 @@ psa_status_t cc_hash_update(psa_hash_operation_t * operation,
     int ret = 0;
     size_t offset = 0;
     size_t size;
-
     do {
         if (input_length > CC310_MAX_HASH_INPUT_BLOCK) {
             size = CC310_MAX_HASH_INPUT_BLOCK;
@@ -84,21 +86,21 @@ psa_status_t cc_hash_update(psa_hash_operation_t * operation,
         #if defined(CONFIG_CC_HASH_SHA1)
                 case PSA_ALG_SHA_1:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_sha1, (uint8_t*)(input + offset), size);
+                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_ctx, (uint8_t*)(input + offset), size);
                     cryptocell_disable();
                     break;
         #endif
         #if defined(CONFIG_CC_HASH_SHA224)
                 case PSA_ALG_SHA_224:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_sha224, (uint8_t*)(input + offset), size);
+                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_ctx, (uint8_t*)(input + offset), size);
                     cryptocell_disable();
                     break;
         #endif
         #if defined(CONFIG_CC_HASH_SHA256)
                 case PSA_ALG_SHA_256:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_sha256, (uint8_t*)(input + offset), size);
+                    ret = CRYS_HASH_Update(&operation->hw_ctx.cc_ctx, (uint8_t*)(input + offset), size);
                     cryptocell_disable();
                     break;
         #endif
@@ -120,26 +122,25 @@ psa_status_t cc_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash)
 {
     int ret = 0;
-    
     switch(operation->alg) {
         #if defined(CONFIG_CC_HASH_SHA1)
                 case PSA_ALG_SHA_1:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_sha1, (uint32_t*)hash);
+                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_ctx, (uint32_t*)hash);
                     cryptocell_disable();
                     break;
         #endif
         #if defined(CONFIG_CC_HASH_SHA224)
                 case PSA_ALG_SHA_224:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_sha224, (uint32_t*)hash);
+                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_ctx, (uint32_t*)hash);
                     cryptocell_disable();
                     break;
         #endif
         #if defined(CONFIG_CC_HASH_SHA256)
                 case PSA_ALG_SHA_256:
                     cryptocell_enable();
-                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_sha256, (uint32_t*)hash);
+                    ret = CRYS_HASH_Finish(&operation->hw_ctx.cc_ctx, (uint32_t*)hash);
                     cryptocell_disable();
                     break;
         #endif
