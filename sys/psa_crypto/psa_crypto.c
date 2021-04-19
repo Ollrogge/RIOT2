@@ -4,7 +4,7 @@
 
 #include "kernel_defines.h"
 
-uint8_t lib_initialized = 0;
+static uint8_t lib_initialized = 0;
 
 /* constant-time buffer comparison */
 static inline int safer_memcmp(const uint8_t *a, const uint8_t *b, size_t n)

@@ -19,7 +19,7 @@ struct psa_hash_operation_s
     uint8_t suspended;
     #if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
         psa_hash_hw_context_t hw_ctx;
-    #endif /* CONFIG_HW_HASHES_ENABLED */
+    #endif
     union
     {
         unsigned dummy; /* Make the union non-empty even with no supported algorithms. */

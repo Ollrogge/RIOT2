@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+/* These are all temporarily defined as some numeric type to prevent errors at compile time.*/
+
 typedef /* implementation-defined type */ uint32_t psa_aead_operation_t;
 typedef uint32_t psa_algorithm_t;
 typedef /* implementation-defined type */ uint32_t psa_cipher_operation_t;
@@ -18,9 +20,6 @@ typedef uint16_t psa_key_type_t;
 typedef uint32_t psa_key_usage_t;
 typedef /* implementation-defined type */ uint32_t psa_mac_operation_t;
 typedef int32_t psa_status_t;
-
-// only for psa arch tests???
-typedef int psa_key_handle_t;
 
 /** The type of the state data structure for multipart hash operations.
  *

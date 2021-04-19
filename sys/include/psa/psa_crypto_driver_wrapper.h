@@ -18,19 +18,12 @@ typedef union
 {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
 
-    #if IS_ACTIVE(CONFIG_CC_HASH_SHA1)
-        cc_hash_hwctx_t cc_sha1;
-    #endif
-    #if IS_ACTIVE(CONFIG_CC_HASH_SHA224)
-        cc_hash_hwctx_t cc_sha224;
-    #endif
-    #if IS_ACTIVE(CONFIG_CC_HASH_SHA256)
-        cc_hash_hwctx_t cc_sha256;
+    #if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
+        cc_hash_hwctx_t cc_ctx;
     #endif
     #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES_SHA256)
         atca_hash_ctx_t atca_sha256;
     #endif
-
 } psa_hash_hw_context_t;
 
 psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,

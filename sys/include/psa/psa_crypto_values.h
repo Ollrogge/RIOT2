@@ -94,24 +94,6 @@
 #define PSA_ALG_KEY_AGREEMENT_GET_KDF(alg) /* specification-defined value */
 
 #define PSA_ALG_HASH_MASK   ((psa_algorithm_t)0x000000ff)
-#define PSA_ALG_NONE        ((psa_algorithm_t)0)
-#define PSA_ALG_MD2         ((psa_algorithm_t)0x02000001)
-#define PSA_ALG_MD4         ((psa_algorithm_t)0x02000002)
-#define PSA_ALG_MD5         ((psa_algorithm_t)0x02000003)
-#define PSA_ALG_RIPEMD160   ((psa_algorithm_t)0x02000004)
-#define PSA_ALG_SHA_1       ((psa_algorithm_t)0x02000005)
-#define PSA_ALG_SHA_224     ((psa_algorithm_t)0x02000008)
-#define PSA_ALG_SHA_256     ((psa_algorithm_t)0x02000009)
-#define PSA_ALG_SHA_384     ((psa_algorithm_t)0x0200000a)
-#define PSA_ALG_SHA_512     ((psa_algorithm_t)0x0200000b)
-#define PSA_ALG_SHA_512_224 ((psa_algorithm_t)0x0200000c)
-#define PSA_ALG_SHA_512_256 ((psa_algorithm_t)0x0200000d)
-#define PSA_ALG_SHA3_224    ((psa_algorithm_t)0x02000010)
-#define PSA_ALG_SHA3_256    ((psa_algorithm_t)0x02000011)
-#define PSA_ALG_SHA3_384    ((psa_algorithm_t)0x02000012)
-#define PSA_ALG_SHA3_512    ((psa_algorithm_t)0x02000013)
-#define PSA_ALG_SM3         ((psa_algorithm_t)0x02000014)
-#define PSA_ALG_ANY_HASH    ((psa_algorithm_t)0x020000ff)
 
 #define PSA_ALG_CBC_MAC     ((psa_algorithm_t)0x03c00100)
 #define PSA_ALG_CMAC        ((psa_algorithm_t)0x03c00200)
@@ -408,7 +390,7 @@
 #define PSA_ERROR_CORRUPTION_DETECTED ((psa_status_t)-151)
 
 /**
- * @brief There is not enough entropy to generate random data needed 
+ * @brief There is not enough entropy to generate random data needed
  * for the requested action.
  */
 #define PSA_ERROR_INSUFFICIENT_ENTROPY ((psa_status_t)-148)
@@ -424,7 +406,7 @@
 #define PSA_ERROR_INVALID_PADDING ((psa_status_t)-150)
 
 /**
- * @brief Return this error when there’s insufficient data when 
+ * @brief Return this error when there’s insufficient data when
  * attempting to read from a resource.
  */
 #define PSA_ERROR_INSUFFICIENT_DATA ((psa_status_t)-143)
@@ -435,63 +417,106 @@
 #define PSA_ERROR_INVALID_HANDLE ((psa_status_t)-136)
 
 
-// /**
-//  * @brief An invalid algorithm identifier value.
-//  * 
-//  * Zero is not the encoding of any algorithm.
-//  */
-// #define PSA_ALG_NONE ((psa_algorithm_t)0)
+/**
+ * @brief An invalid algorithm identifier value.
+ *
+ * Zero is not the encoding of any algorithm.
+ */
+#define PSA_ALG_NONE ((psa_algorithm_t)0)
 
-// /* PSA Hash Algorithms*/
+/* PSA Hash Algorithms*/
 
-// /**
-//  * @brief The MD2 message-digest algorithm.
-//  * 
-//  * \warning The MD2 hash is weak and deprecated and is only recommended 
-//  * for use in legacy protocols.
-//  */
-// #define PSA_ALG_MD2 ((psa_algorithm_t)0x02000001)
+/**
+ * @brief The MD2 message-digest algorithm.
+ *
+ * \warning The MD2 hash is weak and deprecated and is only recommended
+ * for use in legacy protocols.
+ */
+#define PSA_ALG_MD2 ((psa_algorithm_t)0x02000001)
 
-// /**
-//  * @brief The MD4 message-digest algorithm.
-//  * 
-//  * \warning The MD4 hash is weak and deprecated and is only recommended 
-//  * for use in legacy protocols.
-//  */
-// #define PSA_ALG_MD4 ((psa_algorithm_t)0x02000002)
+/**
+ * @brief The MD4 message-digest algorithm.
+ *
+ * \warning The MD4 hash is weak and deprecated and is only recommended
+ * for use in legacy protocols.
+ */
+#define PSA_ALG_MD4 ((psa_algorithm_t)0x02000002)
 
-// /**
-//  * @brief The MD5 message-digest algorithm.
-//  * 
-//  * \warning The MD5 hash is weak and deprecated and is only recommended 
-//  * for use in legacy protocols.
-//  */
-// #define PSA_ALG_MD5 ((psa_algorithm_t)0x02000003)
+/**
+ * @brief The MD5 message-digest algorithm.
+ *
+ * \warning The MD5 hash is weak and deprecated and is only recommended
+ * for use in legacy protocols.
+ */
+#define PSA_ALG_MD5 ((psa_algorithm_t)0x02000003)
 
-// /**
-//  * @brief The RIPEMD-160 message-digest algorithm.
-//  */
-// #define PSA_ALG_RIPEMD160 ((psa_algorithm_t)0x02000004)
+/**
+ * @brief The RIPEMD-160 message-digest algorithm.
+ */
+#define PSA_ALG_RIPEMD160 ((psa_algorithm_t)0x02000004)
 
-// /**
-//  * @brief The SHA-1 message-digest algorithm.
-//  * 
-//  * \warning The SHA-1 hash is weak and deprecated and is only recommended 
-//  * for use in legacy protocols.
-//  */
-// #define PSA_ALG_SHA_1 ((psa_algorithm_t)0x02000005)
+/**
+ * @brief The SHA-1 message-digest algorithm.
+ *
+ * \warning The SHA-1 hash is weak and deprecated and is only recommended
+ * for use in legacy protocols.
+ */
+#define PSA_ALG_SHA_1 ((psa_algorithm_t)0x02000005)
 
-// #define PSA_ALG_SHA_224     ((psa_algorithm_t)0x02000008) /** SHA-224 */ 
-// #define PSA_ALG_SHA_256     ((psa_algorithm_t)0x02000009) /** SHA-256 */
-// #define PSA_ALG_SHA_384     ((psa_algorithm_t)0x0200000a) /** SHA-384 */
-// #define PSA_ALG_SHA_512     ((psa_algorithm_t)0x0200000b) /** SHA-512 */
-// #define PSA_ALG_SHA_512_224 ((psa_algorithm_t)0x0200000c) /** SHA-512/224 */
-// #define PSA_ALG_SHA_512_256 ((psa_algorithm_t)0x0200000d) /** SHA-512/256 */
-// #define PSA_ALG_SHA3_224    ((psa_algorithm_t)0x02000010) /** SHA-3-224 */
-// #define PSA_ALG_SHA3_256    ((psa_algorithm_t)0x02000011) /** SHA-3-256 */
-// #define PSA_ALG_SHA3_384    ((psa_algorithm_t)0x02000012) /** SHA-3-384 */
-// #define PSA_ALG_SHA3_512    ((psa_algorithm_t)0x02000013) /** SHA-3-512 */
-// #define PSA_ALG_SM3         ((psa_algorithm_t)0x02000014) /** SM3 */
+/**
+ * @brief The SHA-224 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_224     ((psa_algorithm_t)0x02000008) /** SHA-224 */
+
+/**
+ * @brief The SHA-256 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_256     ((psa_algorithm_t)0x02000009) /** SHA-256 */
+
+/**
+ * @brief The SHA-384 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_384     ((psa_algorithm_t)0x0200000a) /** SHA-384 */
+
+/**
+ * @brief The SHA-512 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_512     ((psa_algorithm_t)0x0200000b) /** SHA-512 */
+
+/**
+ * @brief The SHA-512/224 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_512_224 ((psa_algorithm_t)0x0200000c) /** SHA-512/224 */
+
+/**
+ * @brief The SHA-512/256 message-digest algorithm.
+ */
+#define PSA_ALG_SHA_512_256 ((psa_algorithm_t)0x0200000d) /** SHA-512/256 */
+
+/**
+ * @brief The SHA3-224 message-digest algorithm.
+ */
+#define PSA_ALG_SHA3_224    ((psa_algorithm_t)0x02000010) /** SHA-3-224 */
+
+/**
+ * @brief The SHA3-256 message-digest algorithm.
+ */
+#define PSA_ALG_SHA3_256    ((psa_algorithm_t)0x02000011) /** SHA-3-256 */
+
+/**
+ * @brief The SHA3-384 message-digest algorithm.
+ */
+#define PSA_ALG_SHA3_384    ((psa_algorithm_t)0x02000012) /** SHA-3-384 */
+
+/**
+ * @brief The SHA3-512 message-digest algorithm.
+ */
+#define PSA_ALG_SHA3_512    ((psa_algorithm_t)0x02000013) /** SHA-3-512 */
+
+/**
+ * @brief The SM3 message-digest algorithm.
+ */
+#define PSA_ALG_SM3         ((psa_algorithm_t)0x02000014) /** SM3 */
 
 
 #endif /* PSA_CRYPTO_VALUES_H */
