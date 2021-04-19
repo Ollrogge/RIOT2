@@ -6,6 +6,7 @@
 
 static psa_status_t atca_to_psa_error(ATCA_STATUS error)
 {
+    DEBUG("ATCA Error: 0x%x\n", error);
     switch(error) {
         case ATCA_NOT_LOCKED:
         case ATCA_EXECUTION_ERROR:
@@ -32,7 +33,7 @@ static psa_status_t atca_to_psa_error(ATCA_STATUS error)
         case ATCA_INVALID_ID:
             return PSA_ERROR_INVALID_ARGUMENT;
         case ATCA_UNIMPLEMENTED:
-            return PSA_ERROR_NOT_SUPPORTED;         
+            return PSA_ERROR_NOT_SUPPORTED;
         default:
             return PSA_ERROR_GENERIC_ERROR;
     }
@@ -63,6 +64,10 @@ psa_status_t atca_hash_update(psa_hash_operation_t * operation,
 {
     int status = PSA_ERROR_GENERIC_ERROR;
 
+    if (operation->alg != PSA_ALG_SHA_256) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
     status = atcab_hw_sha2_256_update(&operation->hw_ctx.atca_sha256, input, input_length);
 
     if (status != ATCA_SUCCESS) {
@@ -76,6 +81,10 @@ psa_status_t atca_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash)
 {
     int status = PSA_ERROR_GENERIC_ERROR;
+
+    if (operation->alg != PSA_ALG_SHA_256) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
 
     status = atcab_hw_sha2_256_finish(&operation->hw_ctx.atca_sha256, hash);
 
