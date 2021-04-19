@@ -19,14 +19,9 @@ if HASHES_MD5
 
 choice HASHES_MD5_IMPLEMENTATION
     bool "MD5 implementation"
-    default MODULE_HASHES_SW_MD5
+    default SW_HASH_MD5
 
-config MOD_PERIPH_HASH_MD5
-    bool "Hardware accelerated"
-    depends on HAS_HW_HASH_MD5
-    select MODULE_PERIPH_HW_HASHES
-
-config MODULE_HASHES_SW_MD5
+config SW_HASH_MD5
     bool "Software implemented"
     select MODULE_HASHES_MD5
 
@@ -41,14 +36,14 @@ if HASHES_SHA1
 
 choice HASHES_SHA1_IMPLEMENTATION
     bool "SHA-1 implementation"
-    default MODULE_HASHES_SW_SHA1
+    default HW_HASH_SHA1
 
-config MOD_PERIPH_HASH_SHA1
+config HW_HASH_SHA1
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA1
-    select MODULE_PERIPH_HW_HASHES
+    select HW_HASHES_ENABLED
 
-config MODULE_HASHES_SW_SHA1
+config SW_HASH_SHA1
     bool "Software implemented"
     select MODULE_HASHES_SHA1
 
@@ -63,14 +58,14 @@ if HASHES_SHA224
 
 choice HASHES_224_IMPLEMENTATION
     bool "SHA-224 implementation"
-    default MODULE_HASHES_SW_SHA224
+    default HW_HASH_SHA224
 
-config MOD_PERIPH_HASH_SHA224
+config HW_HASH_SHA224
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA224
-    select MODULE_PERIPH_HW_HASHES
+    select HW_HASHES_ENABLED
 
-config MODULE_HASHES_SW_SHA224
+config SW_HASH_SHA224
     bool "Software implemented"
     select MODULE_HASHES_SHA224
 
@@ -85,14 +80,20 @@ if HASHES_SHA256
 
 choice HASHES_256_IMPLEMENTATION
     bool "SHA-256 implementation"
-    default MODULE_HASHES_SW_SHA256
+    default HW_HASH_SHA256
 
-config MOD_PERIPH_HASH_SHA256
+config HW_HASH_SHA256
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA256
-    select MODULE_PERIPH_HW_HASHES
+    select HW_HASHES_ENABLED
 
-config MODULE_HASHES_SW_SHA256
+config CRYPTOAUTH_HW_HASH_SHA256
+    bool "Microchip Cryptoauth Package"
+    select PACKAGE_CRYPTOAUTHLIB
+    select MODULE_CRYPTOAUTHLIB_HASHES_SHA256
+    select HW_HASHES_ENABLED
+
+config SW_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
 

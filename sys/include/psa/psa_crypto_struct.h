@@ -2,9 +2,10 @@
 #define PSA_CRYPTO_STRUCT_H
 
 #include "psa/psa_crypto_types.h"
+#include "kernel_defines.h"
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
-#include "hash_hwctx.h"
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
+#include "psa_crypto_driver_wrapper.h"
 #endif
 
 #include "hashes/md5.h"
@@ -12,48 +13,38 @@
 #include "hashes/sha224.h"
 #include "hashes/sha256.h"
 
-#include "kernel_defines.h"
-
 struct psa_hash_operation_s
 {
     psa_algorithm_t alg;
     uint8_t suspended;
+    #if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
+        psa_hash_hw_context_t hw_ctx;
+    #endif /* CONFIG_HW_HASHES_ENABLED */
     union
     {
         unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
 
-        #if IS_ACTIVE(CONFIG_HASHES_MD5)
-                #if defined(CONFIG_MOD_PERIPH_HASH_MD5)
-                        md5_hwctx_t md5;
-                #else
-                        md5_ctx_t md5;
-                #endif
+        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
+                md5_ctx_t md5;
         #endif
-        #if IS_ACTIVE(CONFIG_HASHES_SHA1)
-                #if defined(CONFIG_MOD_PERIPH_HASH_SHA1) 
-                        sha1_hwctx_t sha1;
-                #else
-                        sha1_context sha1;
-                #endif
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
+                sha1_context sha1;
         #endif
-        #if IS_ACTIVE(CONFIG_HASHES_SHA224)
-                #if defined(CONFIG_MOD_PERIPH_HASH_SHA224) 
-                        sha224_hwctx_t sha224;
-                #else
-                        sha224_context_t sha224;
-                #endif
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
+                sha224_context_t sha224;
         #endif
-        #if IS_ACTIVE(CONFIG_HASHES_SHA256)
-                #if defined(CONFIG_MOD_PERIPH_HASH_SHA256)
-                        sha256_hwctx_t sha256;
-                #else
-                        sha256_context_t sha256;
-                #endif
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
+                sha256_context_t sha256;
         #endif
-    } ctx;
+    } sw_ctx;
 };
 
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
+#define PSA_HASH_OPERATION_INIT {0, 0, {0}, {0}}
+#else
 #define PSA_HASH_OPERATION_INIT {0, 0, {0}}
+#endif /* CONFIG_HW_HASHES_ENABLED */
+
 static inline struct psa_hash_operation_s psa_hash_operation_init( void )
 {
     const struct psa_hash_operation_s v = PSA_HASH_OPERATION_INIT;

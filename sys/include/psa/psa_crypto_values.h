@@ -190,29 +190,6 @@
 #define PSA_ECC_FAMILY_SECT_R1 ((psa_ecc_family_t) 0x22)
 #define PSA_ECC_FAMILY_SECT_R2 ((psa_ecc_family_t) 0x2b)
 
-#define PSA_SUCCESS ((psa_status_t)0)
-#define PSA_ERROR_ALREADY_EXISTS ((psa_status_t)-139)
-#define PSA_ERROR_BAD_STATE ((psa_status_t)-137)
-#define PSA_ERROR_BUFFER_TOO_SMALL ((psa_status_t)-138)
-#define PSA_ERROR_COMMUNICATION_FAILURE ((psa_status_t)-145)
-#define PSA_ERROR_CORRUPTION_DETECTED ((psa_status_t)-151)
-#define PSA_ERROR_DATA_CORRUPT ((psa_status_t)-152)
-#define PSA_ERROR_DATA_INVALID ((psa_status_t)-153)
-#define PSA_ERROR_DOES_NOT_EXIST ((psa_status_t)-140)
-#define PSA_ERROR_GENERIC_ERROR ((psa_status_t)-132)
-#define PSA_ERROR_HARDWARE_FAILURE ((psa_status_t)-147)
-#define PSA_ERROR_INSUFFICIENT_DATA ((psa_status_t)-143)
-#define PSA_ERROR_INSUFFICIENT_ENTROPY ((psa_status_t)-148)
-#define PSA_ERROR_INSUFFICIENT_MEMORY ((psa_status_t)-141)
-#define PSA_ERROR_INSUFFICIENT_STORAGE ((psa_status_t)-142)
-#define PSA_ERROR_INVALID_ARGUMENT ((psa_status_t)-135)
-#define PSA_ERROR_INVALID_HANDLE ((psa_status_t)-136)
-#define PSA_ERROR_INVALID_PADDING ((psa_status_t)-150)
-#define PSA_ERROR_INVALID_SIGNATURE ((psa_status_t)-149)
-#define PSA_ERROR_NOT_PERMITTED ((psa_status_t)-133)
-#define PSA_ERROR_NOT_SUPPORTED ((psa_status_t)-134)
-#define PSA_ERROR_STORAGE_FAILURE ((psa_status_t)-146)
-
 #define PSA_EXPORT_KEY_OUTPUT_SIZE(key_type, key_bits) \
 /* implementation-defined value */
 #define PSA_EXPORT_KEY_PAIR_MAX_SIZE /* implementation-defined value */
@@ -345,117 +322,117 @@
 
 
 
-// /**
-//  * @brief The action was completed successfully.
-//  */
-// #define PSA_SUCCESS ((psa_status_t)0)
+/**
+ * @brief The action was completed successfully.
+ */
+#define PSA_SUCCESS ((psa_status_t)0)
 
-// /**
-//  * @brief An error occurred that does not correspond to any defined failure cause.
-//  */
-// #define PSA_ERROR_GENERIC_ERROR ((psa_status_t)-132)
+/**
+ * @brief An error occurred that does not correspond to any defined failure cause.
+ */
+#define PSA_ERROR_GENERIC_ERROR ((psa_status_t)-132)
 
-// /**
-//  * @brief The requested operation or a parameter is not supported by this implementation.
-//  */
-// #define PSA_ERROR_NOT_SUPPORTED ((psa_status_t)-134)
+/**
+ * @brief The requested operation or a parameter is not supported by this implementation.
+ */
+#define PSA_ERROR_NOT_SUPPORTED ((psa_status_t)-134)
 
-// /**
-//  * @brief The requested action is denied by a policy.
-//  */
-// #define PSA_ERROR_NOT_PERMITTED ((psa_status_t)-133)
+/**
+ * @brief The requested action is denied by a policy.
+ */
+#define PSA_ERROR_NOT_PERMITTED ((psa_status_t)-133)
 
-// /**
-//  * @brief An output buffer is too small.
-//  */
-// #define PSA_ERROR_BUFFER_TOO_SMALL ((psa_status_t)-138)
+/**
+ * @brief An output buffer is too small.
+ */
+#define PSA_ERROR_BUFFER_TOO_SMALL ((psa_status_t)-138)
 
-// /**
-//  * @brief Asking for an item that already exists.
-//  */
-// #define PSA_ERROR_ALREADY_EXISTS ((psa_status_t)-139)
+/**
+ * @brief Asking for an item that already exists.
+ */
+#define PSA_ERROR_ALREADY_EXISTS ((psa_status_t)-139)
 
-// /**
-//  * @brief Asking for an item that doesn’t exist.
-//  */
-// #define PSA_ERROR_DOES_NOT_EXIST ((psa_status_t)-140)
+/**
+ * @brief Asking for an item that doesn’t exist.
+ */
+#define PSA_ERROR_DOES_NOT_EXIST ((psa_status_t)-140)
 
-// /**
-//  * @brief The requested action cannot be performed in the current state.
-//  */
-// #define PSA_ERROR_BAD_STATE ((psa_status_t)-137)
+/**
+ * @brief The requested action cannot be performed in the current state.
+ */
+#define PSA_ERROR_BAD_STATE ((psa_status_t)-137)
 
-// /**
-//  * @brief The parameters passed to the function are invalid.
-//  */
-// #define PSA_ERROR_INVALID_ARGUMENT ((psa_status_t)-135)
+/**
+ * @brief The parameters passed to the function are invalid.
+ */
+#define PSA_ERROR_INVALID_ARGUMENT ((psa_status_t)-135)
 
-// /**
-//  * @brief There is not enough runtime memory.
-//  */
-// #define PSA_ERROR_INSUFFICIENT_MEMORY ((psa_status_t)-141)
+/**
+ * @brief There is not enough runtime memory.
+ */
+#define PSA_ERROR_INSUFFICIENT_MEMORY ((psa_status_t)-141)
 
-// /**
-//  * @brief There is not enough persistent storage.
-//  */
-// #define PSA_ERROR_INSUFFICIENT_STORAGE ((psa_status_t)-142)
+/**
+ * @brief There is not enough persistent storage.
+ */
+#define PSA_ERROR_INSUFFICIENT_STORAGE ((psa_status_t)-142)
 
-// /**
-//  * @brief There was a communication failure inside the implementation.
-//  */
-// #define PSA_ERROR_COMMUNICATION_FAILURE ((psa_status_t)-145)
+/**
+ * @brief There was a communication failure inside the implementation.
+ */
+#define PSA_ERROR_COMMUNICATION_FAILURE ((psa_status_t)-145)
 
-// /**
-//  * @brief There was a storage failure that might have led to data loss.
-//  */
-// #define PSA_ERROR_STORAGE_FAILURE ((psa_status_t)-146)
+/**
+ * @brief There was a storage failure that might have led to data loss.
+ */
+#define PSA_ERROR_STORAGE_FAILURE ((psa_status_t)-146)
 
-// /**
-//  * @brief Stored data has been corrupted.
-//  */
-// #define PSA_ERROR_DATA_CORRUPT ((psa_status_t)-152)
+/**
+ * @brief Stored data has been corrupted.
+ */
+#define PSA_ERROR_DATA_CORRUPT ((psa_status_t)-152)
 
-// /**
-//  * @brief Data read from storage is not valid for the implementation.
-//  */
-// #define PSA_ERROR_DATA_INVALID ((psa_status_t)-153)
+/**
+ * @brief Data read from storage is not valid for the implementation.
+ */
+#define PSA_ERROR_DATA_INVALID ((psa_status_t)-153)
 
-// /**
-//  * @brief A hardware failure was detected.
-//  */
-// #define PSA_ERROR_HARDWARE_FAILURE ((psa_status_t)-147)
+/**
+ * @brief A hardware failure was detected.
+ */
+#define PSA_ERROR_HARDWARE_FAILURE ((psa_status_t)-147)
 
-// /**
-//  * @brief A tampering attempt was detected.
-//  */
-// #define PSA_ERROR_CORRUPTION_DETECTED ((psa_status_t)-151)
+/**
+ * @brief A tampering attempt was detected.
+ */
+#define PSA_ERROR_CORRUPTION_DETECTED ((psa_status_t)-151)
 
-// /**
-//  * @brief There is not enough entropy to generate random data needed 
-//  * for the requested action.
-//  */
-// #define PSA_ERROR_INSUFFICIENT_ENTROPY ((psa_status_t)-148)
+/**
+ * @brief There is not enough entropy to generate random data needed 
+ * for the requested action.
+ */
+#define PSA_ERROR_INSUFFICIENT_ENTROPY ((psa_status_t)-148)
 
-// /**
-//  * @brief The signature, MAC or hash is incorrect.
-//  */
-// #define PSA_ERROR_INVALID_SIGNATURE ((psa_status_t)-149)
+/**
+ * @brief The signature, MAC or hash is incorrect.
+ */
+#define PSA_ERROR_INVALID_SIGNATURE ((psa_status_t)-149)
 
-// /**
-//  * @brief The decrypted padding is incorrect.
-//  */
-// #define PSA_ERROR_INVALID_PADDING ((psa_status_t)-150)
+/**
+ * @brief The decrypted padding is incorrect.
+ */
+#define PSA_ERROR_INVALID_PADDING ((psa_status_t)-150)
 
-// /**
-//  * @brief Return this error when there’s insufficient data when 
-//  * attempting to read from a resource.
-//  */
-// #define PSA_ERROR_INSUFFICIENT_DATA ((psa_status_t)-143)
+/**
+ * @brief Return this error when there’s insufficient data when 
+ * attempting to read from a resource.
+ */
+#define PSA_ERROR_INSUFFICIENT_DATA ((psa_status_t)-143)
 
-// /**
-//  * @brief The key identifier is not valid.
-//  */
-// #define PSA_ERROR_INVALID_HANDLE ((psa_status_t)-136)
+/**
+ * @brief The key identifier is not valid.
+ */
+#define PSA_ERROR_INVALID_HANDLE ((psa_status_t)-136)
 
 
 // /**

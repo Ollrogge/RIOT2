@@ -1,21 +1,20 @@
 #include <stdio.h>
 #include "psa/crypto.h"
-#include "psa_crypto_driver_wrapper.h"
+#include "psa/psa_crypto_driver_wrapper.h"
 
 #include "kernel_defines.h"
 
 uint8_t lib_initialized = 0;
 
 /* constant-time buffer comparison */
-static inline int safer_memcmp( const uint8_t *a, const uint8_t *b, size_t n )
+static inline int safer_memcmp(const uint8_t *a, const uint8_t *b, size_t n)
 {
-    size_t i;
-    unsigned char diff = 0;
+    uint8_t diff = 0;
 
-    for( i = 0; i < n; i++ )
+    for (size_t i = 0; i < n; i++)
         diff |= a[i] ^ b[i];
 
-    return( diff );
+    return diff;
 }
 
 psa_status_t psa_crypto_init(void)
@@ -469,40 +468,40 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     psa_status_t status = psa_driver_wrapper_hash_setup(operation, alg);
 
     if (status == PSA_ERROR_NOT_SUPPORTED) {
 #endif
         switch(alg) {
-        #if defined(MODULE_HASHES_SW_MD5)
+        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
             case PSA_ALG_MD5:
-                md5_init(&(operation->ctx.md5));
+                md5_init(&(operation->sw_ctx.md5));
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA1)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
             case PSA_ALG_SHA_1:
-                sha1_init(&(operation->ctx.sha1));
+                sha1_init(&(operation->sw_ctx.sha1));
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA224)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
             case PSA_ALG_SHA_224:
-                sha224_init(&(operation->ctx.sha224));
+                sha224_init(&(operation->sw_ctx.sha224));
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA256)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
             case PSA_ALG_SHA_256:
-                sha256_init(&(operation->ctx.sha256));
+                sha256_init(&(operation->sw_ctx.sha256));
                 break;
         #endif  
             default:
                 return PSA_ERROR_NOT_SUPPORTED;
         }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     }
 
-    if (status != PSA_SUCCESS) {
+    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
         return status;
     }
 #endif
@@ -523,31 +522,31 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
         return PSA_ERROR_BAD_STATE;
     }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
 
     if (status == PSA_ERROR_NOT_SUPPORTED) {
 #endif
 
         switch(operation->alg) {
-        #if defined(MODULE_HASHES_SW_MD5)
+        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
             case PSA_ALG_MD5:
-                md5_update(&(operation->ctx.md5), input, input_length);
+                md5_update(&(operation->sw_ctx.md5), input, input_length);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA1)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
             case PSA_ALG_SHA_1:
-                sha1_update(&(operation->ctx.sha1), input, input_length);
+                sha1_update(&(operation->sw_ctx.sha1), input, input_length);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA224)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
             case PSA_ALG_SHA_224:
-                sha224_update(&(operation->ctx.sha224), input, input_length);
+                sha224_update(&(operation->sw_ctx.sha224), input, input_length);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA256)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
             case PSA_ALG_SHA_256:
-                sha256_update(&(operation->ctx.sha256), input, input_length);
+                sha256_update(&(operation->sw_ctx.sha256), input, input_length);
                 break;
         #endif  
             default:
@@ -556,10 +555,10 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
                 return PSA_ERROR_NOT_SUPPORTED;
         }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     }
 
-    if (status != PSA_SUCCESS) {
+    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
         psa_hash_abort(operation);
         return status;
     }
@@ -584,31 +583,31 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash);
 
     if (status == PSA_ERROR_NOT_SUPPORTED) {
 #endif
 
         switch(operation->alg) {
-        #if defined(MODULE_HASHES_SW_MD5)
+        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
             case PSA_ALG_MD5:
-                md5_final(&(operation->ctx.md5), hash);
+                md5_final(&(operation->sw_ctx.md5), hash);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA1)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
             case PSA_ALG_SHA_1:
-                sha1_final(&(operation->ctx.sha1), hash);
+                sha1_final(&(operation->sw_ctx.sha1), hash);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA224)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
             case PSA_ALG_SHA_224:
-                sha224_final(&(operation->ctx.sha224), hash);
+                sha224_final(&(operation->sw_ctx.sha224), hash);
                 break;
         #endif
-        #if defined(MODULE_HASHES_SW_SHA256)
+        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
             case PSA_ALG_SHA_256:
-                sha256_final(&(operation->ctx.sha256), hash);
+                sha256_final(&(operation->sw_ctx.sha256), hash);
                 break;
         #endif  
             default:
@@ -616,10 +615,10 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
                 return PSA_ERROR_NOT_SUPPORTED;
         }
 
-#if defined(CONFIG_MODULE_PERIPH_HW_HASHES)
+#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     }
 
-    if (status != PSA_SUCCESS) {
+    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
         psa_hash_abort(operation);
         return status;
     }
