@@ -15,8 +15,6 @@
  * limitations under the License.
 **/
 
-#include <string.h>
-#include <stdio.h>
 #include "pal_common.h"
 #include "pal_nvmem.h"
 

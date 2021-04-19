@@ -1,4 +1,3 @@
-#PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/psa-arch-tests
 PKG_NAME=psa_arch_tests
 PKG_URL=https://github.com/ARM-software/psa-arch-tests
 PKG_VERSION=d4b75cc0a8e3df96c2240d7f28d2aac4b0def0f8
@@ -6,22 +5,18 @@ PKG_LICENSE=Apache-2.0
 
 include $(RIOTBASE)/pkg/pkg.mk
 
-# TODO: find a way to correctly pass CFLAGS during build (right now they still have to be patched into GNUARM.cmake in psa-arch-tests repo)
-RIOT_CFLAGS= -mfloat-abi=hard -mfpu=fpv4-sp-d16
+INCLUDE_PATHS=$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto
 
-ifneq (1,$(MODULE_CRYPTOAUTHLIB))
-  INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto;$(RIOTPKG)/cryptoauthlib/hashes/include;$(RIOTBASE)/build/pkg/cryptoauthlib/lib"
-else
-  INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto"
+ifneq (,$(filter cryptoauthlib_contrib,$(USEMODULE)))
+  INCLUDE_PATHS+=;$(RIOTPKG)/cryptoauthlib/hashes/include;$(RIOTBASE)/build/pkg/cryptoauthlib/lib
 endif
 
-# $(info $$Includes is [${INCLUDES}])
+# $(info $$Usemodule is [${USEMODULE}])
 .PHONY: all..cmake_version_supported
 
 CMAKE_MINIMAL_VERSION = 3.10
 
 TOOLCHAIN_FILE=$(PKG_SOURCE_DIR)/xcompile-toolchain.cmake
-# only supports armv8m_ml, armv8m_bl and armv7m
 
 all: psa_arch_tests
 
@@ -29,6 +24,7 @@ psa_arch_tests: $(PKG_BUILD_DIR)/Makefile
 	env -u CC -u CFLAGS \
  	$(MAKE) -C $(PKG_BUILD_DIR)
 
+# Note: Only supports architectures armv8m_ml, armv8m_bl and armv7m
 $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 	cp -r tgt_dev_apis_riot $(PKG_SOURCE_DIR)/api-tests/platform/targets && \
 	cp $(BINDIR)/riotbuild/riotbuild.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
@@ -39,12 +35,11 @@ $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 		  -H$(PKG_SOURCE_DIR)/api-tests \
 		  -B$(PKG_BUILD_DIR) \
 		  -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_FILE) \
-		  -DCFLAGS="$(RIOT_CFLAGS)" \
 		  -Wno-dev \
 		  -DTARGET=tgt_dev_apis_riot \
 		  -DCPU_ARCH=$(CPU_ARCH) \
 		  -DSUITE=CRYPTO \
-		  -DPSA_INCLUDE_PATHS=$(INCLUDE_PATHS) \
+		  -DPSA_INCLUDE_PATHS="$(INCLUDE_PATHS)" \
 		  -DWATCHDOG_AVAILABLE=0
 
 $(TOOLCHAIN_FILE): git-download
