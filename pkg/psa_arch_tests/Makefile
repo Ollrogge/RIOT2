@@ -6,21 +6,22 @@ PKG_LICENSE=Apache-2.0
 
 include $(RIOTBASE)/pkg/pkg.mk
 
-# TODO: pass CFLAGS during build (right now they still have to be patched into GNUARM.cmake in psa-arch-tests repo)
+# TODO: find a way to correctly pass CFLAGS during build (right now they still have to be patched into GNUARM.cmake in psa-arch-tests repo)
 RIOT_CFLAGS= -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
+ifneq (1,$(MODULE_CRYPTOAUTHLIB))
+  INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto;$(RIOTPKG)/cryptoauthlib/hashes/include;$(RIOTBASE)/build/pkg/cryptoauthlib/lib"
+else
+  INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto"
+endif
+
+# $(info $$Includes is [${INCLUDES}])
 .PHONY: all..cmake_version_supported
 
 CMAKE_MINIMAL_VERSION = 3.10
 
 TOOLCHAIN_FILE=$(PKG_SOURCE_DIR)/xcompile-toolchain.cmake
-
-ifeq (1, $(or $(CPU_CORE_CORTEX_M23), $(CPU_CORE_CORTEX_M33)))
-	THIS_ARCH=armv8m_ml
-	# or armv8m_bl ???
-else 
-	THIS_ARCH=armv7m
-endif
+# only supports armv8m_ml, armv8m_bl and armv7m
 
 all: psa_arch_tests
 
@@ -41,9 +42,9 @@ $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 		  -DCFLAGS="$(RIOT_CFLAGS)" \
 		  -Wno-dev \
 		  -DTARGET=tgt_dev_apis_riot \
-		  -DCPU_ARCH=$(THIS_ARCH) \
+		  -DCPU_ARCH=$(CPU_ARCH) \
 		  -DSUITE=CRYPTO \
-		  -DPSA_INCLUDE_PATHS="$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include" \
+		  -DPSA_INCLUDE_PATHS=$(INCLUDE_PATHS) \
 		  -DWATCHDOG_AVAILABLE=0
 
 $(TOOLCHAIN_FILE): git-download

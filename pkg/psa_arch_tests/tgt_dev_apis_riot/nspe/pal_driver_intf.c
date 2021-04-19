@@ -20,7 +20,7 @@
 #include "pal_common.h"
 #include "pal_nvmem.h"
 
-extern void riot_uart_write(const void *str, int32_t data);
+extern void riot_uart_write(const char *str, int32_t data);
 extern void riot_nvmem_read(addr_t base, uint32_t offset, void *buffer, int size);
 extern void riot_nvmem_write(addr_t base, uint32_t offset, void *buffer, int size);
 

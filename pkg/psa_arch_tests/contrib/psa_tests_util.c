@@ -5,58 +5,57 @@
 #include "periph/flashpage.h"
 #include "stdio_uart.h"
 
-#define SIM_FLASHSIZE       (96)
+#define SIM_FLASHSIZE       (128)
 #define LINE_LEN            (16)
-#define PRINT_BUFF_SIZE     (32)
+#define PRINT_BUFF_SIZE     (100)
+
 /* When writing raw bytes on flash, data must be correctly aligned. */
 #define ALIGNMENT_ATTR __attribute__((aligned(FLASHPAGE_WRITE_BLOCK_ALIGNMENT)))
 
-int first_read = 1;
-
-// struct formatted_buffer_t {
-//     size_t pos;
-//     uint8_t buf[PRINT_BUFF_SIZE];
-// };
-
-void riot_uart_write(const void *str, int32_t data) {
-    // (void) data;
+void riot_uart_write(const char *str, int32_t data) {
     int len = fmt_strlen(str);
-    char *input = (char *) str;
     int datalen = 0;
     char output[PRINT_BUFF_SIZE];
+    int pos = 0;
 
     for (int i = 0; i < len; i++) {
-        if (input[i] == '%') {
-            switch (input[i+1]) {
+        if (str[i] == '%') {
+            switch (str[i+1]) {
                 case 'd':
                 case 'i':
-                    datalen = fmt_u32_dec(output, data);
-                    output[datalen++] = '\n';
+                    datalen = fmt_u32_dec(output+pos, data);
+                    pos += datalen;
+                    i++;
                     break;
                 case 'x':
-                    datalen += fmt_u32_hex(output, data);
-                    output[datalen++] = '\n';
+                    datalen = fmt_u32_hex(output+pos, data);
+                    pos += datalen;
+                    i++;
                     break;
-            }            
+            }
+        }
+        else {
+            output[pos++] = str[i];
+            if (pos >= PRINT_BUFF_SIZE) {
+                stdio_write(output, PRINT_BUFF_SIZE);
+                pos = 0;
+            }
         }
     }
 
-    stdio_write(str, len-3);
-    stdio_write(output, datalen);
+    if (pos) {
+        stdio_write(output, pos);
+    }
 }
 
 /* ----------------------------------------------------------------- */
+/* Some PSA Architecture test cases reboot or crash the device or application on purpose. In order to be able to pick up where it left off, the application needs to write some flags and the previous test ID into non volatile memory. Since those tests are not part of the PSA Developer API tests and the flags don't have to be persistent at this point I simulate non volatile memory with an array. */
 
-// static uint8_t page_read[FLASHPAGE_SIZE] ALIGNMENT_ATTR;
 static uint8_t flash_simulation[SIM_FLASHSIZE];
 
 void riot_nvmem_read(uint32_t base, uint32_t offset, void *buffer, int size)
 {
     (void) base;
-    if (first_read) {
-        memset(flash_simulation, 0xFF, SIM_FLASHSIZE);
-        first_read = 0;
-    }
     memcpy(buffer, flash_simulation+offset, size);
 }
 
@@ -65,43 +64,3 @@ void riot_nvmem_write(uint32_t base, uint32_t offset, void *buffer, int size)
     (void) base;
     memcpy(flash_simulation+offset, buffer, size);
 }
-
-// void riot_nvmem_read(uint32_t base, uint32_t offset, void *buffer, int size)
-// {
-//     (void) base;
-//     if (first_read) {
-//         flashpage_erase(100);
-//         first_read = 0;
-//     }
-//     /* Always read and write to flash page 100 (only applies do NRF52840) */
-//     uint32_t page = 100;
-//     memset(page_read, 0xFF, FLASHPAGE_SIZE);
-//     flashpage_read(page, page_read);
-//     memcpy(buffer, page_read+offset, size);
-//     printf("Read: \n");
-//     // memdump(page_read, 100);
-// }
-
-// void riot_nvmem_write(uint32_t base, uint32_t offset, void *buffer, int size)
-// {
-//     (void) base;
-//     /* Always read and write to flash page 100 (only applies do NRF52840) */
-//     uint32_t page = 100;
-//     uint8_t tmp[FLASHPAGE_WRITE_BLOCK_SIZE] = { 0x00 };
-//     printf("Write: \n");
-//     if ((unsigned int) size < FLASHPAGE_WRITE_BLOCK_SIZE) {
-//         for (int i = FLASHPAGE_WRITE_BLOCK_SIZE-1; i >= 0; i--) {
-//             tmp[i] = ((uint8_t*)buffer)[i];
-//         }
-//         flashpage_write(flashpage_addr(page)+offset, tmp, FLASHPAGE_WRITE_BLOCK_SIZE);
-//     }
-//     else {
-//         flashpage_write(flashpage_addr(page)+offset, buffer, size);
-//     }
-//     memset(page_read, 0xFF, FLASHPAGE_SIZE);
-//     flashpage_read(page, page_read);
-//     memcpy(buffer, page_read+offset, size);
-//     printf("Read after write: \n");
-//     memdump(page_read, 100);
-//     // memdump(page_write, 100);    
-// }
