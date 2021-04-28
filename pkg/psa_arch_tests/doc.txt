@@ -1,0 +1,30 @@
+/**
+ * @defgroup pkg_psa_arch_tests ARM PSA Architecture Testsuite
+ * @ingroup  pkg sys_psa_crypto
+ * @brief    Provides the ARM PSA Architecture Testsuite
+ * @see      https://github.com/ARM-software/psa-arch-tests
+ *
+ * # Introduction
+ * This package provides the ARM PSA Architecture Testsuite. It is being used
+ * by tests/psa_crypto.
+ *
+ * It contains tests for all PSA developer APIs and the ARM Firmware Framework.
+ *
+ * ## Usage
+ * Add
+ * CONFIG_PACKAGE_PSA_ARCH_TESTS=y
+ * to your application's app.config file.
+ * You will also need to provide a file called testsuite.db which contains the
+ * names of the test cases you want to build.
+ * The compiled testsuite provides three archives, which need to be included in
+ * the application's makefile:
+ * ARCHIVES += $(BINDIR)/pkg-build/psa_arch_tests/dev_apis/crypto/test_combine.a
+ * ARCHIVES += $(BINDIR)/pkg-build/psa_arch_tests/val/val_nspe.a
+ * ARCHIVES += $(BINDIR)/pkg-build/psa_arch_tests/platform/pal_nspe.a
+ *
+ * ## Implementation Status
+ * The way this package is built and the utility functions are implemented, it
+ * only can only be used to test the PSA Crypto API in a nonsecure execution
+ * environment. It has not been tested for the other PSA developer APIs
+ * and it does not yet support execution in secure processing environments.
+ */

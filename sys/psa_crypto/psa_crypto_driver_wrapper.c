@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     sys_psa_crypto
+ * @{
+ *
+ * @file
+ * @brief       Wrapper to combine several available cryptographic backends.
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
 #include <stdio.h>
 
 #include "kernel_defines.h"
@@ -47,7 +67,7 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
         status = atca_hash_update(operation, input, input_length);
     }
     #endif
-    
+
     return status;
 }
 

@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     pkg_psa_arch_tests
+ * @{
+ *
+ * @file
+ * @brief       Provides utility functions called by the PSA Architecture
+ *              Testsuite's PAL API.
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
 #include <string.h>
 #include <stdint.h>
 #include "fmt.h"
