@@ -13,15 +13,8 @@ config PACKAGE_CRYPTOAUTHLIB
     select MODULE_XTIMER
     imply MODULE_PERIPH_I2C_RECONFIGURE
 
-config MODULE_CRYPTOAUTHLIB_HASHES_SHA256
+config MODULE_CRYPTOAUTHLIB_HASHES
     bool "Microchip CryptoAuth library"
     depends on PACKAGE_CRYPTOAUTHLIB
-    select MODULE_CRYPTOAUTHLIB_HASHES
-
-config MODULE_CRYPTOAUTHLIB_HASHES
-    bool
-    help
-        Symbol for using Cryptoauth hashes
-    
 
 rsource "contrib/Kconfig"

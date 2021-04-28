@@ -31,7 +31,7 @@ endif # HASHES_MD5
 
 menuconfig HASHES_SHA1
     bool "SHA-1"
-    
+
 if HASHES_SHA1
 
 choice HASHES_SHA1_IMPLEMENTATION
@@ -53,7 +53,7 @@ endif # HASHES_SHA1
 
 menuconfig HASHES_SHA224
     bool "SHA-224"
-    
+
 if HASHES_SHA224
 
 choice HASHES_224_IMPLEMENTATION
@@ -75,7 +75,7 @@ endif # HASHES_SHA224
 
 menuconfig HASHES_SHA256
     bool "SHA-256"
-    
+
 if HASHES_SHA256
 
 choice HASHES_256_IMPLEMENTATION
@@ -90,7 +90,7 @@ config HW_HASH_SHA256
 config CRYPTOAUTH_HW_HASH_SHA256
     bool "Microchip Cryptoauth Package"
     select PACKAGE_CRYPTOAUTHLIB
-    select MODULE_CRYPTOAUTHLIB_HASHES_SHA256
+    select MODULE_CRYPTOAUTHLIB_HASHES
     select HW_HASHES_ENABLED
 
 config SW_HASH_SHA256

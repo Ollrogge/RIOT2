@@ -1,5 +1,5 @@
 #ifndef PSA_CRYPTO_DRIVER_WRAPPER_H
-#define PSA_CRYPTO_DRIVER_WRAPPER_H 
+#define PSA_CRYPTO_DRIVER_WRAPPER_H
 
 #include <stdlib.h>
 #include "kernel_defines.h"
@@ -21,7 +21,7 @@ typedef union
     #if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
         cc_hash_hwctx_t cc_ctx;
     #endif
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES_SHA256)
+    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
         atca_hash_ctx_t atca_sha256;
     #endif
 } psa_hash_hw_context_t;

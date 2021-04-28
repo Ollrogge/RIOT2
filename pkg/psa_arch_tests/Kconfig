@@ -15,4 +15,3 @@ config MODULE_PSA_ARCH_TESTS_CONTRIB
     bool
     help
         RIOT integration code for the PSA Arch Testsuite.
-        

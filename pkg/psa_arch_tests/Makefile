@@ -29,7 +29,7 @@ $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 	cp -r tgt_dev_apis_riot $(PKG_SOURCE_DIR)/api-tests/platform/targets && \
 	cp $(BINDIR)/riotbuild/riotbuild.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
 	cp $(BINDIR)/generated/autoconf.h $(PKG_SOURCE_DIR)/api-tests/platform/targets/tgt_dev_apis_riot/nspe && \
-	cp $(RIOTBASE)/tests/psa_crypto/testsuite.db $(PKG_SOURCE_DIR)/api-tests/dev_apis/crypto && \
+	cp $(APPDIR)/testsuite.db $(PKG_SOURCE_DIR)/api-tests/dev_apis/crypto && \
 	env -u CC -u CFLAGS cmake \
 		  -G"Unix Makefiles" \
 		  -H$(PKG_SOURCE_DIR)/api-tests \

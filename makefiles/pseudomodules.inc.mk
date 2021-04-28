@@ -16,7 +16,6 @@ PSEUDOMODULES += cpu_check_address
 PSEUDOMODULES += credman_load
 PSEUDOMODULES += dbgpin
 PSEUDOMODULES += crypto_%	# crypto_aes or crypto_3des
-PSEUDOMODULES += cryptoauthlib_hashes_sha256
 PSEUDOMODULES += devfs_%
 PSEUDOMODULES += dhcpv6_%
 PSEUDOMODULES += dhcpv6_client_dns
