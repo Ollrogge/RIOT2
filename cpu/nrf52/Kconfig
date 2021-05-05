@@ -87,22 +87,22 @@ config CPU_MODEL
 config CPU
     default "nrf52" if CPU_FAM_NRF52
 
-config HW_HASHES_ENABLED
+config PERIPH_HASHES
     bool
     depends on HAS_CPU_NRF52
-    select MODULE_PERIPH_CC_HW_HASHES
+    select MODULE_PERIPH_HASHES
 
-config HW_HASH_SHA1
+config PERIPH_HASH_SHA1
+    bool
     depends on HAS_CPU_NRF52
-    select CC_HASH_SHA1
 
-config HW_HASH_SHA224
+config PERIPH_HASH_SHA224
+    bool
     depends on HAS_CPU_NRF52
-    select CC_HASH_SHA224
 
-config HW_HASH_SHA256
+config PERIPH_HASH_SHA256
+    bool
     depends on HAS_CPU_NRF52
-    select CC_HASH_SHA256
 
 ## Definition of specific features
 config HAS_CPU_NRF52
@@ -110,7 +110,7 @@ config HAS_CPU_NRF52
     help
         Indicates that the current cpu is 'nrf52'.
 
-config MODULE_PERIPH_CC_HW_HASHES
+config MODULE_PERIPH_HASHES
     bool
     help
         Use CryptoCell Hardware Driver

@@ -16,7 +16,9 @@
  *
  * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
  */
+#include "kernel_defines.h"
 
+#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
 #include <stdio.h>
 #include "vendor/nrf52840.h"
 #include "cryptocell_incl/sns_silib.h"
@@ -67,3 +69,4 @@ void cryptocell_terminate(void)
         printf("CRYS_RND_UnInstatiation failed: 0x%x\n", ret);
     }
 }
+#endif /* CONFIG_PERIPH_HASHES */
