@@ -1,11 +1,31 @@
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     sys_psa_crypto
+ * @{
+ *
+ * @file
+ * @brief       Function declarations for PSA Crypto API
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
 #ifndef PSA_CRYPTO_H
 #define PSA_CRYPTO_H
 
 #include <stdlib.h>
-#include "psa_crypto_sizes.h"
-#include "psa_crypto_struct.h"
-#include "psa_crypto_values.h"
-#include "psa_crypto_types.h"
+#include "crypto_sizes.h"
+#include "crypto_struct.h"
+#include "crypto_values.h"
+#include "crypto_types.h"
 
 /**
  * The major version of this implementation of the PSA Crypto API
@@ -484,7 +504,7 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
                             const uint8_t * data,
                             size_t data_length,
                             psa_key_id_t * key);
-                            
+
 psa_key_attributes_t psa_key_attributes_init(void);
 psa_status_t psa_key_derivation_abort(psa_key_derivation_operation_t * operation);
 psa_status_t psa_key_derivation_get_capacity(const psa_key_derivation_operation_t * operation,

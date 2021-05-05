@@ -1,6 +1,26 @@
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     sys_psa_crypto
+ * @{
+ *
+ * @file
+ * @brief       PSA Crypto API implementation
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
 #include <stdio.h>
 #include "psa/crypto.h"
-#include "psa/psa_crypto_driver_wrapper.h"
+#include "psa/crypto_driver_wrapper.h"
 
 #include "kernel_defines.h"
 
@@ -58,7 +78,7 @@ psa_status_t psa_aead_decrypt(psa_key_id_t key,
 psa_status_t psa_aead_decrypt_setup(psa_aead_operation_t * operation,
                                     psa_key_id_t key,
                                     psa_algorithm_t alg)
-{   
+{
     (void) operation;
     (void) key;
     (void) alg;
@@ -113,7 +133,7 @@ psa_status_t psa_aead_finish(psa_aead_operation_t * operation,
     (void) ciphertext;
     (void) ciphertext_size;
     (void) ciphertext_length;
-    (void) tag; 
+    (void) tag;
     (void) tag_size;
     (void) tag_length;
     return PSA_ERROR_NOT_SUPPORTED;
@@ -154,7 +174,7 @@ psa_status_t psa_aead_set_nonce(psa_aead_operation_t * operation,
     (void) nonce_length;
     return PSA_ERROR_NOT_SUPPORTED;
 }
-                            
+
 psa_status_t psa_aead_update(psa_aead_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length,
@@ -460,111 +480,22 @@ psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
 psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
                             psa_algorithm_t alg)
 {
-    if ((lib_initialized == 0) || (operation->alg != 0)) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
     if (!PSA_ALG_IS_HASH(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
-    psa_status_t status = psa_driver_wrapper_hash_setup(operation, alg);
-
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-#endif
-        switch(alg) {
-        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
-            case PSA_ALG_MD5:
-                md5_init(&(operation->sw_ctx.md5));
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
-            case PSA_ALG_SHA_1:
-                sha1_init(&(operation->sw_ctx.sha1));
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
-            case PSA_ALG_SHA_224:
-                sha224_init(&(operation->sw_ctx.sha224));
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
-            case PSA_ALG_SHA_256:
-                sha256_init(&(operation->sw_ctx.sha256));
-                break;
-        #endif  
-            default:
-                return PSA_ERROR_NOT_SUPPORTED;
-        }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
-    }
-
-    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
-        return status;
-    }
-#endif
-
-    operation->alg = alg;
-    operation->suspended = 0;
-
-    return PSA_SUCCESS;
+    return psa_driver_wrapper_hash_setup(operation, alg);
 }
 
 psa_status_t psa_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
-    if ((lib_initialized == 0) || 
-        (operation->alg == 0) || 
-        (operation->suspended == 1)) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
     psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
 
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-#endif
-
-        switch(operation->alg) {
-        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
-            case PSA_ALG_MD5:
-                md5_update(&(operation->sw_ctx.md5), input, input_length);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
-            case PSA_ALG_SHA_1:
-                sha1_update(&(operation->sw_ctx.sha1), input, input_length);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
-            case PSA_ALG_SHA_224:
-                sha224_update(&(operation->sw_ctx.sha224), input, input_length);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
-            case PSA_ALG_SHA_256:
-                sha256_update(&(operation->sw_ctx.sha256), input, input_length);
-                break;
-        #endif  
-            default:
-                (void) input;
-                (void) input_length;
-                return PSA_ERROR_NOT_SUPPORTED;
-        }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
-    }
-
-    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
+    if (status != PSA_SUCCESS) {
         psa_hash_abort(operation);
-        return status;
     }
-#endif
-
-    return PSA_SUCCESS;
+    return status;
 }
 
 psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
@@ -572,88 +503,29 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
                              size_t hash_size,
                              size_t * hash_length)
 {
-    if ((lib_initialized == 0) || 
-        (operation->alg == 0) || 
-        (operation->suspended == 1)) {
-        return PSA_ERROR_BAD_STATE;
-    }
-    uint8_t actual_hash_length = PSA_HASH_LENGTH(operation->alg);
-    
-    if (hash_size < actual_hash_length) {
-        return PSA_ERROR_BUFFER_TOO_SMALL;
-    }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
-    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash);
-
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-#endif
-
-        switch(operation->alg) {
-        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
-            case PSA_ALG_MD5:
-                md5_final(&(operation->sw_ctx.md5), hash);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
-            case PSA_ALG_SHA_1:
-                sha1_final(&(operation->sw_ctx.sha1), hash);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
-            case PSA_ALG_SHA_224:
-                sha224_final(&(operation->sw_ctx.sha224), hash);
-                break;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
-            case PSA_ALG_SHA_256:
-                sha256_final(&(operation->sw_ctx.sha256), hash);
-                break;
-        #endif  
-            default:
-                (void) hash;
-                return PSA_ERROR_NOT_SUPPORTED;
-        }
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
-    }
-
-    if (status != PSA_SUCCESS && status != PSA_ERROR_NOT_SUPPORTED) {
-        psa_hash_abort(operation);
-        return status;
-    }
-#endif
-
-    *hash_length = actual_hash_length;
+    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash, hash_size, hash_length);
 
     /* Make sure operation becomes inactive after successfull execution */
     psa_hash_abort(operation);
 
-    return PSA_SUCCESS;
+    return status;
 }
 
 psa_status_t psa_hash_verify(psa_hash_operation_t * operation,
                              const uint8_t * hash,
                              size_t hash_length)
 {
-    if ((lib_initialized == 0) || 
-        (operation->alg == 0) || 
-        (operation->suspended == 1)) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
     int status = PSA_ERROR_CORRUPTION_DETECTED;
-
-    uint8_t digest_length = PSA_HASH_LENGTH(operation->alg);
-    uint8_t digest[digest_length];
+    uint8_t digest[PSA_HASH_MAX_SIZE];
     size_t actual_hash_length = 0;
 
-    status = psa_hash_finish(operation, digest, digest_length, &actual_hash_length);
+    status = psa_hash_finish(operation, digest, PSA_HASH_MAX_SIZE, &actual_hash_length);
 
     if (status != PSA_SUCCESS) {
         return status;
     }
-    if (actual_hash_length != hash_length) { 
+
+    if (actual_hash_length != hash_length) {
         return PSA_ERROR_INVALID_SIGNATURE;
     }
 
@@ -699,7 +571,7 @@ psa_status_t psa_hash_clone(const psa_hash_operation_t * source_operation,
     (void) target_operation;
     return PSA_ERROR_NOT_SUPPORTED;
 }
-                        
+
 psa_status_t psa_hash_compare(psa_algorithm_t alg,
                               const uint8_t * input,
                               size_t input_length,

@@ -1,7 +1,27 @@
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     sys_psa_crypto
+ * @{
+ *
+ * @file
+ * @brief       Value definitions for PSA Crypto.
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
 #ifndef PSA_CRYPTO_VALUES_H
 #define PSA_CRYPTO_VALUES_H
 
-#include "psa_crypto_types.h"
+#include "crypto_types.h"
 
 /** Vendor-defined algorithm flag.
  *
@@ -180,7 +200,7 @@
 /* implementation-defined value */
 
 #define PSA_HASH_BLOCK_LENGTH(alg) /* implementation-defined value */
-#define PSA_HASH_MAX_SIZE /* implementation-defined value */
+#define PSA_HASH_MAX_SIZE (64) /* implementation-defined value */
 #define PSA_HASH_SUSPEND_ALGORITHM_FIELD_LENGTH ((size_t)4)
 #define PSA_HASH_SUSPEND_HASH_STATE_FIELD_LENGTH(alg) \
 /* specification-defined value */

@@ -36,12 +36,12 @@ if HASHES_SHA1
 
 choice HASHES_SHA1_IMPLEMENTATION
     bool "SHA-1 implementation"
-    default HW_HASH_SHA1
+    default PERIPH_HASH_SHA1
 
-config HW_HASH_SHA1
+config PERIPH_HASH_SHA1
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA1
-    select HW_HASHES_ENABLED
+    select PERIPH_HASHES
 
 config SW_HASH_SHA1
     bool "Software implemented"
@@ -58,12 +58,12 @@ if HASHES_SHA224
 
 choice HASHES_224_IMPLEMENTATION
     bool "SHA-224 implementation"
-    default HW_HASH_SHA224
+    default PERIPH_HASH_SHA224
 
-config HW_HASH_SHA224
+config PERIPH_HASH_SHA224
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA224
-    select HW_HASHES_ENABLED
+    select PERIPH_HASHES
 
 config SW_HASH_SHA224
     bool "Software implemented"
@@ -80,27 +80,30 @@ if HASHES_SHA256
 
 choice HASHES_256_IMPLEMENTATION
     bool "SHA-256 implementation"
-    default HW_HASH_SHA256
+    default PERIPH_HASH_SHA256
 
-config HW_HASH_SHA256
+config PERIPH_HASH_SHA256
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA256
-    select HW_HASHES_ENABLED
+    select PERIPH_HASHES
 
-config CRYPTOAUTH_HW_HASH_SHA256
+config CRYPTOAUTHLIB_HASH_SHA256
     bool "Microchip Cryptoauth Package"
     select PACKAGE_CRYPTOAUTHLIB
     select MODULE_CRYPTOAUTHLIB_HASHES
-    select HW_HASHES_ENABLED
+    select SE_HASHES
 
 config SW_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
 
 endchoice
-
 endif # HASHES_SHA256
-
 endif # MODULE_PSA_CRYPTO
+
+config SE_HASHES
+    bool
+    help
+        Indicates use of a secure element.
 
 endmenu # PSA_Crypto

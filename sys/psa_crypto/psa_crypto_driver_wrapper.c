@@ -18,74 +18,115 @@
  * @}
  */
 
-#include <stdio.h>
-
 #include "kernel_defines.h"
-
-#if IS_ACTIVE(CONFIG_HW_HASHES_ENABLED)
 #include "psa/crypto.h"
+#include "psa/builtin_hashes.h"
 
-#if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
-#include "cc_hw_hashes.h"
+#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+#include "periph_hashes.h"
 #endif
-
 #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-#include "atca_hw_hashes.h"
+#include "atca_hashes.h"
 #endif
 
+#define PSA_CRYPTO_BUILTIN_DRIVER_ID    (1)
+#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+#define PSA_CRYPTO_PERIPH_DRIVER_ID     (2)
+#endif
+#if IS_ACTIVE(CONFIG_SE_HASHES)
+#define PSA_CRYPTO_SE_DRIVER_ID         (3)
+#endif
 
 psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
     psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
 
-    #if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
-        status = cc_hash_setup(operation, alg);
-    #endif
-
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES_SHA256)
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-        status = atca_hash_setup(operation, alg);
+    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+    status = periph_hash_setup(&(operation->ctx.periph_ctx), alg);
+    if (status == PSA_SUCCESS) {
+        operation->driver_id = PSA_CRYPTO_PERIPH_DRIVER_ID;
+    }
+    if (status != PSA_ERROR_NOT_SUPPORTED) {
+        return status;
     }
     #endif
 
-    return status;
+    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+    status = psa_builtin_hash_setup(&(operation->ctx.builtin_ctx), alg);
+    if (status == PSA_SUCCESS) {
+        operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
+    }
+    if (status != PSA_ERROR_NOT_SUPPORTED) {
+        return status;
+    }
+    #endif
+
+    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
+    status = atca_hash_setup(&(operation->ctx.atca_ctx), alg);
+    if (status == PSA_SUCCESS) {
+        operation->driver_id = PSA_CRYPTO_SE_DRIVER_ID;
+    }
+    if (status != PSA_ERROR_NOT_SUPPORTED) {
+        return status;
+    }
+    #endif
+    (void) status;
+    (void) operation;
+    (void) alg;
+    return PSA_ERROR_NOT_SUPPORTED;
 }
 
 psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
-    psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
-
-    #if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
-        status = cc_hash_update(operation, input, input_length);
+    switch(operation->driver_id) {
+    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+        case PSA_CRYPTO_PERIPH_DRIVER_ID:
+            return periph_hash_update(&(operation->ctx.periph_ctx), input, input_length);
     #endif
 
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES_SHA256)
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-        status = atca_hash_update(operation, input, input_length);
+    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+        case PSA_CRYPTO_BUILTIN_DRIVER_ID:
+            return psa_builtin_hash_update(&(operation->ctx.builtin_ctx), input, input_length);
+    #endif
+
+    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
+        case PSA_CRYPTO_SE_DRIVER_ID:
+            return atca_hash_update(&(operation->ctx.atca_ctx), input, input_length);
+    #endif
+        default:
+            (void) input;
+            (void) input_length;
+            return PSA_ERROR_BAD_STATE;
     }
-    #endif
-
-    return status;
 }
 
 psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
-                             uint8_t * hash)
+                             uint8_t * hash,
+                             size_t hash_size,
+                             size_t * hash_length)
 {
-    psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
-
-    #if IS_ACTIVE(CONFIG_MODULE_PERIPH_CC_HW_HASHES)
-        status = cc_hash_finish(operation, hash);
+    switch(operation->driver_id) {
+    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+        case PSA_CRYPTO_PERIPH_DRIVER_ID:
+            return periph_hash_finish(&(operation->ctx.periph_ctx), hash, hash_size, hash_length);
     #endif
 
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES_SHA256)
-    if (status == PSA_ERROR_NOT_SUPPORTED) {
-        status = atca_hash_finish(operation, hash);
+    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+        case PSA_CRYPTO_BUILTIN_DRIVER_ID:
+            return psa_builtin_hash_finish(&(operation->ctx.builtin_ctx), hash, hash_size, hash_length);
+    #endif
+
+    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
+        case PSA_CRYPTO_SE_DRIVER_ID:
+            return atca_hash_finish(&(operation->ctx.atca_ctx), hash, hash_size, hash_length);
+    #endif
+        default:
+            (void) hash;
+            (void) hash_size;
+            (void) hash_length;
+            return PSA_ERROR_BAD_STATE;
     }
-    #endif
-
-    return status;
 }
-#endif /* CONFIG_HW_HASHES_ENABLED */
