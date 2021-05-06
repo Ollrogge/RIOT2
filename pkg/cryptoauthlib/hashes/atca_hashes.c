@@ -63,22 +63,17 @@ psa_status_t atca_hash_setup(psa_hash_atca_operation_t * operation,
                                            psa_algorithm_t alg)
 {
     DEBUG("Cryptoauth Setup\n");
-    if (operation->alg != 0) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
     int status = PSA_ERROR_GENERIC_ERROR;
 
     if (alg != PSA_ALG_SHA_256) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    status = atcab_hw_sha2_256_init(&operation->ctx);
+    status = atcab_hw_sha2_256_init(operation);
 
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
     }
-    operation->alg = alg;
 
     return PSA_SUCCESS;
 }
@@ -87,17 +82,9 @@ psa_status_t atca_hash_update(psa_hash_atca_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
-    if (operation->alg == 0) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
-    if (operation->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
-
     int status = PSA_ERROR_GENERIC_ERROR;
 
-    status = atcab_hw_sha2_256_update(&operation->ctx, input, input_length);
+    status = atcab_hw_sha2_256_update(operation, input, input_length);
 
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
@@ -111,27 +98,13 @@ psa_status_t atca_hash_finish(psa_hash_atca_operation_t * operation,
                              size_t hash_size,
                              size_t * hash_length)
 {
-    if (operation->alg == 0) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
-    if (operation->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
-
-    int status = PSA_ERROR_GENERIC_ERROR;
-    uint8_t actual_hash_length = PSA_HASH_LENGTH(operation->alg);
-
-    if (hash_size < actual_hash_length) {
-        return PSA_ERROR_BUFFER_TOO_SMALL;
-    }
-
-    status = atcab_hw_sha2_256_finish(&operation->ctx, hash);
+    psa_status_t status = atcab_hw_sha2_256_finish(operation, hash);
 
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
     }
 
-    *hash_length = actual_hash_length;
+    (void) hash_size;
+    (void) hash_length;
     return PSA_SUCCESS;
 }

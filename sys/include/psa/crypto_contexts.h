@@ -30,15 +30,4 @@
 
 #include "psa/builtin_hashes.h"
 
-typedef union {
-    unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-    psa_builtin_hash_operation_t builtin_ctx;
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-    psa_hash_periph_operation_t periph_ctx;
-#endif
-#if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-    psa_hash_atca_operation_t atca_ctx;
-#endif
-} psa_hash_context_t;
-
 #endif /* CRYPTO_CONTEXT_H */

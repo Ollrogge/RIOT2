@@ -27,10 +27,7 @@
 #include "cryptocell_incl/crys_hash.h"
 #include "psa/crypto.h"
 
-typedef struct {
-    psa_algorithm_t alg;
-    CRYS_HASHUserContext_t ctx;
-} psa_hash_periph_operation_t;
+typedef CRYS_HASHUserContext_t psa_hash_periph_operation_t;
 
 psa_status_t periph_hash_setup(psa_hash_periph_operation_t * operation,
                                            psa_algorithm_t alg);

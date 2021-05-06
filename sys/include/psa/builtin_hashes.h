@@ -31,35 +31,31 @@
 #include "hashes/sha224.h"
 #include "hashes/sha256.h"
 
-typedef struct
-{
-    psa_algorithm_t alg;
-    union {
-        unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
+typedef union {
+    unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
 
-        #if IS_ACTIVE(CONFIG_SW_HASH_MD5)
-                md5_ctx_t md5;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
-                sha1_context sha1;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
-                sha224_context_t sha224;
-        #endif
-        #if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
-                sha256_context_t sha256;
-        #endif
-    } ctx;
+#if IS_ACTIVE(CONFIG_SW_HASH_MD5)
+    md5_ctx_t md5;
+#endif
+#if IS_ACTIVE(CONFIG_SW_HASH_SHA1)
+    sha1_context sha1;
+#endif
+#if IS_ACTIVE(CONFIG_SW_HASH_SHA224)
+    sha224_context_t sha224;
+#endif
+#if IS_ACTIVE(CONFIG_SW_HASH_SHA256)
+    sha256_context_t sha256;
+#endif
 } psa_builtin_hash_operation_t;
 
-psa_status_t psa_builtin_hash_setup(psa_builtin_hash_operation_t * operation,
+psa_status_t psa_builtin_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg);
 
-psa_status_t psa_builtin_hash_update(psa_builtin_hash_operation_t * operation,
+psa_status_t psa_builtin_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length);
 
-psa_status_t psa_builtin_hash_finish(psa_builtin_hash_operation_t * operation,
+psa_status_t psa_builtin_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash,
                              size_t hash_size,
                              size_t * hash_length);

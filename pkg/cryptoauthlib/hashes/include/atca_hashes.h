@@ -24,10 +24,7 @@
 #include "cryptoauthlib.h"
 #include "psa/crypto.h"
 
-typedef struct {
-    psa_algorithm_t alg;
-    atca_sha256_ctx_t ctx;
-} psa_hash_atca_operation_t;
+typedef atca_sha256_ctx_t psa_hash_atca_operation_t;
 
 psa_status_t atca_hash_setup(psa_hash_atca_operation_t * operation,
                                            psa_algorithm_t alg);

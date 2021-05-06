@@ -480,16 +480,29 @@ psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
 psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
                             psa_algorithm_t alg)
 {
+    if (operation->alg != 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (!PSA_ALG_IS_HASH(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-    return psa_driver_wrapper_hash_setup(operation, alg);
+    psa_status_t status = psa_driver_wrapper_hash_setup(operation, alg);
+    if (status == PSA_SUCCESS) {
+        operation->alg = alg;
+    }
+
+    return status;
 }
 
 psa_status_t psa_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
+    if (operation->alg == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
 
     if (status != PSA_SUCCESS) {
@@ -503,7 +516,21 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
                              size_t hash_size,
                              size_t * hash_length)
 {
+    if (operation->alg == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    uint8_t actual_hash_length = PSA_HASH_LENGTH(operation->alg);
+
+    if (hash_size < actual_hash_length) {
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+
     psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash, hash_size, hash_length);
+
+    if (status == PSA_SUCCESS) {
+        *hash_length = actual_hash_length;
+    }
 
     /* Make sure operation becomes inactive after successfull execution */
     psa_hash_abort(operation);

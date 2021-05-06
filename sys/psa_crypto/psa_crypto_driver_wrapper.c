@@ -53,7 +53,7 @@ psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
     #endif
 
     #if IS_ACTIVE(CONFIG_MODULE_HASHES)
-    status = psa_builtin_hash_setup(&(operation->ctx.builtin_ctx), alg);
+    status = psa_builtin_hash_setup(operation, alg);
     if (status == PSA_SUCCESS) {
         operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
     }
@@ -89,7 +89,7 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
 
     #if IS_ACTIVE(CONFIG_MODULE_HASHES)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_builtin_hash_update(&(operation->ctx.builtin_ctx), input, input_length);
+            return psa_builtin_hash_update(operation, input, input_length);
     #endif
 
     #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
@@ -116,7 +116,7 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
 
     #if IS_ACTIVE(CONFIG_MODULE_HASHES)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_builtin_hash_finish(&(operation->ctx.builtin_ctx), hash, hash_size, hash_length);
+            return psa_builtin_hash_finish(operation, hash, hash_size, hash_length);
     #endif
 
     #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
