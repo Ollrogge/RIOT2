@@ -29,16 +29,7 @@ struct psa_hash_operation_s
 {
     uint8_t driver_id;
     psa_algorithm_t alg;
-    union {
-        unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-        psa_builtin_hash_operation_t builtin_ctx;
-    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-        psa_hash_periph_operation_t periph_ctx;
-    #endif
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-        psa_hash_atca_operation_t atca_ctx;
-    #endif
-    } ctx;
+    psa_hash_context_t ctx;
 };
 
 #define PSA_HASH_OPERATION_INIT {0}
