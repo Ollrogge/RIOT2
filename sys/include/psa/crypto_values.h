@@ -224,14 +224,19 @@
 #define PSA_KEY_ID_USER_MIN ((psa_key_id_t)0x00000001)
 #define PSA_KEY_ID_VENDOR_MAX ((psa_key_id_t)0x7fffffff)
 #define PSA_KEY_ID_VENDOR_MIN ((psa_key_id_t)0x40000000)
+
 #define PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(persistence, location) \
 ((location) << 8 | (persistence))
+
 #define PSA_KEY_LIFETIME_GET_LOCATION(lifetime) \
 ((psa_key_location_t) ((lifetime) >> 8))
+
 #define PSA_KEY_LIFETIME_GET_PERSISTENCE(lifetime) \
 ((psa_key_persistence_t) ((lifetime) & 0x000000ff))
+
 #define PSA_KEY_LIFETIME_IS_VOLATILE(lifetime) \
 (PSA_KEY_LIFETIME_GET_PERSISTENCE(lifetime) == PSA_KEY_PERSISTENCE_VOLATILE)
+
 #define PSA_KEY_LIFETIME_PERSISTENT ((psa_key_lifetime_t) 0x00000001)
 #define PSA_KEY_LIFETIME_VOLATILE ((psa_key_lifetime_t) 0x00000000)
 #define PSA_KEY_LOCATION_LOCAL_STORAGE ((psa_key_location_t) 0x000000)

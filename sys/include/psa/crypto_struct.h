@@ -42,14 +42,14 @@ static inline struct psa_hash_operation_s psa_hash_operation_init( void )
 
 struct psa_key_attributes_s
 {
-    psa_algorithm_t alg;
-    union
-    {
-        unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-    } ctx;
+    psa_key_type_t type;
+    psa_key_bits_t bits;
+    psa_key_lifetime_t lifetime;
+    psa_key_id_t id;
+    psa_key_usage_t usage;
 };
 
-#define PSA_KEY_ATTRIBUTES_INIT {0, {0}}//{PSA_CORE_KEY_ATTRIBUTES_INIT, NULL, 0}
+#define PSA_KEY_ATTRIBUTES_INIT {0}//{PSA_CORE_KEY_ATTRIBUTES_INIT, NULL, 0}
 
 static inline struct psa_key_attributes_s psa_key_attributes_init( void )
 {

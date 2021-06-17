@@ -32,12 +32,13 @@ typedef uint8_t psa_dh_family_t;
 typedef uint8_t psa_ecc_family_t;
 typedef /* implementation-defined type */ uint32_t psa_key_derivation_operation_t;
 typedef uint16_t psa_key_derivation_step_t;
-typedef int psa_key_id_t;
+typedef uint32_t psa_key_id_t;
 typedef uint32_t psa_key_lifetime_t;
 typedef uint32_t psa_key_location_t;
 typedef uint8_t psa_key_persistence_t;
 typedef uint16_t psa_key_type_t;
 typedef uint32_t psa_key_usage_t;
+typedef uint16_t psa_key_bits_t;
 typedef /* implementation-defined type */ uint32_t psa_mac_operation_t;
 typedef int32_t psa_status_t;
 
