@@ -7,9 +7,19 @@
 #include "psa/crypto_values.h"
 #include "psa/crypto_types.h"
 
+#define PSA_MAX_PERSISTENT_DATA_SIZE    (255)
+
+/** For encrypt-decrypt functions, whether the operation is an encryption
+ * or a decryption. */
+typedef enum {
+    PSA_CRYPTO_DRIVER_DECRYPT,
+    PSA_CRYPTO_DRIVER_ENCRYPT
+} psa_encrypt_or_decrypt_t;
+
 typedef struct
 {
-    const void const* persistent_data;
+    /* Kann man das anders machen ohne Allokation?? */
+    const uint8_t persistent_data[PSA_MAX_PERSISTENT_DATA_SIZE];
     const size_t persistent_data_size;
     uintptr_t transient_data;
 } psa_drv_se_context_t;
