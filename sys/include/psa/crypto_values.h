@@ -327,7 +327,8 @@
 /* implementation-defined value */
 #define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
 
-
+/* TODO: Adapt max key length to algorithm in use */
+#define PSA_MAX_KEY_LENGTH  (128)
 
 /**
  * @brief The action was completed successfully.

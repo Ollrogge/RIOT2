@@ -20,6 +20,9 @@
 
 #include <stdio.h>
 #include "psa/crypto.h"
+#include "psa/crypto_se_driver.h"
+#include "psa/crypto_se_management.h"
+#include "psa/crypto_slot_management.h"
 #include "psa/crypto_driver_wrapper.h"
 
 #include "kernel_defines.h"
@@ -651,15 +654,60 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
     return PSA_SUCCESS;
 }
 
+static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, psa_key_attributes_t *attributes, psa_key_slot_t **p_slot, psa_se_drv_data_t **p_drv)
+{
+    psa_status_t status;
+    psa_key_id_t key_id;
+    psa_key_slot_t *slot;
+
+    *p_drv = NULL;
+
+    status = psa_get_empty_key_slot(&key_id, p_slot);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+    slot = *p_slot;
+
+    slot->attr = *attributes;
+    slot->attr.id = key_id;
+
+    return PSA_SUCCESS;
+}
+
+static void psa_fail_key_creation(psa_key_slot_t *slot, psa_se_drv_data_t *driver)
+{
+    (void) driver;
+    if (slot == NULL) {
+        return;
+    }
+    /* TODO: Destroy key in secure element (see mbedtls code) */
+    /* TODO: Secure Element stop transaction */
+    psa_wipe_key_slot(slot);
+}
+
 psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
                             const uint8_t * data,
                             size_t data_length,
                             psa_key_id_t * key)
 {
-    (void) attributes;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+    psa_se_drv_data_t *driver = NULL;
+    size_t bits;
+
     (void) data;
     (void) data_length;
     (void) key;
+    /* Find empty slot */
+    status = psa_start_key_creation(PSA_KEY_CREATION_IMPORT, attributes, &slot, &driver);
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+        return status;
+    }
+
+    bits = slot->attr.bits;
+    status = psa_driver_wrapper_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
@@ -877,49 +925,43 @@ psa_status_t psa_raw_key_agreement(psa_algorithm_t alg,
 
 void psa_reset_key_attributes(psa_key_attributes_t * attributes)
 {
-    (void) attributes;
+    *attributes = psa_key_attributes_init();
 }
 
 void psa_set_key_algorithm(psa_key_attributes_t * attributes,
                            psa_algorithm_t alg)
 {
-    (void) attributes;
-    (void) alg;
+    attributes->alg = alg;
 }
 
 void psa_set_key_bits(psa_key_attributes_t * attributes,
                       size_t bits)
 {
-    (void) attributes;
-    (void) bits;
+    attributes->bits = bits;
 }
 
 void psa_set_key_id(psa_key_attributes_t * attributes,
                     psa_key_id_t id)
 {
-    (void) attributes;
-    (void) id;
+    attributes->id = id;
 }
 
 void psa_set_key_lifetime(psa_key_attributes_t * attributes,
                           psa_key_lifetime_t lifetime)
 {
-    (void) attributes;
-    (void) lifetime;
+    attributes->lifetime = lifetime;
 }
 
 void psa_set_key_type(psa_key_attributes_t * attributes,
                       psa_key_type_t type)
 {
-    (void) attributes;
-    (void) type;
+    attributes->type = type;
 }
 
 void psa_set_key_usage_flags(psa_key_attributes_t * attributes,
                              psa_key_usage_t usage_flags)
 {
-    (void) attributes;
-    (void) usage_flags;
+    attributes->usage = usage_flags;
 }
 
 psa_status_t psa_sign_hash(psa_key_id_t key,

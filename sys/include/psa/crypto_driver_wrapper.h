@@ -29,12 +29,17 @@ psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg);
 
 psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
-                             const uint8_t * input,
-                             size_t input_length);
+                                            const uint8_t * input,
+                                            size_t input_length);
 
 psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
-                             uint8_t * hash,
-                             size_t hash_size,
-                             size_t * hash_length);
+                                            uint8_t * hash,
+                                            size_t hash_size,
+                                            size_t * hash_length);
+
+psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
+                                            const uint8_t *data, size_t data_length,
+                                            uint8_t *key_buffer, size_t key_buffer_size,
+                                            size_t *key_buffer_length, size_t *bits);
 
 #endif

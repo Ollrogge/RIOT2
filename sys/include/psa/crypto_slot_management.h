@@ -6,13 +6,16 @@
 
 #define PSA_KEY_SLOT_COUNT       (32)
 
+#define PSA_KEY_ID_VOLATILE_MIN (PSA_KEY_ID_VENDOR_MAX - PSA_KEY_SLOT_COUNT + 1)
+#define PSA_KEY_ID_VOLATILE_MAX (PSA_KEY_ID_VENDOR_MAX)
+
 typedef struct
 {
     psa_key_attributes_t attr;
     size_t lock_count;
     struct key_data
     {
-        uint8_t *data;
+        uint8_t data[PSA_MAX_KEY_LENGTH];
         size_t bytes;
     } key;
 } psa_key_slot_t;

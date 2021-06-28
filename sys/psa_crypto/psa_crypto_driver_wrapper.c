@@ -130,3 +130,16 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
             return PSA_ERROR_BAD_STATE;
     }
 }
+
+psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
+                                            const uint8_t *data, size_t data_length,
+                                            uint8_t *key_buffer, size_t key_buffer_size,
+                                            size_t *key_buffer_length, size_t *bits)
+{
+    psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime);
+
+    switch(location) {
+        case PSA_KEY_LOCATION_LOCAL_STORAGE:
+            return psa_builtin_import_key(attributes, data, data_length, key_buffer, key_buffer_size, key_buffer_length, bits);
+    }
+}
