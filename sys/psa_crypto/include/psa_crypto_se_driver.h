@@ -1,5 +1,5 @@
-#ifndef CRYPTO_SE_DRIVER_H
-#define CRYPTO_SE_DRIVER_H
+#ifndef PSA_CRYPTO_SE_DRIVER_H
+#define PSA_CRYPTO_SE_DRIVER_H
 
 #include <stdint.h>
 #include <stdlib.h>

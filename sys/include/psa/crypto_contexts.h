@@ -24,11 +24,17 @@
 #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
 #include "periph_hashes.h"
 #endif
+
+#if IS_ACTIVE (CONFIG_PERIPH_CIPHER_AES)
+
+#endif
+
 #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
 #include "atca_hashes.h"
 #endif
 
-#include "psa/builtin_hashes.h"
+#include "psa_builtin_hashes.h"
+#include "psa_builtin_ciphers.h"
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
@@ -40,5 +46,10 @@ typedef union {
     psa_hash_atca_operation_t atca_ctx;
 #endif
 } psa_hash_context_t;
+
+typedef union {
+    unsigned dummy;
+    psa_builtin_cipher_operation_t builtin_ctx;
+} psa_cipher_context_t;
 
 #endif /* CRYPTO_CONTEXT_H */

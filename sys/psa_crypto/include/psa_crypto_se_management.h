@@ -1,8 +1,8 @@
-#ifndef CRYPTO_SE_MANAGEMENT_H
-#define CRYPTO_SE_MANAGEMENT_H
+#ifndef PSA_CRYPTO_SE_MANAGEMENT_H
+#define PSA_CRYPTO_SE_MANAGEMENT_H
 
-#include "crypto.h"
-#include "crypto_se_driver.h"
+#include "psa/crypto.h"
+#include "psa_crypto_se_driver.h"
 
 typedef struct psa_se_drv_data_s psa_se_drv_data_t;
 

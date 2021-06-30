@@ -20,10 +20,10 @@
 
 #include <stdio.h>
 #include "psa/crypto.h"
-#include "psa/crypto_se_driver.h"
-#include "psa/crypto_se_management.h"
-#include "psa/crypto_slot_management.h"
-#include "psa/crypto_driver_wrapper.h"
+#include "psa_crypto_se_driver.h"
+#include "psa_crypto_se_management.h"
+#include "psa_crypto_slot_management.h"
+#include "psa_crypto_driver_wrapper.h"
 
 #include "kernel_defines.h"
 
@@ -264,10 +264,46 @@ psa_status_t psa_asymmetric_encrypt(psa_key_id_t key,
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
+/* Ciphers */
+
 psa_status_t psa_cipher_abort(psa_cipher_operation_t * operation)
 {
     (void) operation;
     return PSA_ERROR_NOT_SUPPORTED;
+}
+
+static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
+                                        psa_key_id_t key,
+                                        psa_algorithm_t alg,
+                                        cipher_operation_t cipher_operation)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+    psa_key_usage_t usage = ( cipher_operation == PSA_CIPHER_ENCRYPT ?
+                              PSA_KEY_USAGE_ENCRYPT :
+                              PSA_KEY_USAGE_DECRYPT );
+
+    if (operation->driver_id != 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    if (!PSA_ALG_IS_CIPHER(alg)) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (cipher_operation == PSA_CIPHER_ENCRYPT) {
+        status = psa_driver_wrapper_cipher_encrypt_setup(operation, key, alg);
+    }
+    else if (cipher_operation == PSA_CIPHER_DECRYPT) {
+        status = psa_driver_wrapper_cipher_decrypt_setup(operation, key, alg);
+    }
+
+    if (status != PSA_SUCCESS) {
+        psa_cipher_abort(operation);
+        return status;
+    }
+
+    return PSA_SUCCESS;
 }
 
 psa_status_t psa_cipher_decrypt(psa_key_id_t key,
@@ -292,10 +328,7 @@ psa_status_t psa_cipher_decrypt_setup(psa_cipher_operation_t * operation,
                                       psa_key_id_t key,
                                       psa_algorithm_t alg)
 {
-    (void) operation;
-    (void) key;
-    (void) alg;
-    return PSA_ERROR_NOT_SUPPORTED;
+    return psa_cipher_setup(operation, key, alg, PSA_CIPHER_DECRYPT);
 }
 
 psa_status_t psa_cipher_encrypt(psa_key_id_t key,
@@ -320,10 +353,7 @@ psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,
                                       psa_key_id_t key,
                                       psa_algorithm_t alg)
 {
-    (void) operation;
-    (void) key;
-    (void) alg;
-    return PSA_ERROR_NOT_SUPPORTED;
+    return psa_cipher_setup(operation, key, alg, PSA_CIPHER_ENCRYPT);
 }
 
 psa_status_t psa_cipher_finish(psa_cipher_operation_t * operation,
@@ -350,11 +380,6 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-psa_cipher_operation_t psa_cipher_operation_init(void)
-{
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
 psa_status_t psa_cipher_set_iv(psa_cipher_operation_t * operation,
                                const uint8_t * iv,
                                size_t iv_length)
@@ -371,7 +396,8 @@ psa_status_t psa_cipher_update(psa_cipher_operation_t * operation,
                                uint8_t * output,
                                size_t output_size,
                                size_t * output_length)
-{   (void) operation;
+{
+    (void) operation;
     (void) input;
     (void) input_length;
     (void) output;
@@ -674,6 +700,25 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, psa
     return PSA_SUCCESS;
 }
 
+static psa_status_t psa_finish_key_creation(psa_key_slot_t *slot, psa_se_drv_data_t *driver, psa_key_id_t *key)
+{
+    psa_status_t status = PSA_SUCCESS;
+    (void) slot;
+    (void) driver;
+
+    /* TODO: Finish persistent key storage */
+    /* TODO: Finish SE key storage */
+
+    if (status == PSA_SUCCESS) {
+        *key = slot->attr.id;
+        status = psa_unlock_key_slot(slot);
+        if (status != PSA_SUCCESS) {
+            *key = 0;
+        }
+    }
+    return status;
+}
+
 static void psa_fail_key_creation(psa_key_slot_t *slot, psa_se_drv_data_t *driver)
 {
     (void) driver;
@@ -694,10 +739,8 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     psa_key_slot_t *slot;
     psa_se_drv_data_t *driver = NULL;
     size_t bits;
+    *key = 0;
 
-    (void) data;
-    (void) data_length;
-    (void) key;
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_IMPORT, attributes, &slot, &driver);
 
@@ -708,7 +751,27 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
 
     bits = slot->attr.bits;
     status = psa_driver_wrapper_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
-    return PSA_ERROR_NOT_SUPPORTED;
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+        return status;
+    }
+
+    if (slot->attr.bits == 0) {
+        slot->attr.bits = (psa_key_bits_t) bits;
+    }
+    else if (bits != slot->attr.bits) {
+        psa_fail_key_creation(slot, driver);
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    status = psa_finish_key_creation(slot, driver, key);
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+    }
+
+    return status;
 }
 
 psa_status_t psa_key_derivation_abort(psa_key_derivation_operation_t * operation)

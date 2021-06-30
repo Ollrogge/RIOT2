@@ -1,8 +1,8 @@
-#ifndef CRYPTO_SLOT_MANAGEMENT_H
-#define CRYPTO_SLOT_MANAGEMENT_H
+#ifndef PSA_CRYPTO_SLOT_MANAGEMENT_H
+#define PSA_CRYPTO_SLOT_MANAGEMENT_H
 
 #include "psa/crypto.h"
-#include "psa/crypto_se_management.h"
+#include "psa_crypto_se_management.h"
 
 #define PSA_KEY_SLOT_COUNT       (32)
 

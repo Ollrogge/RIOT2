@@ -23,11 +23,16 @@
 
 #include <stdint.h>
 
+typedef enum {
+    PSA_CIPHER_ENCRYPT,
+    PSA_CIPHER_DECRYPT
+} cipher_operation_t;
+
 /* These are all temporarily defined as some numeric type to prevent errors at compile time.*/
 
 typedef /* implementation-defined type */ uint32_t psa_aead_operation_t;
 typedef uint32_t psa_algorithm_t;
-typedef /* implementation-defined type */ uint32_t psa_cipher_operation_t;
+
 typedef uint8_t psa_dh_family_t;
 typedef uint8_t psa_ecc_family_t;
 typedef /* implementation-defined type */ uint32_t psa_key_derivation_operation_t;
@@ -38,7 +43,20 @@ typedef uint32_t psa_key_location_t;
 typedef uint8_t psa_key_persistence_t;
 typedef uint16_t psa_key_type_t;
 typedef uint32_t psa_key_usage_t;
+
+/* The type used internally for key sizes.
+ * Public interfaces use size_t, but internally we use a smaller type. */
 typedef uint16_t psa_key_bits_t;
+/* The maximum value of the type used to represent bit-sizes.
+ * This is used to mark an invalid key size. */
+#define PSA_KEY_BITS_TOO_LARGE          ( ( psa_key_bits_t ) -1 )
+/* The maximum size of a key in bits.
+ * Currently defined as the maximum that can be represented, rounded down
+ * to a whole number of bytes.
+ * This is an uncast value so that it can be used in preprocessor
+ * conditionals. */
+#define PSA_MAX_KEY_BITS 0xfff8
+
 typedef /* implementation-defined type */ uint32_t psa_mac_operation_t;
 typedef int32_t psa_status_t;
 
@@ -73,6 +91,8 @@ typedef int32_t psa_status_t;
 typedef struct psa_hash_operation_s psa_hash_operation_t;
 
 typedef struct psa_key_attributes_s psa_key_attributes_t;
+
+typedef struct psa_cipher_operation_s psa_cipher_operation_t;
 
 
 #endif /* PSA_CRYPTO_TYPES_H */

@@ -22,7 +22,7 @@
 #define PSA_CRYPTO_STRUCT_H
 
 #include "crypto_types.h"
-#include "crypto_driver_wrapper.h"
+#include "psa_crypto_driver_wrapper.h"
 #include "crypto_contexts.h"
 
 struct psa_hash_operation_s
@@ -34,10 +34,10 @@ struct psa_hash_operation_s
 
 #define PSA_HASH_OPERATION_INIT {0}
 
-static inline struct psa_hash_operation_s psa_hash_operation_init( void )
+static inline struct psa_hash_operation_s psa_hash_operation_init(void)
 {
     const struct psa_hash_operation_s v = PSA_HASH_OPERATION_INIT;
-    return( v );
+    return v;
 }
 
 struct psa_key_attributes_s
@@ -51,10 +51,27 @@ struct psa_key_attributes_s
 
 #define PSA_KEY_ATTRIBUTES_INIT {0}//{PSA_CORE_KEY_ATTRIBUTES_INIT, NULL, 0}
 
-static inline struct psa_key_attributes_s psa_key_attributes_init( void )
+static inline struct psa_key_attributes_s psa_key_attributes_init(void)
 {
     const struct psa_key_attributes_s v = PSA_KEY_ATTRIBUTES_INIT;
-    return( v );
+    return v;
+}
+
+struct psa_cipher_operation_s
+{
+    uint8_t driver_id;
+    uint8_t iv_required : 1;
+    uint8_t iv_set : 1;
+    uint8_t default_iv_length;
+    psa_cipher_context_t ctx;
+};
+
+#define PSA_CIPHER_OPERATION_INIT {0}
+
+static inline struct psa_cipher_operation_s psa_cipher_operation_init(void)
+{
+    const struct psa_cipher_operation_s v = PSA_CIPHER_OPERATION_INIT;
+    return v;
 }
 
 #endif /* PSA_CRYPTO_STRUCT_H */

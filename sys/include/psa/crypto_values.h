@@ -78,7 +78,18 @@
 #define PSA_ALG_IS_AEAD_ON_BLOCK_CIPHER(alg) /* specification-defined value */
 #define PSA_ALG_IS_ASYMMETRIC_ENCRYPTION(alg) /* specification-defined value */
 #define PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) /* specification-defined value */
-#define PSA_ALG_IS_CIPHER(alg) /* specification-defined value */
+
+/** Whether the specified algorithm is a symmetric cipher algorithm.
+ *
+ * \param alg An algorithm identifier (value of type #psa_algorithm_t).
+ *
+ * \return 1 if \p alg is a symmetric cipher algorithm, 0 otherwise.
+ *         This macro may return either 0 or 1 if \p alg is not a supported
+ *         algorithm identifier.
+ */
+#define PSA_ALG_IS_CIPHER(alg)                                          \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_CIPHER)
+
 #define PSA_ALG_IS_DETERMINISTIC_ECDSA(alg) /* specification-defined value */
 #define PSA_ALG_IS_ECDH(alg) /* specification-defined value */
 #define PSA_ALG_IS_ECDSA(alg) /* specification-defined value */
@@ -244,6 +255,24 @@
 #define PSA_KEY_PERSISTENCE_DEFAULT ((psa_key_persistence_t) 0x01)
 #define PSA_KEY_PERSISTENCE_READ_ONLY ((psa_key_persistence_t) 0xff)
 #define PSA_KEY_PERSISTENCE_VOLATILE ((psa_key_persistence_t) 0x00)
+
+/** Vendor-defined key type flag.
+ *
+ * Key types defined by this standard will never have the
+ * #PSA_KEY_TYPE_VENDOR_FLAG bit set. Vendors who define additional key types
+ * must use an encoding with the #PSA_KEY_TYPE_VENDOR_FLAG bit set and should
+ * respect the bitwise structure used by standard encodings whenever practical.
+ */
+#define PSA_KEY_TYPE_VENDOR_FLAG                    ((psa_key_type_t)0x8000)
+
+#define PSA_KEY_TYPE_CATEGORY_MASK                  ((psa_key_type_t)0x7000)
+#define PSA_KEY_TYPE_CATEGORY_RAW                   ((psa_key_type_t)0x1000)
+#define PSA_KEY_TYPE_CATEGORY_SYMMETRIC             ((psa_key_type_t)0x2000)
+#define PSA_KEY_TYPE_CATEGORY_PUBLIC_KEY            ((psa_key_type_t)0x4000)
+#define PSA_KEY_TYPE_CATEGORY_KEY_PAIR              ((psa_key_type_t)0x7000)
+
+#define PSA_KEY_TYPE_CATEGORY_FLAG_PAIR             ((psa_key_type_t)0x3000)
+
 #define PSA_KEY_TYPE_AES ((psa_key_type_t)0x2400)
 #define PSA_KEY_TYPE_ARC4 ((psa_key_type_t)0x2002)
 #define PSA_KEY_TYPE_CAMELLIA ((psa_key_type_t)0x2403)
@@ -254,7 +283,6 @@
 #define PSA_KEY_TYPE_DH_KEY_PAIR(group) /* specification-defined value */
 #define PSA_KEY_TYPE_DH_PUBLIC_KEY(group) /* specification-defined value */
 #define PSA_KEY_TYPE_ECC_GET_FAMILY(type) /* specification-defined value */
-
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE            ((psa_key_type_t)0x4100)
 #define PSA_KEY_TYPE_ECC_KEY_PAIR_BASE              ((psa_key_type_t)0x7100)
 #define PSA_KEY_TYPE_ECC_CURVE_MASK                 ((psa_key_type_t)0x00ff)
@@ -293,7 +321,15 @@
 #define PSA_KEY_TYPE_IS_KEY_PAIR(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_RSA(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_UNSTRUCTURED(type) /* specification-defined value */
+
+/** Whether a key type is an unstructured array of bytes.
+ *
+ * This encompasses both symmetric keys and non-key data.
+ */
+#define PSA_KEY_TYPE_IS_UNSTRUCTURED(type) \
+    (((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_RAW || \
+     ((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_SYMMETRIC)
+
 #define PSA_KEY_TYPE_KEY_PAIR_OF_PUBLIC_KEY(type) \
 /* specification-defined value */
 #define PSA_KEY_TYPE_NONE ((psa_key_type_t)0x0000)

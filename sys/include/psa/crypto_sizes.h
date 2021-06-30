@@ -21,6 +21,9 @@
 #ifndef PSA_CRYPTO_SIZES_H
 #define PSA_CRYPTO_SIZES_H
 
+#define PSA_BITS_TO_BYTES(bits) (((bits) + 7) / 8)
+#define PSA_BYTES_TO_BITS(bytes) ((bytes) * 8)
+
 #define PSA_HASH_LENGTH(alg)                                      \
     (                                                           \
         PSA_ALG_HMAC_GET_HASH(alg) == PSA_ALG_MD2 ? 16 :            \

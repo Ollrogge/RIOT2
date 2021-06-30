@@ -1,7 +1,7 @@
-#ifndef CRYPTO_SE_REGISTRY_H
-#define CRYPTO_SE_REGISTRY_H
+#ifndef PSA_CRYPTO_SE_REGISTRY_H
+#define PSA_CRYPTO_SE_REGISTRY_H
 
-#include "crypto_se_management.h"
+#include "psa_crypto_se_management.h"
 
 #define PSA_MAX_SE_LOCATION (255)
 #define PSA_MAX_SE_DRIVERS  (4)

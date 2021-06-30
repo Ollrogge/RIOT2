@@ -24,7 +24,7 @@
 
 #include "kernel_defines.h"
 
-#include "crypto.h"
+#include "psa/crypto.h"
 
 #include "hashes/md5.h"
 #include "hashes/sha1.h"
