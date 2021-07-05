@@ -40,13 +40,20 @@ static inline struct psa_hash_operation_s psa_hash_operation_init(void)
     return v;
 }
 
+struct psa_key_policy_s
+{
+    psa_key_usage_t usage;
+    psa_algorithm_t alg;
+};
+typedef struct psa_key_policy_s psa_key_policy_t;
+
 struct psa_key_attributes_s
 {
     psa_key_type_t type;
     psa_key_bits_t bits;
     psa_key_lifetime_t lifetime;
     psa_key_id_t id;
-    psa_key_usage_t usage;
+    psa_key_policy_t policy;
 };
 
 #define PSA_KEY_ATTRIBUTES_INIT {0}//{PSA_CORE_KEY_ATTRIBUTES_INIT, NULL, 0}

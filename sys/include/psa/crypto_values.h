@@ -171,7 +171,33 @@
 /* implementation-defined value */
 #define PSA_ASYMMETRIC_ENCRYPT_OUTPUT_SIZE(key_type, key_bits, alg) \
 /* implementation-defined value */
-#define PSA_BLOCK_CIPHER_BLOCK_LENGTH(type) /* specification-defined value */
+
+#define PSA_GET_KEY_TYPE_BLOCK_SIZE_EXPONENT(type)      \
+    (((type) >> 8) & 7)
+
+/** The block size of a block cipher.
+ *
+ * \param type  A cipher key type (value of type #psa_key_type_t).
+ *
+ * \return      The block size for a block cipher, or 1 for a stream cipher.
+ *              The return value is undefined if \p type is not a supported
+ *              cipher key type.
+ *
+ * \note It is possible to build stream cipher algorithms on top of a block
+ *       cipher, for example CTR mode (#PSA_ALG_CTR).
+ *       This macro only takes the key type into account, so it cannot be
+ *       used to determine the size of the data that #psa_cipher_update()
+ *       might buffer for future processing in general.
+ *
+ * \note This macro returns a compile-time constant if its argument is one.
+ *
+ * \warning This macro may evaluate its argument multiple times.
+ */
+#define PSA_BLOCK_CIPHER_BLOCK_LENGTH(type)                                     \
+    (((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_SYMMETRIC ? \
+     1u << PSA_GET_KEY_TYPE_BLOCK_SIZE_EXPONENT(type) :                         \
+     0u)
+
 #define PSA_BLOCK_CIPHER_BLOCK_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_DECRYPT_OUTPUT_MAX_SIZE(input_length) \
 /* implementation-defined value */
@@ -184,7 +210,43 @@
 #define PSA_CIPHER_FINISH_OUTPUT_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_FINISH_OUTPUT_SIZE(key_type, alg) \
 /* implementation-defined value */
-#define PSA_CIPHER_IV_LENGTH(key_type, alg) /* implementation-defined value */
+
+/** The default IV size for a cipher algorithm, in bytes.
+ *
+ * The IV that is generated as part of a call to #psa_cipher_encrypt() is always
+ * the default IV length for the algorithm.
+ *
+ * This macro can be used to allocate a buffer of sufficient size to
+ * store the IV output from #psa_cipher_generate_iv() when using
+ * a multi-part cipher operation.
+ *
+ * See also #PSA_CIPHER_IV_MAX_SIZE.
+ *
+ * \warning This macro may evaluate its arguments multiple times or
+ *          zero times, so you should not pass arguments that contain
+ *          side effects.
+ *
+ * \param key_type  A symmetric key type that is compatible with algorithm \p alg.
+ *
+ * \param alg       A cipher algorithm (\c PSA_ALG_XXX value such that #PSA_ALG_IS_CIPHER(\p alg) is true).
+ *
+ * \return The default IV size for the specified key type and algorithm.
+ *         If the algorithm does not use an IV, return 0.
+ *         If the key type or cipher algorithm is not recognized,
+ *         or the parameters are incompatible, return 0.
+ */
+#define PSA_CIPHER_IV_LENGTH(key_type, alg) \
+    (PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) > 1 && \
+        ((alg) == PSA_ALG_CTR || \
+         (alg) == PSA_ALG_CFB || \
+         (alg) == PSA_ALG_OFB || \
+         (alg) == PSA_ALG_XTS || \
+         (alg) == PSA_ALG_CBC_NO_PADDING || \
+         (alg) == PSA_ALG_CBC_PKCS7) ? PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) : \
+     (key_type) == PSA_KEY_TYPE_CHACHA20 && \
+         (alg) == PSA_ALG_STREAM_CIPHER ? 12 : \
+     0)
+
 #define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_OPERATION_INIT /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_MAX_SIZE(input_length) \

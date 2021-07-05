@@ -1,4 +1,4 @@
-#include "psa/crypto_slot_management.h"
+#include "psa_crypto_slot_management.h"
 
 typedef struct
 {
@@ -8,21 +8,81 @@ typedef struct
 
 static psa_global_data_t global_data;
 
+int psa_is_valid_key_id(psa_key_id_t id, int vendor_ok)
+{
+    if ((PSA_KEY_ID_USER_MIN <= id) &&
+        (id <= PSA_KEY_ID_USER_MAX)) {
+        return 1;
+    }
+
+    if (vendor_ok &&
+        (PSA_KEY_ID_VENDOR_MIN <= id) &&
+        (id <= PSA_KEY_ID_VENDOR_MAX)) {
+        return 1;
+    }
+
+    return 0;
+}
+
 psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot)
 {
     memset(slot, 0, sizeof(*slot));
     return PSA_SUCCESS;
 }
 
+static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t *id, psa_key_slot_t **p_slot)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    size_t slot_index;
+    psa_key_slot_t *slot = NULL;
+
+    if (psa_key_id_is_volatile(*id)) {
+        slot = &global_data.key_slots[*id - PSA_KEY_ID_VOLATILE_MIN];
+        status = (slot->attr.id == *id) ? PSA_SUCCESS : PSA_ERROR_DOES_NOT_EXIST;
+    }
+    else {
+        if (!psa_is_valid_key_id(*id, 1)) {
+            return PSA_ERROR_INVALID_HANDLE;
+        }
+
+        for (slot_index = 0; slot_index < PSA_KEY_SLOT_COUNT; slot_index++) {
+            slot = &global_data.key_slots[slot_index];
+            if (slot->attr.id == *id) {
+                break;
+            }
+        }
+        status = (slot_index < PSA_KEY_SLOT_COUNT) ? PSA_SUCCESS : PSA_ERROR_DOES_NOT_EXIST;
+    }
+
+    if (status == PSA_SUCCESS) {
+        status = psa_lock_key_slot(slot);
+        if (status == PSA_SUCCESS) {
+            *p_slot = slot;
+        }
+    }
+
+    return status;
+}
+
 psa_status_t psa_get_and_lock_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 {
     /* TODO validate ID */
 
-    psa_key_slot_t *slot = NULL;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
-    for (int i = 0; i < PSA_KEY_SLOT_COUNT; i++) {
+    *p_slot = NULL;
+    if (!global_data.key_slots_initialized) {
+        return PSA_ERROR_BAD_STATE;
     }
-    return PSA_ERROR_GENERIC_ERROR;
+
+    status = psa_get_and_lock_key_slot_in_memory(id, p_slot);
+    if (status != PSA_ERROR_DOES_NOT_EXIST) {
+        return status;
+    }
+
+    /* TODO: get persistent key from storage and load into slot */
+
+    return status;
 }
 
 psa_status_t psa_initialize_key_slots(void)

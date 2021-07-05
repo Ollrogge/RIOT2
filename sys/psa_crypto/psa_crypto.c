@@ -266,6 +266,59 @@ psa_status_t psa_asymmetric_encrypt(psa_key_id_t key,
 
 /* Ciphers */
 
+static int psa_key_algorithm_permits(psa_key_type_t type, psa_algorithm_t policy_alg, psa_algorithm_t requested_alg)
+{
+    if (requested_alg == policy_alg) {
+        return 1;
+    }
+    return 0;
+}
+
+static psa_status_t psa_key_policy_permits( const psa_key_policy_t *policy, psa_key_type_t type, psa_algorithm_t alg)
+{
+    if (alg == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+    if (psa_key_algorithm_permits(type, policy->alg, alg)) {
+        return PSA_SUCCESS;
+    }
+    else {
+        return PSA_ERROR_NOT_PERMITTED;
+    }
+}
+
+static psa_status_t psa_get_and_lock_key_slot_with_policy(
+    psa_key_id_t id,
+    psa_key_slot_t **p_slot,
+    psa_key_usage_t usage,
+    psa_algorithm_t alg)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+
+    status = psa_get_and_lock_key_slot(id, p_slot);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+    slot = *p_slot;
+
+    if ((slot->attr.policy.usage & usage) != usage) {
+        *p_slot = NULL;
+        psa_unlock_key_slot(slot);
+        return PSA_ERROR_NOT_PERMITTED;
+    }
+
+    if (alg != 0) {
+        status = psa_key_policy_permits( &slot->attr.policy, slot->attr.type, alg);
+        if (status != PSA_SUCCESS) {
+            *p_slot = NULL;
+            psa_unlock_key_slot(slot);
+            return status;
+        }
+    }
+    return PSA_SUCCESS;
+}
+
 psa_status_t psa_cipher_abort(psa_cipher_operation_t * operation)
 {
     (void) operation;
@@ -278,10 +331,11 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
                                         cipher_operation_t cipher_operation)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
-    psa_key_usage_t usage = ( cipher_operation == PSA_CIPHER_ENCRYPT ?
-                              PSA_KEY_USAGE_ENCRYPT :
-                              PSA_KEY_USAGE_DECRYPT );
+    psa_key_usage_t usage = (   cipher_operation == PSA_CIPHER_ENCRYPT ?
+                                PSA_KEY_USAGE_ENCRYPT :
+                                PSA_KEY_USAGE_DECRYPT );
 
     if (operation->driver_id != 0) {
         return PSA_ERROR_BAD_STATE;
@@ -291,19 +345,37 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, usage, alg);
+    if (status != PSA_SUCCESS) {
+        psa_cipher_abort(operation);
+        unlock_status = psa_unlock_key_slot(slot);
+        return status;
+    }
+
+    operation->iv_set = 0;
+    if (alg == PSA_ALG_ECB_NO_PADDING) {
+        operation->iv_required = 0;
+    }
+    else {
+        operation->iv_required = 1;
+    }
+    operation->default_iv_length = PSA_CIPHER_IV_LENGTH(slot->attr.type, alg);
+
+    psa_key_attributes_t attr = slot->attr;
+
     if (cipher_operation == PSA_CIPHER_ENCRYPT) {
-        status = psa_driver_wrapper_cipher_encrypt_setup(operation, key, alg);
+        status = psa_driver_wrapper_cipher_encrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
     }
     else if (cipher_operation == PSA_CIPHER_DECRYPT) {
-        status = psa_driver_wrapper_cipher_decrypt_setup(operation, key, alg);
+        status = psa_driver_wrapper_cipher_decrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
     }
 
     if (status != PSA_SUCCESS) {
         psa_cipher_abort(operation);
-        return status;
     }
 
-    return PSA_SUCCESS;
+    unlock_status = psa_unlock_key_slot(slot);
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
 psa_status_t psa_cipher_decrypt(psa_key_id_t key,
@@ -994,7 +1066,7 @@ void psa_reset_key_attributes(psa_key_attributes_t * attributes)
 void psa_set_key_algorithm(psa_key_attributes_t * attributes,
                            psa_algorithm_t alg)
 {
-    attributes->alg = alg;
+    attributes->policy.alg = alg;
 }
 
 void psa_set_key_bits(psa_key_attributes_t * attributes,
@@ -1024,7 +1096,7 @@ void psa_set_key_type(psa_key_attributes_t * attributes,
 void psa_set_key_usage_flags(psa_key_attributes_t * attributes,
                              psa_key_usage_t usage_flags)
 {
-    attributes->usage = usage_flags;
+    attributes->policy.usage = usage_flags;
 }
 
 psa_status_t psa_sign_hash(psa_key_id_t key,

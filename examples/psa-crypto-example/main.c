@@ -52,12 +52,14 @@ int main(void)
     psa_key_lifetime_t ext_lifetime = 0x00000100;
     psa_key_lifetime_t int_lifetime = 0;
     psa_key_id_t key_id = 0;
+    psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
 
     uint8_t cipher_out[ECB_CIPHER_LEN];
     size_t output_len = 0;
 
     psa_set_key_lifetime(&attr, int_lifetime);
     psa_set_key_algorithm(&attr, PSA_ALG_ECB_NO_PADDING);
+    psa_set_key_usage_flags(&attr, usage);
     psa_set_key_bits(&attr, 128);
     psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
 
