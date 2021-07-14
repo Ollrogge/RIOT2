@@ -1,4 +1,4 @@
-#include "psa_builtin_key_management.h"
+#include "include/psa_builtin_key_management.h"
 #include "psa/crypto.h"
 
 static int key_type_is_raw_bytes( psa_key_type_t type )
@@ -9,13 +9,14 @@ static int key_type_is_raw_bytes( psa_key_type_t type )
 static psa_status_t psa_validate_unstructured_key_bit_size(psa_key_type_t type, size_t bits)
 {
     switch(type) {
-#if IS_ACTIVE(CONFIG_CIPHER_AES)
+#if IS_ACTIVE(CONFIG_BUILTIN_CIPHER)
         case PSA_KEY_TYPE_AES:
             if( bits != 128 && bits != 192 && bits != 256 )
                 return( PSA_ERROR_INVALID_ARGUMENT );
             break;
 #endif
     default:
+        (void) bits;
         return PSA_ERROR_NOT_SUPPORTED;
     }
     return PSA_SUCCESS;
@@ -52,5 +53,6 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
 
         return PSA_SUCCESS;
     }
+    return status;
     /* TODO: Else cases for ECC & RSA */
 }

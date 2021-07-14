@@ -4,7 +4,22 @@
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"
 
+#if IS_ACTIVE(PSA_MULTIPLE_SE)
+#include "include/psa_crypto_se_registry.h"
+#define PSA_MAX_SE_LOCATION (255)
+#else
+#define PSA_MAX_SE_LOCATION (1)
+#endif
+
 typedef struct psa_se_drv_data_s psa_se_drv_data_t;
+
+#if !IS_ACTIVE(PSA_MULTIPLE_SE)
+psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime);
+#endif
+
+int psa_get_se_driver(  psa_key_lifetime_t lifetime,
+                        const psa_drv_se_t **p_methods,
+                        psa_drv_se_context_t **p_drv_context);
 
 const psa_drv_se_t *psa_get_se_driver_methods(const psa_se_drv_data_t *driver);
 psa_drv_se_context_t *psa_get_se_drv_context(psa_se_drv_data_t *driver);

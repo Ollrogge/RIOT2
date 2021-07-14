@@ -22,7 +22,6 @@
 #define PSA_CRYPTO_STRUCT_H
 
 #include "crypto_types.h"
-#include "psa_crypto_driver_wrapper.h"
 #include "crypto_contexts.h"
 
 struct psa_hash_operation_s

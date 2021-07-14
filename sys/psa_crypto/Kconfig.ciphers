@@ -1,0 +1,82 @@
+# Copyright (c) 2021 HAW Hamburg
+#
+# This file is subject to the terms and conditions of the GNU Lesser
+# General Public License v2.1. See the file LICENSE in the top level
+# directory for more details.
+#
+
+menuconfig CIPHER_AES_128
+    bool "AES-128"
+
+if CIPHER_AES_128
+
+choice CIPHER_AES_128_IMPLEMENTATION
+    bool "AES-128 implementation"
+    default BUILTIN_CIPHER_AES_128
+
+config BUILTIN_CIPHER_AES_128
+    bool "Software implemented"
+    select MODULE_CRYPTO
+    select BUILTIN_CIPHER
+    select MODULE_CRYPTO_AES_128
+    select MODULE_CIPHER_MODES
+
+config CRYPTOAUTHLIB_CIPHER_AES_128
+    bool "Microchip Cryptoauthlib"
+    select PACKAGE_CRYPTOAUTHLIB
+    select MODULE_PSA_SE_DRIVER
+    select PSA_CRYPTO_SECURE_ELEMENT
+
+endchoice
+
+endif # CIPHER_AES_128
+
+menuconfig CIPHER_AES_192
+    bool "AES-192"
+
+if CIPHER_AES_192
+
+choice CIPHER_AES_192_IMPLEMENTATION
+    bool "AES-192 implementation"
+    default BUILTIN_CIPHER_AES_192
+
+config BUILTIN_CIPHER_AES_192
+    bool "Software implemented"
+    select MODULE_CRYPTO
+    select BUILTIN_CIPHER
+    select MODULE_CRYPTO_AES_192
+    select MODULE_CIPHER_MODES
+
+endchoice
+
+endif # CIPHER_AES_192
+
+menuconfig CIPHER_AES_256
+    bool "AES-256"
+
+if CIPHER_AES_256
+
+choice CIPHER_AES_256_IMPLEMENTATION
+    bool "AES-256 implementation"
+    default BUILTIN_CIPHER_AES_256
+
+config BUILTIN_CIPHER_AES_256
+    bool "Software implemented"
+    select MODULE_CRYPTO
+    select BUILTIN_CIPHER
+    select MODULE_CRYPTO_AES_256
+    select MODULE_CIPHER_MODES
+
+endchoice
+
+endif # CIPHER_AES_256
+
+config BUILTIN_CIPHER
+    bool
+    help
+        Indicates that a builtin cipher implementation is used
+
+config PSA_CRYPTO_SECURE_ELEMENT
+    bool
+    help
+        Indicates a Secure Element is being used

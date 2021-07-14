@@ -1,6 +1,6 @@
 # name of your application
 APPLICATION = hello-world
-
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
 
@@ -14,5 +14,7 @@ DEVELHELP ?= 1
 
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
+
+export TEST_KCONFIG ?= 1
 
 include $(RIOTBASE)/Makefile.include

@@ -17,4 +17,9 @@ config MODULE_CRYPTOAUTHLIB_HASHES
     bool "Microchip CryptoAuth library"
     depends on PACKAGE_CRYPTOAUTHLIB
 
+config MODULE_PSA_SE_DRIVER
+    bool
+    depends on PACKAGE_CRYPTOAUTHLIB
+
 rsource "contrib/Kconfig"
+rsource "psa_se_driver/Kconfig"

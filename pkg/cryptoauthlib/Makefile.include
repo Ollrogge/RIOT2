@@ -11,6 +11,11 @@ ifneq (,$(filter cryptoauthlib_hashes, $(USEMODULE)))
   INCLUDES += -I$(RIOTPKG)/cryptoauthlib/hashes/include
 endif
 
+ifneq (,$(filter psa_crypto, $(USEMODULE)))
+  DIRS += $(RIOTPKG)/cryptoauthlib/psa_se_driver
+  INCLUDES += -I$(RIOTBASE)/sys/psa_crypto/include
+endif
+
 DIRS += $(RIOTPKG)/cryptoauthlib/contrib
 ARCHIVES += $(BINDIR)/cryptoauthlib.a
 

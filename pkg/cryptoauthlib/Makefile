@@ -6,6 +6,8 @@ PKG_TEST_NAME=cryptoauthlib_test
 
 include $(RIOTBASE)/pkg/pkg.mk
 
+$(info USEMODULE is [${USEMODULE}])
+
 .PHONY: all..cmake_version_supported
 
 CMAKE_MINIMAL_VERSION = 3.6.0

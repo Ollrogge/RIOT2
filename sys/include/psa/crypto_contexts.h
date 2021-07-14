@@ -21,20 +21,17 @@
 #ifndef CRYPTO_CONTEXT_H
 #define CRYPTO_CONTEXT_H
 
+#include "kernel_defines.h"
+
 #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
 #include "periph_hashes.h"
-#endif
-
-#if IS_ACTIVE (CONFIG_PERIPH_CIPHER_AES)
-
 #endif
 
 #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
 #include "atca_hashes.h"
 #endif
 
-#include "psa_builtin_hashes.h"
-#include "psa_builtin_ciphers.h"
+#include "crypto_builtin_contexts.h"
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
@@ -50,6 +47,9 @@ typedef union {
 typedef union {
     unsigned dummy;
     psa_builtin_cipher_operation_t builtin_ctx;
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    uint64_t se_key_slot;
+#endif
 } psa_cipher_context_t;
 
 #endif /* CRYPTO_CONTEXT_H */

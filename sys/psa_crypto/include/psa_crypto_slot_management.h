@@ -50,14 +50,18 @@ static inline psa_key_slot_number_t psa_key_slot_get_slot_number(psa_key_slot_t 
     return *((psa_key_slot_number_t *)(slot->key.data));
 }
 
+static inline psa_status_t psa_key_lifetime_is_external(psa_key_lifetime_t lifetime)
+{
+    return (PSA_KEY_LIFETIME_GET_LOCATION(lifetime) != PSA_KEY_LOCATION_LOCAL_STORAGE);
+}
+
 psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot);
-psa_status_t psa_get_and_lock_key_slot(psa_key_id_t *id, psa_key_slot_t **slot);
+psa_status_t psa_get_and_lock_key_slot(psa_key_id_t id, psa_key_slot_t **slot);
 psa_status_t psa_initialize_key_slots(void);
 void psa_wipe_all_key_slots(void);
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **slot);
 psa_status_t psa_lock_key_slot(psa_key_slot_t *slot);
 psa_status_t psa_unlock_key_slot(psa_key_slot_t *slot);
-psa_status_t psa_key_lifetime_is_external(psa_key_lifetime_t lifetime);
 psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_data_t **driver);
 psa_status_t psa_validate_key_persistence(psa_key_lifetime_t lifetime);
 int psa_is_valid_key_id(psa_key_id_t id, int vendor_ok);

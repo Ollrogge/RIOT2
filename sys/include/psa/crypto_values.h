@@ -248,7 +248,6 @@
      0)
 
 #define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
-#define PSA_CIPHER_OPERATION_INIT /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_MAX_SIZE(input_length) \
 /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_SIZE(key_type, alg, input_length) \

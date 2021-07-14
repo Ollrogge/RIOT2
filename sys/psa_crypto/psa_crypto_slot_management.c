@@ -1,4 +1,5 @@
-#include "psa_crypto_slot_management.h"
+#include "include/psa_crypto_slot_management.h"
+#include "include/psa_crypto_se_management.h"
 
 typedef struct
 {
@@ -30,24 +31,24 @@ psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot)
     return PSA_SUCCESS;
 }
 
-static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t *id, psa_key_slot_t **p_slot)
+static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     size_t slot_index;
     psa_key_slot_t *slot = NULL;
 
-    if (psa_key_id_is_volatile(*id)) {
-        slot = &global_data.key_slots[*id - PSA_KEY_ID_VOLATILE_MIN];
-        status = (slot->attr.id == *id) ? PSA_SUCCESS : PSA_ERROR_DOES_NOT_EXIST;
+    if (psa_key_id_is_volatile(id)) {
+        slot = &global_data.key_slots[id - PSA_KEY_ID_VOLATILE_MIN];
+        status = (slot->attr.id == id) ? PSA_SUCCESS : PSA_ERROR_DOES_NOT_EXIST;
     }
     else {
-        if (!psa_is_valid_key_id(*id, 1)) {
+        if (!psa_is_valid_key_id(id, 1)) {
             return PSA_ERROR_INVALID_HANDLE;
         }
 
         for (slot_index = 0; slot_index < PSA_KEY_SLOT_COUNT; slot_index++) {
             slot = &global_data.key_slots[slot_index];
-            if (slot->attr.id == *id) {
+            if (slot->attr.id == id) {
                 break;
             }
         }
@@ -64,7 +65,7 @@ static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t *id, psa_ke
     return status;
 }
 
-psa_status_t psa_get_and_lock_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
+psa_status_t psa_get_and_lock_key_slot(psa_key_id_t id, psa_key_slot_t **p_slot)
 {
     /* TODO validate ID */
 
@@ -102,11 +103,6 @@ void psa_wipe_all_key_slots(void)
     global_data.key_slots_initialized = 0;
 }
 
-static int psa_is_key_slot_occupied(const psa_key_slot_t *slot)
-{
-    return (slot->attr.type != 0);
-}
-
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
@@ -122,7 +118,7 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 
     for (size_t i = 0; i < PSA_KEY_SLOT_COUNT; i++) {
         psa_key_slot_t *slot = &global_data.key_slots[i];
-        if (psa_is_key_slot_occupied(slot)) {
+        if (!psa_is_key_slot_occupied(slot)) {
             selected_slot = slot;
             break;
         }
@@ -150,6 +146,7 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 
         return PSA_SUCCESS;
     }
+
     status = PSA_ERROR_INSUFFICIENT_MEMORY;
     *p_slot = NULL;
     *id = 0;
@@ -173,7 +170,7 @@ psa_status_t psa_unlock_key_slot(psa_key_slot_t *slot)
         return PSA_SUCCESS;
     }
 
-    if (slot->lock_count < 0) {
+    if (slot->lock_count > 0) {
         slot->lock_count--;
         return PSA_SUCCESS;
     }
@@ -181,7 +178,34 @@ psa_status_t psa_unlock_key_slot(psa_key_slot_t *slot)
     return PSA_ERROR_CORRUPTION_DETECTED;
 }
 
-psa_status_t psa_key_lifetime_is_external(psa_key_lifetime_t lifetime);
-psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_data_t **driver);
-psa_status_t psa_validate_key_persistence(psa_key_lifetime_t lifetime);
-psa_status_t psa_is_valid_key_id(psa_key_id_t id);
+psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_data_t **p_drv)
+{
+    if (psa_key_lifetime_is_external(lifetime)) {
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+        psa_se_drv_data_t *driver = psa_get_se_driver_data(lifetime);
+        if (driver != NULL) {
+            if (p_drv != NULL) {
+                *p_drv = driver;
+            }
+            return PSA_SUCCESS;
+        }
+#else
+        (void) p_drv;
+#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+    else {
+        (void) p_drv;
+        return PSA_SUCCESS;
+    }
+}
+
+
+psa_status_t psa_validate_key_persistence(psa_key_lifetime_t lifetime)
+{
+    if (PSA_KEY_LIFETIME_IS_VOLATILE(lifetime)) {
+        return PSA_SUCCESS;
+    }
+    /* TODO: Persistent key storage not implemented, yet */
+    return PSA_ERROR_NOT_SUPPORTED;
+}

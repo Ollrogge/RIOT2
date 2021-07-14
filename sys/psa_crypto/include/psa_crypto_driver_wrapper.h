@@ -54,12 +54,8 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(   psa_cipher_operation_t *
                                                         size_t key_buffer_size,
                                                         psa_algorithm_t alg);
 
-psa_status_t psa_driver_wrapper_cipher_finish(  psa_cipher_operation_t * operation,
-                                                uint8_t * output,
-                                                size_t output_size,
-                                                size_t * output_length);
-
-psa_status_t psa_driver_wrapper_cipher_update(  psa_cipher_operation_t * operation,
+psa_status_t psa_driver_wrapper_cipher_encrypt( psa_cipher_operation_t *operation,
+                                                const psa_key_attributes_t *attributes,
                                                 const uint8_t * input,
                                                 size_t input_length,
                                                 uint8_t * output,

@@ -1,5 +1,7 @@
-#include "psa/crypto_se_registry.h"
-#include "psa/crypto_se_driver.h"
+#include "include/psa_crypto_se_registry.h"
+#include "include/psa_crypto_se_driver.h"
+
+#if IS_ACTIVE(PSA_MULTIPLE_SE)
 
 static psa_se_drv_data_t driver_table[PSA_MAX_SE_DRIVERS];
 
@@ -21,20 +23,6 @@ psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime)
         }
     }
     return NULL;
-}
-
-int psa_get_se_driver(  psa_key_lifetime_t lifetime,
-                        const psa_drv_se_t **p_methods,
-                        psa_drv_se_context_t **p_drv_context)
-{
-    psa_se_drv_data_t *driver = psa_get_se_driver_entry(lifetime);
-    if (p_methods != NULL) {
-        *p_methods = (driver ? driver->methods : NULL);
-    }
-    if (p_drv_context != NULL) {
-        *p_drv_context = (driver ? &driver->u.context : NULL);
-    }
-    return (driver != NULL);
 }
 
 psa_status_t psa_init_all_se_drivers(void)
@@ -97,3 +85,5 @@ psa_status_t psa_register_se_driver(psa_key_location_t location,
 
     return PSA_SUCCESS;
 }
+
+#endif /* PSA_MULTIPLE_SE */
