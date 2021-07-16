@@ -1,6 +1,8 @@
+PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
 PKG_NAME=cryptoauthlib
 PKG_URL=https://github.com/MicrochipTech/cryptoauthlib
-PKG_VERSION=af8187776cd3f3faf8bed412eaf6ff7221862e19
+# PKG_VERSION=af8187776cd3f3faf8bed412eaf6ff7221862e19
+PKG_VERSION=b177b31182573f439191214d356a34f5db048beb
 PKG_LICENSE=LGPL-2.1
 PKG_TEST_NAME=cryptoauthlib_test
 
@@ -41,7 +43,6 @@ cryptoauth: $(PKG_BUILD_DIR)/Makefile
 $(PKG_BUILD_DIR)/Makefile: $(TOOLCHAIN_FILE)
 	cmake -DCMAKE_TOOLCHAIN_FILE=$(TOOLCHAIN_FILE) \
 		  -Wno-dev \
-		  -DATCA_HAL_I2C:BOOL=TRUE \
 		  -B$(PKG_BUILD_DIR) \
 		  -H$(PKG_SOURCE_DIR)/lib
 
@@ -53,6 +54,9 @@ build_tests:
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/jwt -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_jwt
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/tng -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_tng
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/atcacert -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_atcacert
+	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_atcab -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_atcab
+	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_calib -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_calib
+	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_crypto -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_crypto
 
 git-download: | ..cmake_version_supported
 
