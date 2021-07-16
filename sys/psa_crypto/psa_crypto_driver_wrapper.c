@@ -188,7 +188,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *
         if (drv->cipher == NULL || drv->cipher->p_setup == NULL) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-        status = drv->cipher->p_setup(drv_context, &operation->ctx, (psa_key_slot_number_t) *key_buffer, attributes->policy.alg, PSA_CRYPTO_DRIVER_ENCRYPT);
+        status = drv->cipher->p_setup(drv_context, &operation->ctx, *((psa_key_slot_number_t*) key_buffer), attributes->policy.alg, PSA_CRYPTO_DRIVER_ENCRYPT);
         if (status != PSA_SUCCESS) {
             return status;
         }
