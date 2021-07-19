@@ -21,21 +21,24 @@
 #include <stdio.h>
 #include "cryptoauthlib_test.h"
 
+const char atecc508[] = "ecc508";
+const char atecc608[] = "ecc608";
+const char unit[] = "basic";
 int main(void)
 {
     /* Set device to ATECC508A */
     if (ATCA_DEVTYPE == ATECC608A) {
-        atca_run_cmd("608");
+        atca_run_cmd(atecc608, sizeof(atecc608));
     }
     else if (ATCA_DEVTYPE == ATECC508A) {
-        atca_run_cmd("508");
+        atca_run_cmd(atecc508, sizeof(atecc508));
     }
     else {
         printf("This device is currently not supported.");
         return 0;
     }
 
-    atca_run_cmd("unit");
+    atca_run_cmd(unit, sizeof(unit));
 
     return 0;
 }

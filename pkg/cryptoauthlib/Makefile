@@ -1,4 +1,5 @@
-PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
+# PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
+PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/cryptoauthlib
 PKG_NAME=cryptoauthlib
 PKG_URL=https://github.com/MicrochipTech/cryptoauthlib
 # PKG_VERSION=af8187776cd3f3faf8bed412eaf6ff7221862e19
@@ -50,6 +51,7 @@ $(TOOLCHAIN_FILE): git-download
 	$(RIOTTOOLS)/cmake/generate-xcompile-toolchain.sh > $(TOOLCHAIN_FILE)
 
 build_tests:
+	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/third_party/unity -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_third_party_unity
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/jwt -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_jwt
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/tng -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_tng
@@ -57,6 +59,7 @@ build_tests:
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_atcab -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_atcab
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_calib -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_calib
 	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/api_crypto -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_api_crypto
+	$(QQ)"$(MAKE)" -C $(PKG_SOURCE_DIR)/test/vectors -f $(RIOTBASE)/Makefile.base MODULE=$(PKG_TEST_NAME)_vectors
 
 git-download: | ..cmake_version_supported
 

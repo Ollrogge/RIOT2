@@ -44,9 +44,9 @@ void atca_delay_ms(uint32_t delay)
 }
 
 /* Hal I2C implementation */
-ATCA_STATUS hal_i2c_init(void *hal, ATCAIfaceCfg *cfg)
+ATCA_STATUS hal_i2c_init(ATCAIface iface, ATCAIfaceCfg *cfg)
 {
-    (void)hal;
+    (void)iface;
     if (cfg->iface_type != ATCA_I2C_IFACE) {
         return ATCA_BAD_PARAM;
     }
@@ -62,8 +62,9 @@ ATCA_STATUS hal_i2c_post_init(ATCAIface iface)
     return ATCA_SUCCESS;
 }
 
-ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
+ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata, int txlength)
 {
+    (void) word_address;
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     int ret;
 
@@ -82,9 +83,10 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength)
     return ATCA_SUCCESS;
 }
 
-ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata,
+ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t word_address, uint8_t *rxdata,
                             uint16_t *rxlength)
 {
+    (void) word_address;
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     uint8_t retries = cfg->rx_retries;
     uint8_t length_package = 0;
@@ -178,11 +180,21 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
     }
     i2c_release(cfg->atcai2c.bus);
 
-    if (status != ATCA_SUCCESS) {
-        return ATCA_COMM_FAIL;
-    }
+    // if (status != ATCA_SUCCESS) {
+    //     return ATCA_COMM_FAIL;
+    // }
 
     return hal_check_wake(data, 4);
+}
+
+ATCA_STATUS hal_i2c_control(ATCAIface iface, uint8_t option, void* param, size_t paramlen)
+{
+    (void) param;
+    (void) paramlen;
+    if (option == ATCA_HAL_CONTROL_WAKE) {
+    return hal_i2c_wake(iface);
+    }
+    return ATCA_UNIMPLEMENTED;
 }
 
 ATCA_STATUS hal_i2c_idle(ATCAIface iface)

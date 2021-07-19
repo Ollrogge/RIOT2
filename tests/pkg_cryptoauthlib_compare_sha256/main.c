@@ -50,8 +50,16 @@ static int test_riot_sha256(uint8_t *teststring, uint16_t len,
 static int test_atca_sha(uint8_t *teststring, uint16_t len, uint8_t *expected,
                          uint8_t *result)
 {
-    atcab_sha_start();
-    atcab_sha_end(result, len, teststring);
+    ATCA_STATUS status;
+    atcab_wakeup();
+    status = atcab_sha_start();
+    if (status != ATCA_SUCCESS) {
+        printf("SHA Start failed: %x\n", status);
+    }
+    status = atcab_sha_end(result, len, teststring);
+    if (status != ATCA_SUCCESS) {
+        printf("SHA End failed: %x\n", status);
+    }
     return memcmp(expected, result, SHA256_HASH_SIZE);
 }
 

@@ -6,8 +6,9 @@ include ../Makefile.tests_common
 BOARD_BLACKLIST := stk3200 stk3600 stk3700
 
 # due to memory constrains we ignore the cert test
-CFLAGS += -DDO_NOT_TEST_CERT
+CFLAGS += -DDO_NOT_TEST_CERT -DDO_NOT_TEST_SW_CRYPTO
 USEPKG += cryptoauthlib
 USEMODULE += cryptoauthlib_test
+USEMODULE += embunit
 
 include $(RIOTBASE)/Makefile.include

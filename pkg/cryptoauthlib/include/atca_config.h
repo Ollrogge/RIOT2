@@ -2,35 +2,13 @@
 #ifndef ATCA_CONFIG_H
 #define ATCA_CONFIG_H
 
-/* Included HALS */
-/* #undef ATCA_HAL_KIT_UART */
-/* #undef ATCA_HAL_KIT_HID */
-/* #undef ATCA_HAL_I2C */
-/* #undef ATCA_HAL_SPI */
-/* #undef ATCA_HAL_KIT_BRIDGE */
-/* #undef ATCA_HAL_CUSTOM */
-/* #undef ATCA_HAL_SWI */
-/* #undef ATCA_HAL_1WIRE */
-
-
-/** Define to enable compatibility with legacy HALs
-   (HALs with embedded device logic)*/
-/* #undef ATCA_HAL_LEGACY_API */
-
+#define ATCA_PRINTF
+#define ATCA_HAL_I2C
+#define ATCA_USE_ATCAB_FUNCTIONS
 
 /* Included device support */
-#define ATCA_ATSHA204A_SUPPORT
-#define ATCA_ATSHA206A_SUPPORT
-#define ATCA_ATECC108A_SUPPORT
 #define ATCA_ATECC508A_SUPPORT
-#define ATCA_ATECC608_SUPPORT
-/* #undef ATCA_TA100_SUPPORT */
-#define ATCA_ECC204_SUPPORT
-
-/** Device Override - Library Assumes ATECC608B support in checks */
-/* #undef ATCA_ATECC608A_SUPPORT */
-
-
+#define ATCA_ATECC608A_SUPPORT
 
 /** Define if cryptoauthlib is to use the maximum execution time method */
 /* #undef ATCA_NO_POLL */
@@ -44,49 +22,6 @@
 #ifndef ATCA_POST_DELAY_MSEC
 #define ATCA_POST_DELAY_MSEC 25
 #endif
-
-/***************** Diagnostic & Test Configuration Section *****************/
-
-/** Enable debug messages */
-/* #undef ATCA_PRINTF */
-
-/** Enable to build in test hooks */
-/* #undef ATCA_TESTS_ENABLED */
-
-/******************** Features Configuration Section ***********************/
-
-/** Define certificate templates to be supported. */
-/* #undef ATCA_TNGTLS_SUPPORT */
-/* #undef ATCA_TNGLORA_SUPPORT */
-/* #undef ATCA_TFLEX_SUPPORT */
-/* #undef ATCA_TNG_LEGACY_SUPPORT */
-
-/** Define Software Crypto Library to Use - if none are defined use the
-    cryptoauthlib version where applicable */
-/* #undef ATCA_MBEDTLS */
-/* #undef ATCA_OPENSSL */
-/* #undef ATCA_WOLFSSL */
-
-/** Additional Runtime Configuration */
-/* #undef ATCA_LIBRARY_CONF */
-
-/** Define to build atcab_ functions rather that defining them as macros */
-/* #undef ATCA_USE_ATCAB_FUNCTIONS */
-
-/** Define to enable older API forms that have been replaced */
-/* #undef ATCA_ENABLE_DEPRECATED */
-
-/** TA100 Specific - Enable auth sessions that require AES (CMAC/GCM) from
-   an external library */
-/* #undef ATCA_TA100_AES_AUTH_SUPPORT */
-
-/** TA100 Specific - Enable support for the FCE APIs for the TA100 */
-/* #undef ATCA_TA100_FCE_SUPPORT */
-
-/******************** Platform Configuration Section ***********************/
-
-/** Define if the library is not to use malloc/free */
-/* #undef ATCA_NO_HEAP */
 
 /** Define platform malloc/free */
 #define ATCA_PLATFORM_MALLOC    malloc
