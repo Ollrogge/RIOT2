@@ -1,5 +1,5 @@
-# PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
-PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/cryptoauthlib
+PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
+# PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/cryptoauthlib
 PKG_NAME=cryptoauthlib
 PKG_URL=https://github.com/MicrochipTech/cryptoauthlib
 # PKG_VERSION=af8187776cd3f3faf8bed412eaf6ff7221862e19

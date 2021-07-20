@@ -68,12 +68,9 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata,
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     int ret;
 
-    /* The first byte of the command package contains the word address */
-    txdata[0] = ATCA_DATA_ADDR;
-
     i2c_acquire(cfg->atcai2c.bus);
     ret = i2c_write_bytes(cfg->atcai2c.bus, (cfg->atcai2c.address >> 1),
-                          txdata, txlength + 1, 0);
+                          txdata, txlength, 0);
     i2c_release(cfg->atcai2c.bus);
 
     if (ret != 0) {
@@ -89,56 +86,20 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t word_address, uint8_t *rxda
     (void) word_address;
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     uint8_t retries = cfg->rx_retries;
-    uint8_t length_package = 0;
-    uint8_t bytes_to_read;
     int ret = -1;
-
-    /* Every command needs some time to be executed. We check whether the device is done
-       by polling, so we don't have to wait for the max execution time. For that there's
-       a number of retries (specified in the device descriptor). If polling is not successful
-       this function returns an error code. */
-
-    i2c_acquire(cfg->atcai2c.bus);
-    while (retries-- > 0 && ret != 0) {
-        /* read first byte (size of output data) and store it in variable length_package
-           to check if output will fit into rxdata */
-        ret = i2c_read_byte(cfg->atcai2c.bus, (cfg->atcai2c.address >> 1),
-                            &length_package, 0);
-    }
-    i2c_release(cfg->atcai2c.bus);
-
-    if (ret != 0) {
-        return ATCA_RX_TIMEOUT;
-    }
-
-    bytes_to_read = length_package - 1;
-
-    if (bytes_to_read > *rxlength) {
-        return ATCA_SMALL_BUFFER;
-    }
-
-    /* CRC function calculates value of the whole output package, so to get a correct
-       result we need to include the length of the package we got before into rxdata as first byte. */
-    rxdata[0] = length_package;
-
-    /* reset ret and retries to read the rest of the output */
-    ret = -1;
-    retries = cfg->rx_retries;
 
     /* read rest of output and insert into rxdata array after first byte */
     i2c_acquire(cfg->atcai2c.bus);
     while (retries-- > 0 && ret != 0) {
         ret = i2c_read_bytes(cfg->atcai2c.bus,
-                             (cfg->atcai2c.address >> 1), (rxdata + 1),
-                             bytes_to_read, 0);
+                             (cfg->atcai2c.address >> 1), (rxdata),
+                             *rxlength, 0);
     }
     i2c_release(cfg->atcai2c.bus);
 
     if (ret != 0) {
         return ATCA_RX_TIMEOUT;
     }
-
-    *rxlength = length_package;
 
     return ATCA_SUCCESS;
 }
@@ -180,21 +141,10 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface)
     }
     i2c_release(cfg->atcai2c.bus);
 
-    // if (status != ATCA_SUCCESS) {
-    //     return ATCA_COMM_FAIL;
-    // }
-
-    return hal_check_wake(data, 4);
-}
-
-ATCA_STATUS hal_i2c_control(ATCAIface iface, uint8_t option, void* param, size_t paramlen)
-{
-    (void) param;
-    (void) paramlen;
-    if (option == ATCA_HAL_CONTROL_WAKE) {
-    return hal_i2c_wake(iface);
+    if (status != ATCA_SUCCESS) {
+        return ATCA_COMM_FAIL;
     }
-    return ATCA_UNIMPLEMENTED;
+    return hal_check_wake(data, 4);
 }
 
 ATCA_STATUS hal_i2c_idle(ATCAIface iface)
@@ -217,6 +167,28 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
                    ATCA_SLEEP_ADDR, 0);
     i2c_release(cfg->atcai2c.bus);
     return ATCA_SUCCESS;
+}
+
+ATCA_STATUS hal_i2c_control(ATCAIface iface, uint8_t option, void* param, size_t paramlen)
+{
+    (void) param;
+    (void) paramlen;
+    switch (option) {
+        case ATCA_HAL_CONTROL_WAKE:
+            return hal_i2c_wake(iface);
+        case ATCA_HAL_CONTROL_IDLE:
+            return hal_i2c_idle(iface);
+        case ATCA_HAL_CONTROL_SLEEP:
+            return hal_i2c_sleep(iface);
+        case ATCA_HAL_CHANGE_BAUD:
+            return ATCA_UNIMPLEMENTED;
+        case ATCA_HAL_CONTROL_SELECT:
+        case ATCA_HAL_CONTROL_DESELECT:
+            return ATCA_SUCCESS;
+        default:
+            return ATCA_BAD_PARAM;
+    }
+    return ATCA_UNIMPLEMENTED;
 }
 
 ATCA_STATUS hal_i2c_release(void *hal_data)

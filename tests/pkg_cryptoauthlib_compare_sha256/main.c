@@ -29,6 +29,30 @@
 
 #define SHA256_HASH_SIZE (32)
 
+static uint8_t KEY[] = {
+    0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+static uint8_t KEY_LEN = 32;
+
+static uint8_t __attribute__((aligned)) ECB_PLAIN[] = {
+    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+};
+static uint8_t ECB_PLAIN_LEN = 32;
+
+static uint8_t __attribute__((aligned))ECB_CIPHER[] = {
+    0x3a, 0xd7, 0x7b, 0xb4, 0x0d, 0x7a, 0x36, 0x60,
+    0xa8, 0x9e, 0xca, 0xf3, 0x24, 0x66, 0xef, 0x97,
+    0x3a, 0xd7, 0x7b, 0xb4, 0x0d, 0x7a, 0x36, 0x60,
+    0xa8, 0x9e, 0xca, 0xf3, 0x24, 0x66, 0xef, 0x97
+};
+static uint8_t ECB_CIPHER_LEN = 32;
+
 /**
  * Function to call RIOT software implementation of SHA-256
  */
@@ -51,7 +75,6 @@ static int test_atca_sha(uint8_t *teststring, uint16_t len, uint8_t *expected,
                          uint8_t *result)
 {
     ATCA_STATUS status;
-    atcab_wakeup();
     status = atcab_sha_start();
     if (status != ATCA_SUCCESS) {
         printf("SHA Start failed: %x\n", status);
@@ -61,6 +84,34 @@ static int test_atca_sha(uint8_t *teststring, uint16_t len, uint8_t *expected,
         printf("SHA End failed: %x\n", status);
     }
     return memcmp(expected, result, SHA256_HASH_SIZE);
+}
+
+static int test_atca_calib_aes(void)
+{
+    ATCA_STATUS status;
+    ATCADevice dev;
+    size_t offset;
+    uint8_t result[ECB_CIPHER_LEN];
+
+    status = atcab_init_ext(&dev, (ATCAIfaceCfg *)&atca_params[0]);
+    if (status != ATCA_SUCCESS) {
+        printf("Device Init failed: %x\n", status);
+    }
+    status = calib_nonce_load(dev, NONCE_MODE_TARGET_TEMPKEY, KEY, KEY_LEN);
+    if (status != ATCA_SUCCESS) {
+        printf("Nonce Load failed: %x\n", status);
+    }
+    offset = 0;
+
+    do {
+        status = calib_aes_encrypt(dev, ATCA_TEMPKEY_KEYID, 0, ECB_PLAIN + offset, result + offset);
+        if (status != ATCA_SUCCESS) {
+            printf("AES Encrypt failed: %x\n", status);
+        }
+        offset += 16;
+    } while (offset < ECB_PLAIN_LEN);
+
+    return memcmp(ECB_CIPHER, result, ECB_CIPHER_LEN);
 }
 
 int main(void)
@@ -91,6 +142,13 @@ int main(void)
     }
     else {
         printf("ATCA SHA256: Failure.\n");
+    }
+
+    if (test_atca_calib_aes() == 0) {
+        printf("ATCA AES ECB: Success\n");
+    }
+    else {
+        printf("ATCA AES ECB: Failure.\n");
     }
 
     return 0;
