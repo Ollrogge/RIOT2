@@ -22,6 +22,7 @@
 
 #include "board.h"
 #include "periph/i2c.h"
+#include "atca.h"
 #include "cryptoauthlib.h"
 
 #ifdef __cplusplus
@@ -57,14 +58,24 @@ extern "C" {
 #define ATCA_DEVTYPE            (ATECC608A)
 #endif
 
-#ifndef ATCA_PARAMS
-#define ATCA_PARAMS                {    .iface_type = ATCA_I2C_IFACE, \
-                                        .devtype = ATCA_DEVTYPE, \
-                                        .atcai2c.address = ATCA_PARAM_ADDR, \
-                                        .atcai2c.bus = ATCA_PARAM_I2C, \
-                                        .atcai2c.baud = -1, /**< Not used in RIOT */ \
-                                        .wake_delay = 1500, \
-                                        .rx_retries = ATCA_RX_RETRIES }
+#ifndef ATCA_PARAMS_DEV0
+#define ATCA_PARAMS_DEV0                {   .iface_type = ATCA_I2C_IFACE, \
+                                            .devtype = ATCA_DEVTYPE, \
+                                            .atcai2c.address = ATCA_PARAM_ADDR, \
+                                            .atcai2c.bus = ATCA_PARAM_I2C, \
+                                            .atcai2c.baud = -1, /**< Not used in RIOT */ \
+                                            .wake_delay = 1500, \
+                                            .rx_retries = ATCA_RX_RETRIES }
+#endif
+
+#ifndef ATCA_PARAMS_DEV1
+#define ATCA_PARAMS_DEV1                {   .iface_type = ATCA_I2C_IFACE, \
+                                            .devtype = ATCA_DEVTYPE, \
+                                            .atcai2c.address = ATCA_PARAM_ADDR, \
+                                            .atcai2c.bus = I2C_DEV(1), \
+                                            .atcai2c.baud = -1, /**< Not used in RIOT */ \
+                                            .wake_delay = 1500, \
+                                            .rx_retries = ATCA_RX_RETRIES }
 #endif
 
 /**@}*/
@@ -74,7 +85,8 @@ extern "C" {
  */
 static const ATCAIfaceCfg atca_params[] =
 {
-    ATCA_PARAMS
+    ATCA_PARAMS_DEV0,
+    ATCA_PARAMS_DEV1
 };
 
 #ifdef __cplusplus

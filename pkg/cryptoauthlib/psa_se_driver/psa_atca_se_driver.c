@@ -1,8 +1,11 @@
 // #include "include/atca_key_management.h"
+#include "atca_params.h"
 #include "psa_se_driver/atca_driver.h"
 #include "psa_se_driver/atca_common.h"
 #include <stdio.h>
+
 #define  AES_ECB_128_BLOCK_SIZE (16)
+
 // /* Secure Element Cipher Functions */
 
 psa_status_t atca_cipher_setup( psa_drv_se_context_t *drv_context,
@@ -33,9 +36,10 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
                                 uint8_t *p_output,
                                 size_t output_size)
 {
-    (void) drv_context;
     ATCA_STATUS status;
+    ATCADevice dev = NULL;
     size_t offset;
+
     if (algorithm != PSA_ALG_ECB_NO_PADDING || direction != PSA_CRYPTO_DRIVER_ENCRYPT) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
@@ -44,9 +48,14 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
+    status = atcab_init_ext(&dev, (ATCAIfaceCfg *) drv_context->transient_data);
+    if (status != ATCA_SUCCESS) {
+        return atca_to_psa_error(status);
+    }
+
     offset = 0;
     do {
-        status = atcab_aes_encrypt(key_slot, 0, p_input + offset, p_output + offset);
+        status = calib_aes_encrypt(dev, key_slot, 0, p_input + offset, p_output + offset);
         if (status != ATCA_SUCCESS) {
             printf("ATCA status: %x\n", status);
             return atca_to_psa_error(status);
@@ -91,27 +100,33 @@ psa_status_t atca_import (
     size_t data_length,
     size_t *bits)
 {
-    (void) drv_context;
-
     ATCA_STATUS status;
+    ATCADevice dev = NULL;
+
     uint8_t buf_in[32] = {0};
 
     if (attributes->policy.alg != PSA_ALG_ECB_NO_PADDING) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
+    status = atcab_init_ext(&dev, (ATCAIfaceCfg *) drv_context->transient_data);
+    if (status != ATCA_SUCCESS) {
+        return atca_to_psa_error(status);
+    }
+
     if (key_slot == ATCA_TEMPKEY_KEYID) {
         memcpy(buf_in, data, data_length);
-        status = atcab_nonce_load(NONCE_MODE_TARGET_TEMPKEY, buf_in, sizeof(buf_in));
+        status = calib_nonce_load(dev, NONCE_MODE_TARGET_TEMPKEY, buf_in, sizeof(buf_in));
 
         if (status != ATCA_SUCCESS) {
             return atca_to_psa_error(status);
         }
+        *bits = PSA_BYTES_TO_BITS(data_length);
+
+        return PSA_SUCCESS;
     }
 
-    *bits = PSA_BYTES_TO_BITS(data_length);
-
-    return PSA_SUCCESS;
+    return PSA_ERROR_NOT_SUPPORTED;
 }
 
 static psa_drv_se_cipher_t atca_cipher = {

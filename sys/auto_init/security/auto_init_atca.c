@@ -21,7 +21,7 @@
 #include "atca_params.h"
 #include "kernel_defines.h"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include "debug.h"
 
 #if IS_ACTIVE(CONFIG_MODULE_PSA_CRYPTO)
@@ -42,8 +42,18 @@ void auto_init_atca(void)
 
 #if IS_ACTIVE(CONFIG_MODULE_PSA_CRYPTO)
         DEBUG("Registering Driver");
-        psa_key_location_t location = i + 1; /* Lowest possible SE location value is 1 */
-        if (psa_register_se_driver(location, &atca_methods) != PSA_SUCCESS) {
+        psa_key_location_t location = (i == 0) ? PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT : PSA_KEY_LOCATION_SECONDARY_SE_MIN;
+
+        if (i >= PSA_MAX_SE_COUNT) {
+            LOG_ERROR("[auto_init_atca] PSA Crypto – too many secure elements #%u\n", i + 1);
+            continue;
+        }
+
+        if (location == PSA_KEY_LOCATION_SECONDARY_SE_MIN) {
+            location += i - 1;
+        }
+
+        if (psa_register_se_driver(location, &atca_methods, (ATCAIfaceCfg *) &atca_params[i]) != PSA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error registering cryptoauth PSA driver for device #%u\n", i);
             continue;
         }

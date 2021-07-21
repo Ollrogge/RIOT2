@@ -1,6 +1,7 @@
 #ifndef ATCA_COMMON_H
 #define ATCA_COMMON_H
 
+#include <stdio.h>
 #include "cryptoauthlib.h"
 #include "psa/crypto.h"
 

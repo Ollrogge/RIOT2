@@ -1,6 +1,10 @@
 #include "include/psa_crypto_slot_management.h"
 #include "include/psa_crypto_se_management.h"
 
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+#include "include/psa_crypto_se_registry.h"
+#endif
+
 typedef struct
 {
     psa_key_slot_t key_slots[PSA_KEY_SLOT_COUNT];

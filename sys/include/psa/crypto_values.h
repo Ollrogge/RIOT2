@@ -311,8 +311,15 @@
 
 #define PSA_KEY_LIFETIME_PERSISTENT ((psa_key_lifetime_t) 0x00000001)
 #define PSA_KEY_LIFETIME_VOLATILE ((psa_key_lifetime_t) 0x00000000)
-#define PSA_KEY_LOCATION_LOCAL_STORAGE ((psa_key_location_t) 0x000000)
+
+#define PSA_KEY_LOCATION_LOCAL_STORAGE          ((psa_key_location_t) 0x000000)
 #define PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT ((psa_key_location_t) 0x000001)
+
+#define PSA_KEY_LOCATION_VENDOR_FLAG            ((psa_key_location_t)0x800000)
+
+#define PSA_KEY_LOCATION_SECONDARY_SE_MIN (PSA_KEY_LOCATION_VENDOR_FLAG)
+#define PSA_KEY_LOCATION_SECONDARY_SE_MAX ((psa_key_location_t) 0x8000ff)
+
 #define PSA_KEY_PERSISTENCE_DEFAULT ((psa_key_persistence_t) 0x01)
 #define PSA_KEY_PERSISTENCE_READ_ONLY ((psa_key_persistence_t) 0xff)
 #define PSA_KEY_PERSISTENCE_VOLATILE ((psa_key_persistence_t) 0x00)

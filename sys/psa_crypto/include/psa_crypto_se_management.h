@@ -4,16 +4,33 @@
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"
 
-#if IS_ACTIVE(PSA_MULTIPLE_SE)
-#include "include/psa_crypto_se_registry.h"
-#define PSA_MAX_SE_LOCATION (255)
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+#define PSA_MAX_SE_COUNT    (PSA_KEY_LOCATION_SECONDARY_SE_MAX - PSA_KEY_LOCATION_SECONDARY_SE_MIN)
 #else
-#define PSA_MAX_SE_LOCATION (1)
+#define PSA_MAX_SE_COUNT (PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT)
 #endif
+
+typedef struct
+{
+    uint8_t persistent_data[PSA_MAX_PERSISTENT_DATA_SIZE];
+    size_t persistent_data_size;
+    uintptr_t transient_data;
+} psa_drv_se_internal_context_t;
+
+struct psa_se_drv_data_s
+{
+    psa_key_location_t location;
+    const psa_drv_se_t *methods;
+    union
+    {
+        psa_drv_se_internal_context_t internal;
+        psa_drv_se_context_t context;
+    } u;
+};
 
 typedef struct psa_se_drv_data_s psa_se_drv_data_t;
 
-#if !IS_ACTIVE(PSA_MULTIPLE_SE)
+#if !IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime);
 #endif
 

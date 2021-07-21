@@ -1284,6 +1284,7 @@ typedef struct {
  */
 psa_status_t psa_register_se_driver(
     psa_key_location_t location,
-    const psa_drv_se_t *methods);
+    const psa_drv_se_t *methods,
+    void *drv_data);
 
 #endif /* CRYPTO_SE_DRIVER_H */

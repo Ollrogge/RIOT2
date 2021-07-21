@@ -1,14 +1,9 @@
 #include "include/psa_crypto_se_registry.h"
 #include "include/psa_crypto_se_driver.h"
 
-#if IS_ACTIVE(PSA_MULTIPLE_SE)
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 
 static psa_se_drv_data_t driver_table[PSA_MAX_SE_DRIVERS];
-
-psa_status_t psa_init_all_se_drivers(void)
-{
-    return PSA_ERROR_GENERIC_ERROR;
-}
 
 psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime)
 {
@@ -18,7 +13,7 @@ psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime)
         return NULL;
     }
     for (size_t i = 0; i < PSA_MAX_SE_DRIVERS; i++) {
-        if (driver_table[i]->location == location) {
+        if (driver_table[i].location == location) {
             return &driver_table[i];
         }
     }
@@ -39,15 +34,16 @@ psa_status_t psa_init_all_se_drivers(void)
                 return status;
             }
         }
-        return PSA_SUCCESS;
     }
+
+    return PSA_SUCCESS;
 }
 
 psa_status_t psa_register_se_driver(psa_key_location_t location,
-                                    const psa_drv_se_t *methods)
+                                    const psa_drv_se_t *methods,
+                                    void *drv_data)
 {
     size_t i;
-    psa_status_t status;
 
     if (methods->hal_version != PSA_DRV_SE_HAL_VERSION) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -56,7 +52,7 @@ psa_status_t psa_register_se_driver(psa_key_location_t location,
     if (location == PSA_KEY_LOCATION_LOCAL_STORAGE) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-    if (location > PSA_MAX_SE_LOCATION) {
+    if (location > PSA_KEY_LOCATION_SECONDARY_SE_MAX) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
@@ -79,6 +75,7 @@ psa_status_t psa_register_se_driver(psa_key_location_t location,
 
     driver_table[i].location = location;
     driver_table[i].methods = methods;
+    driver_table[i].u.internal.transient_data = (uintptr_t) drv_data;
     driver_table[i].u.internal.persistent_data_size = methods->persistent_data_size;
 
     /* TODO: Load Persistent data if persistent_data_size != 0 */
@@ -86,4 +83,4 @@ psa_status_t psa_register_se_driver(psa_key_location_t location,
     return PSA_SUCCESS;
 }
 
-#endif /* PSA_MULTIPLE_SE */
+#endif /* CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS */
