@@ -82,6 +82,7 @@ static void test_prim_se(void)
     }
 }
 
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 static void test_sec_se(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
@@ -120,12 +121,15 @@ static void test_sec_se(void)
         puts("Secondary SE Encryption successful");
     }
 }
+#endif
 
 int main(void)
 {
     psa_crypto_init();
 
     test_prim_se();
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     test_sec_se();
+#endif
     return 0;
 }

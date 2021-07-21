@@ -14,9 +14,9 @@ psa_status_t atca_cipher_setup( psa_drv_se_context_t *drv_context,
                                 psa_algorithm_t algorithm,
                                 psa_encrypt_or_decrypt_t direction)
 {
-    (void) drv_context;
-    (void) op_context;
-    (void) key_slot;
+    if (((ATCAIfaceCfg *) (drv_context)->transient_data)->devtype != ATECC608A) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
 
     if (algorithm != PSA_ALG_ECB_NO_PADDING || direction != PSA_CRYPTO_DRIVER_ENCRYPT) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -39,6 +39,10 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
     ATCA_STATUS status;
     ATCADevice dev = NULL;
     size_t offset;
+
+    if (((ATCAIfaceCfg *) (drv_context)->transient_data)->devtype != ATECC608A) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
 
     if (algorithm != PSA_ALG_ECB_NO_PADDING || direction != PSA_CRYPTO_DRIVER_ENCRYPT) {
         return PSA_ERROR_NOT_SUPPORTED;

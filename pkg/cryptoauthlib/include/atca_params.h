@@ -45,8 +45,11 @@ extern "C" {
  * @{
  */
 
-#ifndef ATCA_PARAM_I2C
-#define ATCA_PARAM_I2C           I2C_DEV(0)
+#ifndef ATCA_PARAM_I2C_DEV0
+#define ATCA_PARAM_I2C_DEV0      I2C_DEV(0)
+#endif
+#ifndef ATCA_PARAM_I2C_DEV1
+#define ATCA_PARAM_I2C_DEV1      I2C_DEV(1)
 #endif
 #ifndef ATCA_PARAM_ADDR
 #define ATCA_PARAM_ADDR          (ATCA_I2C_ADDR)
@@ -62,7 +65,7 @@ extern "C" {
 #define ATCA_PARAMS_DEV0                {   .iface_type = ATCA_I2C_IFACE, \
                                             .devtype = ATCA_DEVTYPE, \
                                             .atcai2c.address = ATCA_PARAM_ADDR, \
-                                            .atcai2c.bus = ATCA_PARAM_I2C, \
+                                            .atcai2c.bus = ATCA_PARAM_I2C_DEV0, \
                                             .atcai2c.baud = -1, /**< Not used in RIOT */ \
                                             .wake_delay = 1500, \
                                             .rx_retries = ATCA_RX_RETRIES }
@@ -72,7 +75,7 @@ extern "C" {
 #define ATCA_PARAMS_DEV1                {   .iface_type = ATCA_I2C_IFACE, \
                                             .devtype = ATCA_DEVTYPE, \
                                             .atcai2c.address = ATCA_PARAM_ADDR, \
-                                            .atcai2c.bus = I2C_DEV(1), \
+                                            .atcai2c.bus = ATCA_PARAM_I2C_DEV1, \
                                             .atcai2c.baud = -1, /**< Not used in RIOT */ \
                                             .wake_delay = 1500, \
                                             .rx_retries = ATCA_RX_RETRIES }
