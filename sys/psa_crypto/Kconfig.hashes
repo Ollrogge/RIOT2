@@ -12,9 +12,9 @@ if HASHES_MD5
 
 choice HASHES_MD5_IMPLEMENTATION
     bool "MD5 implementation"
-    default MODULE_BUILTIN_HASH_MD5
+    default BUILTIN_HASH_MD5
 
-config MODULE_BUILTIN_HASH_MD5
+config BUILTIN_HASH_MD5
     bool "Software implemented"
     select MODULE_HASHES_MD5
 
@@ -36,9 +36,10 @@ config PERIPH_HASH_SHA1
     depends on HAS_HW_HASH_SHA1
     select PERIPH_HASHES
 
-config MODULE_BUILTIN_HASH_SHA1
+config BUILTIN_HASH_SHA1
     bool "Software implemented"
     select MODULE_HASHES_SHA1
+    select MODULE_PSA_SOFTWARE_HASHES
 
 endchoice
 
@@ -58,7 +59,7 @@ config PERIPH_HASH_SHA224
     depends on HAS_HW_HASH_SHA224
     select PERIPH_HASHES
 
-config MODULE_BUILTIN_HASH_SHA224
+config BUILTIN_HASH_SHA224
     bool "Software implemented"
     select MODULE_HASHES_SHA224
 
@@ -86,9 +87,10 @@ config CRYPTOAUTHLIB_HASH_SHA256
     select MODULE_CRYPTOAUTHLIB_HASHES
     select SE_HASHES
 
-config MODULE_BUILTIN_HASH_SHA256
+config BUILTIN_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
+    select MODULE_HASHES_PSA
 
 endchoice
 endif # HASHES_SHA256

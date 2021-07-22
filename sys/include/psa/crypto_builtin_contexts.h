@@ -19,16 +19,16 @@ typedef struct
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
 
-#if IS_ACTIVE(CONFIG_MODULE_BUILTIN_HASH_MD5)
+#if IS_ACTIVE(CONFIG_BUILTIN_HASH_MD5)
     md5_ctx_t md5;
 #endif
-#if IS_ACTIVE(CONFIG_MODULE_BUILTIN_HASH_SHA1)
+#if IS_ACTIVE(CONFIG_BUILTIN_HASH_SHA1)
     sha1_context sha1;
 #endif
-#if IS_ACTIVE(CONFIG_MODULE_BUILTIN_HASH_SHA224)
+#if IS_ACTIVE(CONFIG_BUILTIN_HASH_SHA224)
     sha224_context_t sha224;
 #endif
-#if IS_ACTIVE(CONFIG_MODULE_BUILTIN_HASH_SHA256)
+#if IS_ACTIVE(CONFIG_BUILTIN_HASH_SHA256)
     sha256_context_t sha256;
 #endif
 } psa_software_hash_operation_t;
