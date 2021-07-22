@@ -13,23 +13,14 @@ if MODULE_PSA_CRYPTO
 
 menuconfig PSA_HASHES
     bool "Hashes Implementations"
-
-if PSA_HASHES
 rsource "Kconfig.hashes"
-endif # PSA_HASHES
 
 menuconfig PSA_CIPHERS
     bool "Ciphers Implementations"
-
-if PSA_CIPHERS
 rsource "Kconfig.ciphers"
-endif # PSA_CIPHERS
 
 menuconfig PSA_CONFIG
     bool "PSA Configuration"
-
-if PSA_CONFIG
 rsource "Kconfig.config"
-endif # PSA_CONFIG
 
 endif # MODULE_PSA_CRYPTO

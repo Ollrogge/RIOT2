@@ -1,5 +1,5 @@
 #include "psa/crypto.h"
-#include "include/psa_builtin_ciphers.h"
+#include "include/psa_software_ciphers.h"
 #include "crypto/modes/ecb.h"
 
 #define ALG_IS_SUPPORTED(alg)   \
@@ -20,7 +20,7 @@ static psa_status_t cipher_to_psa_error(int error)
     }
 }
 
-psa_status_t psa_builtin_cipher_encrypt_setup(  psa_builtin_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_encrypt_setup(  psa_software_cipher_operation_t * operation,
                                                 const psa_key_attributes_t *attributes,
                                                 const uint8_t *key_buffer,
                                                 size_t key_buffer_size,
@@ -43,16 +43,16 @@ psa_status_t psa_builtin_cipher_encrypt_setup(  psa_builtin_cipher_operation_t *
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_builtin_cipher_decrypt_setup(  psa_builtin_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_decrypt_setup(  psa_software_cipher_operation_t * operation,
                                                 const psa_key_attributes_t *attributes,
                                                 const uint8_t *key_buffer,
                                                 size_t key_buffer_size,
                                                 psa_algorithm_t alg)
 {
-    return psa_builtin_cipher_encrypt_setup(operation, attributes, key_buffer, key_buffer_size, alg);
+    return psa_software_cipher_encrypt_setup(operation, attributes, key_buffer, key_buffer_size, alg);
 }
 
-psa_status_t psa_builtin_cipher_encrypt(psa_builtin_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * operation,
                                         const uint8_t * input,
                                         size_t input_length,
                                         uint8_t * output,

@@ -42,8 +42,6 @@ static inline int safer_memcmp(const uint8_t *a, const uint8_t *b, size_t n)
 
 psa_status_t psa_crypto_init(void)
 {
-    psa_initialize_key_slots();
-
     lib_initialized = 1;
     return PSA_SUCCESS;
 }

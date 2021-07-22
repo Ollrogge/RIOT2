@@ -20,7 +20,7 @@
 
 #include "psa/crypto.h"
 
-psa_status_t psa_builtin_hash_setup(psa_hash_operation_t * operation,
+psa_status_t psa_software_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
     switch(alg) {
@@ -51,7 +51,7 @@ psa_status_t psa_builtin_hash_setup(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_builtin_hash_update(psa_hash_operation_t * operation,
+psa_status_t psa_software_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
@@ -85,7 +85,7 @@ psa_status_t psa_builtin_hash_update(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_builtin_hash_finish(psa_hash_operation_t * operation,
+psa_status_t psa_software_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash,
                              size_t hash_size,
                              size_t * hash_length)

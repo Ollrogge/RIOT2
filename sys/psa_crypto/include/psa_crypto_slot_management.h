@@ -6,8 +6,19 @@
 
 #define PSA_KEY_SLOT_COUNT       (32)
 
-#define PSA_KEY_ID_VOLATILE_MIN (PSA_KEY_ID_VENDOR_MAX - PSA_KEY_SLOT_COUNT + 1)
-#define PSA_KEY_ID_VOLATILE_MAX (PSA_KEY_ID_VENDOR_MAX)
+#define PSA_KEY_ID_VOLATILE_MIN (PSA_KEY_ID_VENDOR_MIN)
+#define PSA_KEY_ID_VOLATILE_MAX (PSA_KEY_ID_VENDOR_MIN + PSA_KEY_SLOT_COUNT)
+
+typedef struct
+{
+    psa_key_attributes_t attr;
+    size_t lock_count;
+    struct key_data
+    {
+        uint8_t data[PSA_MAX_KEY_LENGTH];
+        size_t bytes;
+    } key;
+} psa_key_slot_t;
 
 /** Test whether a key identifier is a volatile key identifier.
  *
@@ -23,17 +34,6 @@ static inline int psa_key_id_is_volatile( psa_key_id_t key_id )
     return( ( key_id >= PSA_KEY_ID_VOLATILE_MIN ) &&
             ( key_id <= PSA_KEY_ID_VOLATILE_MAX ) );
 }
-
-typedef struct
-{
-    psa_key_attributes_t attr;
-    size_t lock_count;
-    struct key_data
-    {
-        uint8_t data[PSA_MAX_KEY_LENGTH];
-        size_t bytes;
-    } key;
-} psa_key_slot_t;
 
 static inline int psa_is_key_slot_occupied(psa_key_slot_t *slot)
 {
@@ -57,7 +57,6 @@ static inline psa_status_t psa_key_lifetime_is_external(psa_key_lifetime_t lifet
 
 psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot);
 psa_status_t psa_get_and_lock_key_slot(psa_key_id_t id, psa_key_slot_t **slot);
-psa_status_t psa_initialize_key_slots(void);
 void psa_wipe_all_key_slots(void);
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **slot);
 psa_status_t psa_lock_key_slot(psa_key_slot_t *slot);

@@ -14,7 +14,7 @@ typedef struct
 {
     psa_algorithm_t alg;
     cipher_t cipher_ctx;
-} psa_builtin_cipher_operation_t;
+} psa_software_cipher_operation_t;
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
@@ -31,6 +31,6 @@ typedef union {
 #if IS_ACTIVE(CONFIG_MODULE_BUILTIN_HASH_SHA256)
     sha256_context_t sha256;
 #endif
-} psa_builtin_hash_operation_t;
+} psa_software_hash_operation_t;
 
 #endif /* CRYPTO_BUILTIN_CONTEXTS_H */

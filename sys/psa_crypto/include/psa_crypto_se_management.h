@@ -14,7 +14,7 @@ typedef struct
 {
     uint8_t persistent_data[PSA_MAX_PERSISTENT_DATA_SIZE];
     size_t persistent_data_size;
-    uintptr_t transient_data;
+    uintptr_t drv_data;
 } psa_drv_se_internal_context_t;
 
 struct psa_se_drv_data_s
@@ -30,9 +30,11 @@ struct psa_se_drv_data_s
 
 typedef struct psa_se_drv_data_s psa_se_drv_data_t;
 
-#if !IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+psa_status_t psa_register_secure_element(psa_key_location_t location,
+                                    const psa_drv_se_t *methods,
+                                    void *drv_data);
+
 psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime);
-#endif
 
 int psa_get_se_driver(  psa_key_lifetime_t lifetime,
                         const psa_drv_se_t **p_methods,

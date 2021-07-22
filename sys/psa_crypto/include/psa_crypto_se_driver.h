@@ -21,30 +21,8 @@ typedef struct
     /* Kann man das anders machen ohne Allokation?? */
     const uint8_t persistent_data[PSA_MAX_PERSISTENT_DATA_SIZE];
     const size_t persistent_data_size;
-    uintptr_t transient_data;
+    uintptr_t drv_data;
 } psa_drv_se_context_t;
-
-/** \brief A driver initialization function.
- *
- * \param[in,out] drv_context       The driver context structure.
- * \param[in,out] persistent_data   A pointer to the persistent data
- *                                  that allows writing.
- * \param location                  The location value for which this driver
- *                                  is registered. The driver will be invoked
- *                                  for all keys whose lifetime is in this
- *                                  location.
- *
- * \retval #PSA_SUCCESS
- *         The driver is operational.
- *         The core will update the persistent data in storage.
- * \return
- *         Any other return value prevents the driver from being used in
- *         this session.
- *         The core will NOT update the persistent data in storage.
- */
-typedef psa_status_t (*psa_drv_se_init_t)(psa_drv_se_context_t *drv_context,
-                                          void *persistent_data,
-                                          psa_key_location_t location);
 
 typedef uint64_t psa_key_slot_number_t;
 
@@ -1205,18 +1183,6 @@ typedef struct {
      */
     size_t persistent_data_size;
 
-    /** The driver initialization function.
-     *
-     * This function is called once during the initialization of the
-     * PSA Cryptography subsystem, before any other function of the
-     * driver is called. If this function returns a failure status,
-     * the driver will be unusable, at least until the next system reset.
-     *
-     * If this field is \c NULL, it is equivalent to a function that does
-     * nothing and returns #PSA_SUCCESS.
-     */
-    psa_drv_se_init_t p_init;
-
     const psa_drv_se_key_management_t *key_management;
     const psa_drv_se_mac_t *mac;
     const psa_drv_se_cipher_t *cipher;
@@ -1229,62 +1195,5 @@ typedef struct {
  */
 /* 0.0.0 patchlevel 5 */
 #define PSA_DRV_SE_HAL_VERSION 0x00000005
-
-/** Register an external cryptoprocessor (secure element) driver.
- *
- * This function is only intended to be used by driver code, not by
- * application code. In implementations with separation between the
- * PSA cryptography module and applications, this function should
- * only be available to callers that run in the same memory space as
- * the cryptography module, and should not be exposed to applications
- * running in a different memory space.
- *
- * This function may be called before psa_crypto_init(). It is
- * implementation-defined whether this function may be called
- * after psa_crypto_init().
- *
- * \note Implementations store metadata about keys including the lifetime
- *       value, which contains the driver's location indicator. Therefore,
- *       from one instantiation of the PSA Cryptography
- *       library to the next one, if there is a key in storage with a certain
- *       lifetime value, you must always register the same driver (or an
- *       updated version that communicates with the same secure element)
- *       with the same location value.
- *
- * \param location      The location value through which this driver will
- *                      be exposed to applications.
- *                      This driver will be used for all keys such that
- *                      `location == #PSA_KEY_LIFETIME_GET_LOCATION( lifetime )`.
- *                      The value #PSA_KEY_LOCATION_LOCAL_STORAGE is reserved
- *                      and may not be used for drivers. Implementations
- *                      may reserve other values.
- * \param[in] methods   The method table of the driver. This structure must
- *                      remain valid for as long as the cryptography
- *                      module keeps running. It is typically a global
- *                      constant.
- *
- * \return #PSA_SUCCESS
- *         The driver was successfully registered. Applications can now
- *         use \p location to access keys through the methods passed to
- *         this function.
- * \return #PSA_ERROR_BAD_STATE
- *         This function was called after the initialization of the
- *         cryptography module, and this implementation does not support
- *         driver registration at this stage.
- * \return #PSA_ERROR_ALREADY_EXISTS
- *         There is already a registered driver for this value of \p location.
- * \return #PSA_ERROR_INVALID_ARGUMENT
- *         \p location is a reserved value.
- * \return #PSA_ERROR_NOT_SUPPORTED
- *         `methods->hal_version` is not supported by this implementation.
- * \return #PSA_ERROR_INSUFFICIENT_MEMORY
- * \return #PSA_ERROR_NOT_PERMITTED
- * \return #PSA_ERROR_STORAGE_FAILURE
- * \return #PSA_ERROR_DATA_CORRUPT
- */
-psa_status_t psa_register_se_driver(
-    psa_key_location_t location,
-    const psa_drv_se_t *methods,
-    void *drv_data);
 
 #endif /* CRYPTO_SE_DRIVER_H */

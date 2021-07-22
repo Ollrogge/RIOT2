@@ -25,8 +25,9 @@
 #include "debug.h"
 
 #if IS_ACTIVE(CONFIG_MODULE_PSA_CRYPTO)
-#include "psa_se_driver/atca_driver.h"
 #include "psa_crypto_se_management.h"
+
+extern psa_drv_se_t atca_methods;
 #endif
 
 #define ATCA_NUMOF (ARRAY_SIZE(atca_params))
@@ -53,7 +54,7 @@ void auto_init_atca(void)
             location += i - 1;
         }
 
-        if (psa_register_se_driver(location, &atca_methods, (ATCAIfaceCfg *) &atca_params[i]) != PSA_SUCCESS) {
+        if (psa_register_secure_element(location, &atca_methods, (ATCAIfaceCfg *) &atca_params[i]) != PSA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error registering cryptoauth PSA driver for device #%u\n", i);
             continue;
         }

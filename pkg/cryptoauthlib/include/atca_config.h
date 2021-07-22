@@ -9,7 +9,7 @@
 /* Included device support */
 #define ATCA_ATECC508A_SUPPORT
 #define ATCA_ATECC608A_SUPPORT
-
+#define ATCA_NO_HEAP
 /** Define if cryptoauthlib is to use the maximum execution time method */
 /* #undef ATCA_NO_POLL */
 

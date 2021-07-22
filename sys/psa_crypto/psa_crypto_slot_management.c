@@ -1,14 +1,8 @@
 #include "include/psa_crypto_slot_management.h"
-#include "include/psa_crypto_se_management.h"
-
-#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
-#include "include/psa_crypto_se_registry.h"
-#endif
 
 typedef struct
 {
     psa_key_slot_t key_slots[PSA_KEY_SLOT_COUNT];
-    uint8_t key_slots_initialized : 1;
 } psa_global_data_t;
 
 static psa_global_data_t global_data;
@@ -76,9 +70,6 @@ psa_status_t psa_get_and_lock_key_slot(psa_key_id_t id, psa_key_slot_t **p_slot)
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
     *p_slot = NULL;
-    if (!global_data.key_slots_initialized) {
-        return PSA_ERROR_BAD_STATE;
-    }
 
     status = psa_get_and_lock_key_slot_in_memory(id, p_slot);
     if (status != PSA_ERROR_DOES_NOT_EXIST) {
@@ -90,12 +81,6 @@ psa_status_t psa_get_and_lock_key_slot(psa_key_id_t id, psa_key_slot_t **p_slot)
     return status;
 }
 
-psa_status_t psa_initialize_key_slots(void)
-{
-    global_data.key_slots_initialized = 1;
-    return PSA_SUCCESS;
-}
-
 void psa_wipe_all_key_slots(void)
 {
     for (int i = 0; i < PSA_KEY_SLOT_COUNT; i++) {
@@ -103,20 +88,12 @@ void psa_wipe_all_key_slots(void)
         slot->lock_count = 1;
         psa_wipe_key_slot(slot);
     }
-
-    global_data.key_slots_initialized = 0;
 }
 
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *selected_slot, *unlocked_persistent_slot;
-
-    if (!global_data.key_slots_initialized) {
-        *p_slot = NULL;
-        *id = 0;
-        return PSA_ERROR_BAD_STATE;
-    }
 
     selected_slot = unlocked_persistent_slot = NULL;
 

@@ -1,4 +1,4 @@
-#include "include/psa_builtin_key_management.h"
+#include "include/psa_software_key_management.h"
 #include "psa/crypto.h"
 
 static int key_type_is_raw_bytes( psa_key_type_t type )
@@ -22,7 +22,7 @@ static psa_status_t psa_validate_unstructured_key_bit_size(psa_key_type_t type, 
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
+psa_status_t psa_software_import_key(const psa_key_attributes_t *attributes,
                                     const uint8_t *data, size_t data_length,
                                     uint8_t *key_buffer, size_t key_buffer_size,
                                     size_t *key_buffer_length, size_t *bits)

@@ -64,7 +64,6 @@ ATCA_STATUS hal_i2c_post_init(ATCAIface iface)
 
 ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata, int txlength)
 {
-    (void) word_address;
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     int ret;
 
@@ -77,23 +76,21 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t word_address, uint8_t *txdata,
         return ATCA_TX_FAIL;
     }
 
+    (void) word_address;
     return ATCA_SUCCESS;
 }
 
 ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t word_address, uint8_t *rxdata,
                             uint16_t *rxlength)
 {
-    (void) word_address;
     ATCAIfaceCfg *cfg = atgetifacecfg(iface);
     uint8_t retries = cfg->rx_retries;
     int ret = -1;
 
-    /* read rest of output and insert into rxdata array after first byte */
     i2c_acquire(cfg->atcai2c.bus);
     while (retries-- > 0 && ret != 0) {
-        ret = i2c_read_bytes(cfg->atcai2c.bus,
-                             (cfg->atcai2c.address >> 1), (rxdata),
-                             *rxlength, 0);
+        ret = i2c_read_bytes(cfg->atcai2c.bus, (cfg->atcai2c.address >> 1),
+                             rxdata, *rxlength, 0);
     }
     i2c_release(cfg->atcai2c.bus);
 
@@ -101,6 +98,7 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t word_address, uint8_t *rxda
         return ATCA_RX_TIMEOUT;
     }
 
+    (void) word_address;
     return ATCA_SUCCESS;
 }
 
@@ -171,8 +169,6 @@ ATCA_STATUS hal_i2c_sleep(ATCAIface iface)
 
 ATCA_STATUS hal_i2c_control(ATCAIface iface, uint8_t option, void* param, size_t paramlen)
 {
-    (void) param;
-    (void) paramlen;
     switch (option) {
         case ATCA_HAL_CONTROL_WAKE:
             return hal_i2c_wake(iface);
@@ -186,9 +182,10 @@ ATCA_STATUS hal_i2c_control(ATCAIface iface, uint8_t option, void* param, size_t
         case ATCA_HAL_CONTROL_DESELECT:
             return ATCA_SUCCESS;
         default:
+            (void) param;
+            (void) paramlen;
             return ATCA_BAD_PARAM;
     }
-    return ATCA_UNIMPLEMENTED;
 }
 
 ATCA_STATUS hal_i2c_release(void *hal_data)
