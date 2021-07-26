@@ -90,7 +90,6 @@ config CRYPTOAUTHLIB_HASH_SHA256
 config BUILTIN_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
-    select MODULE_HASHES_PSA
 
 endchoice
 endif # HASHES_SHA256
