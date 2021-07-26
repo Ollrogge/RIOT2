@@ -31,11 +31,11 @@
 #include "atca_hashes.h"
 #endif
 
-#include "crypto_builtin_contexts.h"
+#include "crypto_software_contexts.h"
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-    psa_software_hash_operation_t builtin_ctx;
+    psa_software_hash_operation_t sw_ctx;
 #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
     psa_hash_periph_operation_t periph_ctx;
 #endif

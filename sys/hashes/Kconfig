@@ -25,7 +25,6 @@ config MODULE_HASHES_SHA256
     bool "SHA-256 hashing support"
     select MODULE_HASHES
     select MODULE_HASHES_SHA2XX_COMMON
-    select MODULE_HASHES_PSA
 
 config MODULE_HASHES
     bool "Hash algorithms"
@@ -36,8 +35,6 @@ config MODULE_HASHES_SHA2XX_COMMON
     help
         Base module for sha2xx implementations.
 
-config MODULE_HASHES_PSA
-    bool
-    depends on MODULE_PSA_CRYPTO
+rsource "psa_software/Kconfig"
 
 endmenu # Hashes

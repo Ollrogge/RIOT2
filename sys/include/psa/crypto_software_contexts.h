@@ -10,6 +10,10 @@
 #include "hashes/sha224.h"
 #include "hashes/sha256.h"
 
+#if IS_ACTIVE(CONFIG_PSA_SOFTWARE_TC)
+#include "tinycrypt/sha256.h"
+#endif
+
 typedef struct
 {
     psa_algorithm_t alg;
@@ -18,7 +22,6 @@ typedef struct
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-
 #if IS_ACTIVE(CONFIG_BUILTIN_HASH_MD5)
     md5_ctx_t md5;
 #endif
@@ -30,6 +33,9 @@ typedef union {
 #endif
 #if IS_ACTIVE(CONFIG_BUILTIN_HASH_SHA256)
     sha256_context_t sha256;
+#endif
+#if IS_ACTIVE(CONFIG_PSA_SOFTWARE_TC_HASHES)
+    TCSha256State_t tc_sha256;
 #endif
 } psa_software_hash_operation_t;
 

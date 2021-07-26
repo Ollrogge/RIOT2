@@ -39,7 +39,6 @@ config PERIPH_HASH_SHA1
 config BUILTIN_HASH_SHA1
     bool "Software implemented"
     select MODULE_HASHES_SHA1
-    select MODULE_PSA_SOFTWARE_HASHES
 
 endchoice
 
@@ -90,6 +89,12 @@ config CRYPTOAUTHLIB_HASH_SHA256
 config BUILTIN_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
+    select MODULE_PSA_SOFTWARE_HASHES
+
+config TINYCRYPT_HASHES
+    bool "Use TinyCrypt library as PSA Backend"
+    select PACKAGE_TINYCRYPT
+    select MODULE_PSA_SOFTWARE_TC
 
 endchoice
 endif # HASHES_SHA256
