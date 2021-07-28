@@ -11,6 +11,10 @@ ifneq (,$(filter cryptoauthlib_contrib,$(USEMODULE)))
   INCLUDE_PATHS+=;$(RIOTPKG)/cryptoauthlib/hashes/include;$(RIOTBASE)/build/pkg/cryptoauthlib/lib
 endif
 
+ifneq (,$(filter psa_software_tc_%, $(USEMODULE)))
+  INCLUDE_PATHS += ;$(PKGDIRBASE)/tinycrypt/lib/include
+endif
+
 # $(info $$Usemodule is [${USEMODULE}])
 .PHONY: all..cmake_version_supported
 

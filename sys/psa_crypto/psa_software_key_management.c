@@ -9,10 +9,16 @@ static int key_type_is_raw_bytes( psa_key_type_t type )
 static psa_status_t psa_validate_unstructured_key_bit_size(psa_key_type_t type, size_t bits)
 {
     switch(type) {
-#if IS_ACTIVE(CONFIG_BUILTIN_CIPHER)
+#if IS_ACTIVE(CONFIG_MODULE_PSA_SOFTWARE_CIPHER)
         case PSA_KEY_TYPE_AES:
-            if( bits != 128 && bits != 192 && bits != 256 )
-                return( PSA_ERROR_INVALID_ARGUMENT );
+            if (bits != 128 && bits != 192 && bits != 256)
+                return PSA_ERROR_INVALID_ARGUMENT;
+            break;
+#endif
+#if IS_ACTIVE(CONFIG_TINYCRYPT_CIPHER)
+        case PSA_KEY_TYPE_AES:
+            if (bits != 128)
+                return PSA_ERROR_INVALID_ARGUMENT;
             break;
 #endif
     default:
@@ -36,9 +42,7 @@ psa_status_t psa_software_import_key(const psa_key_attributes_t *attributes,
 
     if (key_type_is_raw_bytes(type)) {
         *bits = PSA_BYTES_TO_BITS(data_length);
-        if (*bits > (SIZE_MAX / 8)) {
-            return PSA_ERROR_NOT_SUPPORTED;
-        }
+
         if (*bits > PSA_MAX_KEY_BITS) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
@@ -54,5 +58,4 @@ psa_status_t psa_software_import_key(const psa_key_attributes_t *attributes,
         return PSA_SUCCESS;
     }
     return status;
-    /* TODO: Else cases for ECC & RSA */
 }

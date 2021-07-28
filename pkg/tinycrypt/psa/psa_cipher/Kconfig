@@ -5,10 +5,7 @@
 # directory for more details.
 #
 
-config PACKAGE_TINYCRYPT
-    bool "TinyCrypt crypto library package"
-    depends on TEST_KCONFIG
-    depends on HAS_ARCH_32BIT
-
-rsource "psa/psa_tc_hashes/Kconfig"
-rsource "psa/psa_tc_cipher/Kconfig"
+config MODULE_PSA_TINYCRYPT_CIPHER
+    bool
+    depends on PACKAGE_TINYCRYPT
+    depends on MODULE_PSA_CRYPTO

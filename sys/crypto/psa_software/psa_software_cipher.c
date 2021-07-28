@@ -1,5 +1,4 @@
 #include "psa/crypto.h"
-#include "include/psa_software_ciphers.h"
 #include "crypto/modes/ecb.h"
 
 #define ALG_IS_SUPPORTED(alg)   \

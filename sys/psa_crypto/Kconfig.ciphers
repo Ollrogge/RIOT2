@@ -17,15 +17,22 @@ choice CIPHER_AES_128_IMPLEMENTATION
 config BUILTIN_CIPHER_AES_128
     bool "Software implemented"
     select MODULE_CRYPTO
-    select BUILTIN_CIPHER
     select MODULE_CRYPTO_AES_128
     select MODULE_CIPHER_MODES
+    select MODULE_PSA_SOFTWARE_CIPHER
+    select PSA_SOFTWARE_IMPLEMENTATION
 
 config CRYPTOAUTHLIB_CIPHER_AES_128
     bool "Microchip Cryptoauthlib"
     select PACKAGE_CRYPTOAUTHLIB
     select MODULE_PSA_SE_DRIVER
     select PSA_CRYPTO_SECURE_ELEMENT
+
+config TINYCRYPT_CIPHER
+    bool "TinyCrypt library as PSA Backend"
+    select PACKAGE_TINYCRYPT
+    select MODULE_PSA_TINYCRYPT_CIPHER
+    select PSA_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -70,11 +77,6 @@ config BUILTIN_CIPHER_AES_256
 endchoice
 
 endif # CIPHER_AES_256
-
-config BUILTIN_CIPHER
-    bool
-    help
-        Indicates that a builtin cipher implementation is used
 
 config PSA_CRYPTO_SECURE_ELEMENT
     bool

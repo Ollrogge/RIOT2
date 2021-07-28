@@ -34,5 +34,6 @@ config MODULE_CRYPTO_AES_UNROLL
 endmenu # Crypto AES options
 
 rsource "modes/Kconfig"
+rsource "psa_software/Kconfig"
 
 endif # Crypto

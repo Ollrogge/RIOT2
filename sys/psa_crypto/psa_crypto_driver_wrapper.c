@@ -56,7 +56,7 @@ psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
     }
     #endif
 
-    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+    #if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
     status = psa_software_hash_setup(operation, alg);
     if (status == PSA_SUCCESS) {
         operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
@@ -91,7 +91,7 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
             return periph_hash_update(&(operation->ctx.periph_ctx), input, input_length);
     #endif
 
-    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+    #if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
             return psa_software_hash_update(operation, input, input_length);
     #endif
@@ -118,7 +118,7 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
             return periph_hash_finish(&(operation->ctx.periph_ctx), hash, hash_size, hash_length);
     #endif
 
-    #if IS_ACTIVE(CONFIG_MODULE_HASHES)
+    #if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
             return psa_software_hash_finish(operation, hash, hash_size, hash_length);
     #endif
@@ -199,8 +199,8 @@ psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *
 
     switch(location) {
         case PSA_KEY_LOCATION_LOCAL_STORAGE:
-#if IS_ACTIVE(CONFIG_BUILTIN_CIPHER)
-        status = psa_software_cipher_encrypt_setup(&operation->ctx.builtin_ctx, attributes, key_buffer, key_buffer_size, alg);
+#if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
+        status = psa_software_cipher_encrypt_setup(&operation->ctx.sw_ctx, attributes, key_buffer, key_buffer_size, alg);
         if (status == PSA_SUCCESS) {
             operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
         }
@@ -230,8 +230,8 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(   psa_cipher_operation_t *
 
     switch(location) {
         case PSA_KEY_LOCATION_LOCAL_STORAGE:
-#if IS_ACTIVE(CONFIG_BUILTIN_CIPHER)
-        status = psa_software_cipher_decrypt_setup(&operation->ctx.builtin_ctx, attributes, key_buffer, key_buffer_size, alg);
+#if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
+        status = psa_software_cipher_decrypt_setup(&operation->ctx.sw_ctx, attributes, key_buffer, key_buffer_size, alg);
         if (status == PSA_SUCCESS) {
             operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
         }
@@ -276,9 +276,9 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_cipher_operation_t *operatio
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
     switch(operation->driver_id) {
-#if IS_ACTIVE(CONFIG_BUILTIN_CIPHER)
+#if IS_ACTIVE(CONFIG_PSA_SOFTWARE_IMPLEMENTATION)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_software_cipher_encrypt(&operation->ctx.builtin_ctx, input, input_length, output, output_size, output_length);
+            return psa_software_cipher_encrypt(&operation->ctx.sw_ctx, input, input_length, output, output_size, output_length);
 #endif /* CONFIG_BUILTIN_CIPHER */
         default:
         (void) operation;

@@ -1,1 +1,13 @@
 INCLUDES += -I$(PKGDIRBASE)/tinycrypt/lib/include
+
+ifneq (,$(filter psa_crypto, $(USEMODULE)))
+  INCLUDES += -I$(RIOTBASE)/sys/psa_crypto/include
+endif
+
+ifneq (,$(filter psa_tinycrypt_hashes, $(USEMODULE)))
+  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_hashes
+endif
+
+ifneq (,$(filter psa_tinycrypt_cipher, $(USEMODULE)))
+  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_cipher
+endif

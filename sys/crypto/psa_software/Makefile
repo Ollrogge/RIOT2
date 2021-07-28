@@ -1,3 +1,3 @@
-MODULE = psa_software_tc
+MODULE := psa_software_cipher
 
 include $(RIOTBASE)/Makefile.base

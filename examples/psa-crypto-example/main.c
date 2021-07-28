@@ -44,6 +44,45 @@ static uint8_t __attribute__((aligned))ECB_CIPHER[] = {
 };
 static uint8_t ECB_CIPHER_LEN = 32;
 
+static void test_cipher_aes(void)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_key_attributes_t attr = psa_key_attributes_init();
+    psa_key_lifetime_t lifetime = 0x00000000;
+    psa_key_id_t key_id = 0;
+    psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
+
+    uint8_t cipher_out[ECB_CIPHER_LEN];
+    size_t output_len = 0;
+
+    psa_set_key_lifetime(&attr, lifetime);
+    psa_set_key_algorithm(&attr, PSA_ALG_ECB_NO_PADDING);
+    psa_set_key_usage_flags(&attr, usage);
+    psa_set_key_bits(&attr, 128);
+    psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
+
+    status = psa_import_key(&attr, KEY, KEY_LEN, &key_id);
+
+    if (status != PSA_SUCCESS) {
+        printf("Import failed: %ld\n", status);
+        return;
+    }
+
+    status = psa_cipher_encrypt(key_id, PSA_ALG_ECB_NO_PADDING, ECB_PLAIN, ECB_PLAIN_LEN, cipher_out, ECB_CIPHER_LEN, &output_len);
+    if (status != PSA_SUCCESS) {
+        printf("Encrypt failed: %ld\n", status);
+        return;
+    }
+
+    if (memcmp(cipher_out, ECB_CIPHER, ECB_CIPHER_LEN)) {
+        puts("Encryption failed");
+    }
+    else {
+        puts("Encryption successful");
+    }
+}
+
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
 static void test_prim_se(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
@@ -81,6 +120,7 @@ static void test_prim_se(void)
         puts("Primary SE Encryption successful");
     }
 }
+#endif
 
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 static void test_sec_se(void)
@@ -127,7 +167,10 @@ int main(void)
 {
     psa_crypto_init();
 
+    test_cipher_aes();
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     test_prim_se();
+#endif
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     test_sec_se();
 #endif

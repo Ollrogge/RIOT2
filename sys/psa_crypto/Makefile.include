@@ -1,2 +1,6 @@
 # include the PSA headers
 INCLUDES += -I$(RIOTBASE)/sys/psa_crypto/include
+
+ifneq (,$(filter psa_software_tc, $(USEMODULE)))
+  INCLUDES += -I$(PKG_SOURCE_DIR)/tinycrypt/lib/include
+endif
