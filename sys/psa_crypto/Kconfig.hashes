@@ -17,6 +17,7 @@ choice HASHES_MD5_IMPLEMENTATION
 config RIOT_HASH_MD5
     bool "Software implemented"
     select MODULE_HASHES_MD5
+    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -39,6 +40,7 @@ config PERIPH_HASH_SHA1
 config RIOT_HASH_SHA1
     bool "Software implemented"
     select MODULE_HASHES_SHA1
+    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -61,6 +63,7 @@ config PERIPH_HASH_SHA224
 config RIOT_HASH_SHA224
     bool "Software implemented"
     select MODULE_HASHES_SHA224
+    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -90,18 +93,18 @@ config RIOT_HASH_SHA256
     bool "Software implemented"
     select MODULE_HASHES_SHA256
     select MODULE_PSA_SOFTWARE_HASHES
-    select PSA_SOFTWARE_IMPLEMENTATION
+    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 config TINYCRYPT_HASHES
     bool "TinyCrypt library as PSA Backend"
     select PACKAGE_TINYCRYPT
     select MODULE_PSA_TINYCRYPT_HASHES
-    select PSA_SOFTWARE_IMPLEMENTATION
+    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 endif # HASHES_SHA256
 
-config PSA_SOFTWARE_IMPLEMENTATION
+config PSA_HASHES_SOFTWARE_IMPLEMENTATION
     bool
     help
         Indicates use of a PSA Software implementation

@@ -68,11 +68,23 @@
  *
  * Comment macros to disable the types
  */
+
+// #define ARCH_TEST_AES
+#ifdef CONFIG_PSA_CIPHERS_AES
 #define ARCH_TEST_AES
+#endif
+#ifdef CONFIG_CIPHER_AES_128
 #define ARCH_TEST_AES_128
+#endif
+#ifdef CONFIG_CIPHER_AES_192
 #define ARCH_TEST_AES_192
+#endif
+#ifdef CONFIG_CIPHER_AES_256
 #define ARCH_TEST_AES_256
+#endif
+#ifdef CONFIG_CIPHER_AES_512
 #define ARCH_TEST_AES_512
+#endif
 
 /**
  * \def  ARCH_TEST_DES

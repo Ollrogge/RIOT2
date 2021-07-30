@@ -15,7 +15,7 @@ menuconfig PSA_HASHES
     bool "Hashes Implementations"
 rsource "Kconfig.hashes"
 
-menuconfig PSA_CIPHERS
+menuconfig PSA_CIPHERS_AES
     bool "Ciphers Implementations"
 rsource "Kconfig.ciphers"
 

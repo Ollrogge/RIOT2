@@ -1,5 +1,6 @@
 #include "psa/crypto.h"
 #include "crypto/modes/ecb.h"
+#include "crypto/modes/ctr.h"
 
 #define ALG_IS_SUPPORTED(alg)   \
     (   (alg == PSA_ALG_ECB_NO_PADDING) || \
@@ -72,5 +73,16 @@ psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * opera
         default:
             return PSA_ERROR_NOT_SUPPORTED;
     }
+}
 
+psa_status_t psa_cipher_set_iv(psa_software_cipher_operation_t *ctx,
+                               const uint8_t * iv,
+                               size_t iv_length)
+{
+    if (iv_length > 16) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    memcpy(ctx->iv, iv, iv_length);
+    return PSA_SUCCESS;
 }

@@ -415,10 +415,19 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_cipher_operation_t operation = psa_cipher_operation_init();
     psa_key_attributes_t attr = psa_key_attributes_init();
+    size_t iv_length = 16;
+    uint8_t iv[iv_length];
+    memset(iv, 0, iv_length);
+
     psa_get_key_attributes(key, &attr);
     status = psa_cipher_encrypt_setup(&operation, key, alg);
     if (status != PSA_SUCCESS) {
         return status;
+    }
+
+
+    if (operation.iv_required) {
+        status = psa_cipher_set_iv(&operation, iv, iv_length);
     }
 
     return psa_driver_wrapper_cipher_encrypt(&operation, &attr, input, input_length, output, output_size, output_length);
