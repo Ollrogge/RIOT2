@@ -1,6 +1,8 @@
+# PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/psa-arch-tests
 PKG_NAME=psa_arch_tests
 PKG_URL=https://github.com/ARM-software/psa-arch-tests
-PKG_VERSION=d4b75cc0a8e3df96c2240d7f28d2aac4b0def0f8
+# PKG_VERSION=d4b75cc0a8e3df96c2240d7f28d2aac4b0def0f8
+PKG_VERSION=bfc75bdbb7181e9482864803300ae56cc9dbb1b5
 PKG_LICENSE=Apache-2.0
 
 include $(RIOTBASE)/pkg/pkg.mk
@@ -11,7 +13,7 @@ ifneq (,$(filter cryptoauthlib_contrib,$(USEMODULE)))
   INCLUDE_PATHS+=;$(RIOTPKG)/cryptoauthlib/hashes/include;$(RIOTBASE)/build/pkg/cryptoauthlib/lib
 endif
 
-ifneq (,$(filter psa_software_tc_%, $(USEMODULE)))
+ifneq (,$(filter psa_tinycrypt_%, $(USEMODULE)))
   INCLUDE_PATHS += ;$(PKGDIRBASE)/tinycrypt/lib/include
 endif
 
