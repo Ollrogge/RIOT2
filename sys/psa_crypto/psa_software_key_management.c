@@ -1,4 +1,5 @@
 #include "include/psa_software_key_management.h"
+#include "include/psa_crypto_slot_management.h"
 #include "psa/crypto.h"
 
 static int key_type_is_raw_bytes( psa_key_type_t type )

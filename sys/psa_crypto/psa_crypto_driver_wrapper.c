@@ -257,7 +257,7 @@ psa_status_t psa_driver_wrapper_cipher_set_iv(  psa_cipher_operation_t *operatio
     switch(operation->driver_id) {
 #if IS_ACTIVE(CONFIG_PSA_CIPHER_SOFTWARE_IMPLEMENTATION)
         case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_software_cipher_set_iv(operation->ctx.sw_ctx, iv, iv_length);
+            return psa_software_cipher_set_iv(operation, iv, iv_length);
 #endif
         default:
             (void) operation;

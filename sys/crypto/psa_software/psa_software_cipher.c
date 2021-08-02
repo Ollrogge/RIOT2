@@ -1,12 +1,10 @@
 #include "psa/crypto.h"
 #include "crypto/modes/ecb.h"
-#include "crypto/modes/ctr.h"
+#include "crypto/modes/cbc.h"
 
 #define ALG_IS_SUPPORTED(alg)   \
     (   (alg == PSA_ALG_ECB_NO_PADDING) || \
-        (alg == PSA_ALG_CBC_NO_PADDING) || \
-        (alg == PSA_ALG_CTR)            || \
-        (alg == PSA_ALG_CCM)            )
+        (alg == PSA_ALG_CBC_NO_PADDING))
 
 static psa_status_t cipher_to_psa_error(int error)
 {
@@ -64,18 +62,27 @@ psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * opera
 
     switch(operation->alg){
         case PSA_ALG_ECB_NO_PADDING:
+
             ret = cipher_encrypt_ecb(&operation->cipher_ctx, input, input_length, output);
             if (ret <= 0) {
                 return cipher_to_psa_error(ret);
             }
             *output_length = ret;
             return PSA_SUCCESS;
+        case PSA_ALG_CBC_NO_PADDING:
+            ret = cipher_encrypt_cbc(&operation->cipher_ctx, operation->iv, input, input_length, output);
+            if (ret <= 0) {
+                return cipher_to_psa_error(ret);
+            }
+            // *output_length = ret;
+            *output_length = 0;
+            return PSA_SUCCESS;
         default:
             return PSA_ERROR_NOT_SUPPORTED;
     }
 }
 
-psa_status_t psa_cipher_set_iv(psa_software_cipher_operation_t *ctx,
+psa_status_t psa_software_cipher_set_iv(psa_cipher_operation_t *operation,
                                const uint8_t * iv,
                                size_t iv_length)
 {
@@ -83,6 +90,8 @@ psa_status_t psa_cipher_set_iv(psa_software_cipher_operation_t *ctx,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    memcpy(ctx->iv, iv, iv_length);
+    memcpy(operation->ctx.sw_ctx.iv, iv, iv_length);
+    operation->iv_set = 1;
+
     return PSA_SUCCESS;
 }

@@ -419,12 +419,15 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     uint8_t iv[iv_length];
     memset(iv, 0, iv_length);
 
-    psa_get_key_attributes(key, &attr);
+    status = psa_get_key_attributes(key, &attr);
+    if (status != PSA_SUCCESS) {
+        return PSA_ERROR_INVALID_HANDLE;
+    }
+
     status = psa_cipher_encrypt_setup(&operation, key, alg);
     if (status != PSA_SUCCESS) {
         return status;
     }
-
 
     if (operation.iv_required) {
         status = psa_cipher_set_iv(&operation, iv, iv_length);
@@ -468,10 +471,11 @@ psa_status_t psa_cipher_set_iv(psa_cipher_operation_t * operation,
                                const uint8_t * iv,
                                size_t iv_length)
 {
-    (void) operation;
-    (void) iv;
-    (void) iv_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    if (operation->iv_set) {
+        return PSA_ERROR_CORRUPTION_DETECTED;
+    }
+
+    return psa_driver_wrapper_cipher_set_iv(operation, iv, iv_length);
 }
 
 psa_status_t psa_cipher_update(psa_cipher_operation_t * operation,
@@ -502,8 +506,18 @@ psa_status_t psa_copy_key(psa_key_id_t source_key,
 
 psa_status_t psa_destroy_key(psa_key_id_t key)
 {
-    (void) key;
-    return PSA_ERROR_NOT_SUPPORTED;
+    psa_status_t status;
+    psa_key_slot_t *slot;
+
+    status = psa_get_and_lock_key_slot(key, &slot);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+    if (slot->lock_count > 1) {
+        return PSA_ERROR_GENERIC_ERROR;
+    }
+
+    return psa_wipe_key_slot(slot);
 }
 
 psa_status_t psa_export_key(psa_key_id_t key,

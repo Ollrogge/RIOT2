@@ -78,6 +78,11 @@ endchoice
 
 endif # CIPHER_AES_256
 
+config PSA_CIPHER_SOFTWARE_IMPLEMENTATION
+    bool
+    help
+        Indicates use of a software implemented cipher operation
+
 config PSA_CRYPTO_SECURE_ELEMENT
     bool
     help
