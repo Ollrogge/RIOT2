@@ -237,15 +237,7 @@
  */
 #define PSA_CIPHER_IV_LENGTH(key_type, alg) \
     (PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) > 1 && \
-        ((alg) == PSA_ALG_CTR || \
-         (alg) == PSA_ALG_CFB || \
-         (alg) == PSA_ALG_OFB || \
-         (alg) == PSA_ALG_XTS || \
-         (alg) == PSA_ALG_CBC_NO_PADDING || \
-         (alg) == PSA_ALG_CBC_PKCS7) ? PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) : \
-     (key_type) == PSA_KEY_TYPE_CHACHA20 && \
-         (alg) == PSA_ALG_STREAM_CIPHER ? 12 : \
-     0)
+        ((alg) == PSA_ALG_CBC_NO_PADDING) ? 16 : 0)
 
 #define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_MAX_SIZE(input_length) \

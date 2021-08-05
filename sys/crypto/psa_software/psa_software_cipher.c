@@ -50,7 +50,7 @@ psa_status_t psa_software_cipher_decrypt_setup(  psa_software_cipher_operation_t
     return psa_software_cipher_encrypt_setup(operation, attributes, key_buffer, key_buffer_size, alg);
 }
 
-psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_encrypt(psa_cipher_operation_t * operation,
                                         const uint8_t * input,
                                         size_t input_length,
                                         uint8_t * output,
@@ -59,39 +59,28 @@ psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * opera
 {
     (void) output_size;
     int ret = 0;
+    psa_software_cipher_operation_t *sw_op = &operation->ctx.sw_ctx;
 
-    switch(operation->alg){
+    switch(sw_op->alg){
         case PSA_ALG_ECB_NO_PADDING:
 
-            ret = cipher_encrypt_ecb(&operation->cipher_ctx, input, input_length, output);
+            ret = cipher_encrypt_ecb(&sw_op->cipher_ctx, input, input_length, output);
             if (ret <= 0) {
                 return cipher_to_psa_error(ret);
             }
             *output_length = ret;
             return PSA_SUCCESS;
         case PSA_ALG_CBC_NO_PADDING:
-            ret = cipher_encrypt_cbc(&operation->cipher_ctx, operation->iv, input, input_length, output);
+            ret = cipher_encrypt_cbc(&sw_op->cipher_ctx, output, input, input_length, output + operation->default_iv_length);
             if (ret <= 0) {
                 return cipher_to_psa_error(ret);
             }
-            // *output_length = ret;
-            *output_length = 0;
-            return PSA_SUCCESS;
+            break;
         default:
             return PSA_ERROR_NOT_SUPPORTED;
     }
-}
 
-psa_status_t psa_software_cipher_set_iv(psa_cipher_operation_t *operation,
-                               const uint8_t * iv,
-                               size_t iv_length)
-{
-    if (iv_length > 16) {
-        return PSA_ERROR_INVALID_ARGUMENT;
-    }
-
-    memcpy(operation->ctx.sw_ctx.iv, iv, iv_length);
-    operation->iv_set = 1;
+    *output_length = ret;
 
     return PSA_SUCCESS;
 }

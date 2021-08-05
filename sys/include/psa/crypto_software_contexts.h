@@ -29,7 +29,6 @@ typedef struct
 {
     psa_algorithm_t alg;
 #if IS_ACTIVE(CONFIG_MODULE_PSA_SOFTWARE_CIPHER)
-    uint8_t iv[16];
     cipher_t cipher_ctx;
 #endif
 #if IS_ACTIVE(CONFIG_TINYCRYPT_CIPHER)

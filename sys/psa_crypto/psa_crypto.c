@@ -415,9 +415,7 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_cipher_operation_t operation = psa_cipher_operation_init();
     psa_key_attributes_t attr = psa_key_attributes_init();
-    size_t iv_length = 16;
-    uint8_t iv[iv_length];
-    memset(iv, 0, iv_length);
+    size_t iv_length;
 
     status = psa_get_key_attributes(key, &attr);
     if (status != PSA_SUCCESS) {
@@ -430,7 +428,11 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     }
 
     if (operation.iv_required) {
-        status = psa_cipher_set_iv(&operation, iv, iv_length);
+        /* Generates an IV and stores it in the first bytes of the output vector */
+        status = psa_cipher_generate_iv(&operation, output, operation.default_iv_length, &iv_length);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
     }
 
     return psa_driver_wrapper_cipher_encrypt(&operation, &attr, input, input_length, output, output_size, output_length);
@@ -460,22 +462,42 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
                                     size_t iv_size,
                                     size_t * iv_length)
 {
-    (void) operation;
-    (void) iv;
-    (void) iv_size;
-    (void) iv_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    *iv_length = 0;
+
+    uint8_t CBC_IV[16] = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+    };
+
+    if (operation->driver_id == 0) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    if (!operation->iv_required || operation->iv_set) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    if (iv_size < operation->default_iv_length) {
+        psa_cipher_abort(operation);
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+    /*  Currently just returns the CBC_IV array,
+        should call a random number generator */
+    memcpy(iv, CBC_IV, iv_size);
+
+    *iv_length = operation->default_iv_length;
+
+    return PSA_SUCCESS;
 }
 
 psa_status_t psa_cipher_set_iv(psa_cipher_operation_t * operation,
                                const uint8_t * iv,
                                size_t iv_length)
 {
-    if (operation->iv_set) {
-        return PSA_ERROR_CORRUPTION_DETECTED;
-    }
-
-    return psa_driver_wrapper_cipher_set_iv(operation, iv, iv_length);
+    (void) operation;
+    (void) iv;
+    (void) iv_length;
+    return PSA_ERROR_NOT_SUPPORTED;
 }
 
 psa_status_t psa_cipher_update(psa_cipher_operation_t * operation,

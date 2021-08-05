@@ -15,11 +15,7 @@ psa_status_t psa_software_cipher_decrypt_setup(  psa_software_cipher_operation_t
                                                 size_t key_buffer_size,
                                                 psa_algorithm_t alg);
 
-psa_status_t psa_software_cipher_set_iv(psa_cipher_operation_t *ctx,
-                               const uint8_t * iv,
-                               size_t iv_length);
-
-psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_encrypt(psa_cipher_operation_t * operation,
                                         const uint8_t * input,
                                         size_t input_length,
                                         uint8_t * output,

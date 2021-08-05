@@ -44,7 +44,66 @@ static uint8_t __attribute__((aligned))ECB_CIPHER[] = {
 };
 static uint8_t ECB_CIPHER_LEN = 32;
 
-static void test_cipher_aes(void)
+static uint8_t __attribute__((aligned)) CBC_PLAIN[] = {
+    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+    0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03, 0xac, 0x9c,
+    0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51
+};
+static uint8_t CBC_PLAIN_LEN = 32;
+
+static uint8_t __attribute__((aligned)) CBC_CIPHER[] = {
+    0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46,
+    0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d,
+    0x50, 0x86, 0xcb, 0x9b, 0x50, 0x72, 0x19, 0xee,
+    0x95, 0xdb, 0x11, 0x3a, 0x91, 0x76, 0x78, 0xb2
+};
+static uint8_t CBC_CIPHER_LEN = 32;
+
+static void test_cipher_aes_cbc(void)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_key_attributes_t attr = psa_key_attributes_init();
+    psa_key_lifetime_t lifetime = 0x00000000;
+    psa_key_id_t key_id = 0;
+    psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
+    size_t iv_size = PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CBC_NO_PADDING);
+    size_t combined_output_size = CBC_CIPHER_LEN + iv_size;
+
+    uint8_t cipher_out[combined_output_size];
+    size_t output_len = 0;
+
+    psa_set_key_lifetime(&attr, lifetime);
+    psa_set_key_algorithm(&attr, PSA_ALG_CBC_NO_PADDING);
+    psa_set_key_usage_flags(&attr, usage);
+    psa_set_key_bits(&attr, 128);
+    psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
+
+    status = psa_import_key(&attr, KEY, KEY_LEN, &key_id);
+
+    if (status != PSA_SUCCESS) {
+        printf("CBC Import failed: %ld\n", status);
+        return;
+    }
+
+    status = psa_cipher_encrypt(key_id, PSA_ALG_CBC_NO_PADDING, CBC_PLAIN, CBC_PLAIN_LEN, cipher_out, combined_output_size, &output_len);
+    if (status != PSA_SUCCESS) {
+        printf("CBC Encrypt failed: %ld\n", status);
+        return;
+    }
+
+    if (memcmp(cipher_out + iv_size, CBC_CIPHER, CBC_CIPHER_LEN)) {
+        puts("CBC Encryption failed");
+        for (size_t i = 0; i < combined_output_size; i++) {
+            printf("0x%02x\n", cipher_out[i]);
+        }
+    }
+    else {
+        puts("CBC Encryption successful");
+    }
+}
+
+static void test_cipher_aes_ecb(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_attributes_t attr = psa_key_attributes_init();
@@ -64,21 +123,21 @@ static void test_cipher_aes(void)
     status = psa_import_key(&attr, KEY, KEY_LEN, &key_id);
 
     if (status != PSA_SUCCESS) {
-        printf("Import failed: %ld\n", status);
+        printf("ECB Import failed: %ld\n", status);
         return;
     }
 
     status = psa_cipher_encrypt(key_id, PSA_ALG_ECB_NO_PADDING, ECB_PLAIN, ECB_PLAIN_LEN, cipher_out, ECB_CIPHER_LEN, &output_len);
     if (status != PSA_SUCCESS) {
-        printf("Encrypt failed: %ld\n", status);
+        printf("ECB Encrypt failed: %ld\n", status);
         return;
     }
 
     if (memcmp(cipher_out, ECB_CIPHER, ECB_CIPHER_LEN)) {
-        puts("Encryption failed");
+        puts("ECB Encryption failed");
     }
     else {
-        puts("Encryption successful");
+        puts("ECB Encryption successful");
     }
 }
 
@@ -167,7 +226,8 @@ int main(void)
 {
     psa_crypto_init();
 
-    test_cipher_aes();
+    test_cipher_aes_ecb();
+    test_cipher_aes_cbc();
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     test_prim_se();
 #endif
