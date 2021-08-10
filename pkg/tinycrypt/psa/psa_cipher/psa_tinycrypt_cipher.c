@@ -20,13 +20,15 @@
 #include <stdio.h>
 #include "psa/crypto.h"
 #include "tinycrypt/aes.h"
+#include "tinycrypt/cbc_mode.h"
 #include "tinycrypt/constants.h"
 
 #define AES_128_BLOCK_SIZE      (16)
 #define AES_128_KEY_SIZE        (16)
 
 #define ALG_IS_SUPPORTED(alg)   \
-    (   (alg == PSA_ALG_ECB_NO_PADDING))
+    (   (alg == PSA_ALG_ECB_NO_PADDING) || \
+        (alg == PSA_ALG_CBC_NO_PADDING))
 
 psa_status_t psa_software_cipher_encrypt_setup(  psa_software_cipher_operation_t * operation,
                                                 const psa_key_attributes_t *attributes,
@@ -89,20 +91,29 @@ static psa_status_t tc_aes_ecb_encrypt(TCAesKeySched_t ctx, const uint8_t *input
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_software_cipher_encrypt(psa_software_cipher_operation_t * operation,
+psa_status_t psa_software_cipher_encrypt(psa_cipher_operation_t * operation,
                                         const uint8_t * input,
                                         size_t input_length,
                                         uint8_t * output,
                                         size_t output_size,
                                         size_t * output_length)
 {
+    int ret;
+    psa_software_cipher_operation_t *sw_op = &operation->ctx.sw_ctx;
+
     if (input_length % AES_128_BLOCK_SIZE != 0) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    switch(operation->alg) {
+    switch(sw_op->alg) {
         case PSA_ALG_ECB_NO_PADDING:
-            return tc_aes_ecb_encrypt(&operation->tc_aes, input, input_length, output);
+            return tc_aes_ecb_encrypt(&sw_op->tc_aes, input, input_length, output);
+        case PSA_ALG_CBC_NO_PADDING:
+            ret = tc_cbc_mode_encrypt(output, output_size, input, input_length, output, &sw_op->tc_aes);
+            if (ret != TC_CRYPTO_SUCCESS) {
+                return PSA_ERROR_INVALID_ARGUMENT;
+            }
+            break;
         default:
             return PSA_ERROR_NOT_SUPPORTED;
     }
