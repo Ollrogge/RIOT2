@@ -73,6 +73,10 @@ extern "C" {
  */
 typedef sha2xx_context_t sha224_context_t;
 
+#if IS_ACTIVE(CONFIG_RIOT_HASHES_SHA224)
+typedef sha224_context_t psa_hashes_sha224_ctx_t;
+#endif
+
 /**
  * @brief SHA-224 initialization.  Begins a SHA-224 operation.
  *

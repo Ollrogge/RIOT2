@@ -35,6 +35,6 @@ config MODULE_HASHES_SHA2XX_COMMON
     help
         Base module for sha2xx implementations.
 
-rsource "psa_software/Kconfig"
+rsource "psa_riot_hashes/Kconfig"
 
 endmenu # Hashes

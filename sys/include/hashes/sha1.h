@@ -27,6 +27,7 @@
 #define HASHES_SHA1_H
 
 #include <stdint.h>
+#include "kernel_defines.h"
 
 #ifdef __cplusplus
 extern "C" {

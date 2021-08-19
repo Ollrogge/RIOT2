@@ -50,6 +50,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
+#include "kernel_defines.h"
 #include "hashes/sha2xx_common.h"
 
 #ifdef __cplusplus
