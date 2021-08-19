@@ -22,17 +22,11 @@
 #include "tinycrypt/sha256.h"
 #include "tinycrypt/constants.h"
 
-psa_status_t psa_software_hash_setup(psa_hash_operation_t * operation,
-                                           psa_algorithm_t alg)
+psa_status_t psa_hashes_sha256_setup(psa_hashes_sha256_ctx_t * ctx)
 {
     int status;
 
-    /* Tinycrypt only supports SHA256 operations */
-    if (alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
-
-    status = tc_sha256_init(&operation->ctx.sw_ctx.tc_sha256);
+    status = tc_sha256_init((TCSha256State_t *) ctx);
     if (status != TC_CRYPTO_SUCCESS) {
         /* Init fails, when a Nullpointer is passed, which translates to
         an invalid argument error */
@@ -42,16 +36,13 @@ psa_status_t psa_software_hash_setup(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_software_hash_update(psa_hash_operation_t * operation,
+psa_status_t psa_hashes_sha256_update(psa_hashes_sha256_ctx_t * ctx,
                              const uint8_t * input,
                              size_t input_length)
 {
     int status;
-    if (operation->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
 
-    status = tc_sha256_update(&operation->ctx.sw_ctx.tc_sha256, input, input_length);
+    status = tc_sha256_update((TCSha256State_t *) ctx, input, input_length);
 
     if (status != TC_CRYPTO_SUCCESS) {
         /* Update fails, when a Nullpointer is passed, which translates to
@@ -62,17 +53,14 @@ psa_status_t psa_software_hash_update(psa_hash_operation_t * operation,
     return PSA_SUCCESS;
 }
 
-psa_status_t psa_software_hash_finish(psa_hash_operation_t * operation,
+psa_status_t psa_hashes_sha256_finish(psa_hashes_sha256_ctx_t * ctx,
                              uint8_t * hash,
                              size_t hash_size,
                              size_t * hash_length)
 {
     int status;
-    if (operation->alg != PSA_ALG_SHA_256) {
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
 
-    status = tc_sha256_final(hash, &operation->ctx.sw_ctx.tc_sha256);
+    status = tc_sha256_final(hash, (TCSha256State_t *) ctx);
 
     if (status != TC_CRYPTO_SUCCESS) {
         /* Final fails, when a Nullpointer is passed, which translates to

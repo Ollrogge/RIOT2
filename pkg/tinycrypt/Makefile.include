@@ -5,7 +5,7 @@ ifneq (,$(filter psa_crypto, $(USEMODULE)))
 endif
 
 ifneq (,$(filter psa_tinycrypt_hashes, $(USEMODULE)))
-  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_hashes
+  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_tinycrypt_hashes
 endif
 
 ifneq (,$(filter psa_tinycrypt_cipher, $(USEMODULE)))

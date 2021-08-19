@@ -132,6 +132,7 @@ PSEUDOMODULES += prng_%
 PSEUDOMODULES += fortuna_reseed
 PSEUDOMODULES += random_cmd
 PSEUDOMODULES += psa_arch_tests
+PSEUDOMODULES += psa_riot_hashes_%
 PSEUDOMODULES += qmc5883l_int
 PSEUDOMODULES += riotboot_%
 PSEUDOMODULES += rtt_cmd

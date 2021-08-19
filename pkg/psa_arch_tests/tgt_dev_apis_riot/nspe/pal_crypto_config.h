@@ -70,22 +70,22 @@
  */
 
 // #define ARCH_TEST_AES
-#ifdef CONFIG_PSA_CIPHERS_AES
+// #ifdef CONFIG_PSA_CIPHERS_AES
 #define ARCH_TEST_AES
-#endif
-#ifdef CONFIG_CIPHER_AES_128
+// #endif
+// #ifdef CONFIG_CIPHER_AES_128
 #define ARCH_TEST_AES
 #define ARCH_TEST_AES_128
-#endif
-#ifdef CONFIG_CIPHER_AES_192
+// #endif
+// #ifdef CONFIG_CIPHER_AES_192
 #define ARCH_TEST_AES_192
-#endif
-#ifdef CONFIG_CIPHER_AES_256
+// #endif
+// #ifdef CONFIG_CIPHER_AES_256
 #define ARCH_TEST_AES_256
-#endif
-#ifdef CONFIG_CIPHER_AES_512
+// #endif
+// #ifdef CONFIG_CIPHER_AES_512
 #define ARCH_TEST_AES_512
-#endif
+// #endif
 
 /**
  * \def  ARCH_TEST_DES
@@ -95,10 +95,10 @@
  *
  * Comment macros to disable the types
  */
-//#define ARCH_TEST_DES
-//#define ARCH_TEST_DES_1KEY
-//#define ARCH_TEST_DES_2KEY
-//#define ARCH_TEST_DES_3KEY
+#define ARCH_TEST_DES
+#define ARCH_TEST_DES_1KEY
+#define ARCH_TEST_DES_2KEY
+#define ARCH_TEST_DES_3KEY
 
 /**
  * \def  ARCH_TEST_RAW
@@ -121,25 +121,25 @@
  *
  * Enable the ARC4 key type.
  */
-//#define ARCH_TEST_ARC4
+#define ARCH_TEST_ARC4
 
-// /**
-//  * \def ARCH_TEST_CIPHER_MODE_CTR
-//  *
-//  * Enable Counter Block Cipher mode (CTR) for symmetric ciphers.
-//  *
-//  * Requires: ARCH_TEST_CIPHER
-//  */
-// #define ARCH_TEST_CIPHER_MODE_CTR
+/**
+ * \def ARCH_TEST_CIPHER_MODE_CTR
+ *
+ * Enable Counter Block Cipher mode (CTR) for symmetric ciphers.
+ *
+ * Requires: ARCH_TEST_CIPHER
+ */
+#define ARCH_TEST_CIPHER_MODE_CTR
 
-// /**
-//  * \def ARCH_TEST_CIPHER_MODE_CFB
-//  *
-//  * Enable Cipher Feedback mode (CFB) for symmetric ciphers.
-//  *
-//  * Requires: ARCH_TEST_CIPHER
-//  */
-// #define ARCH_TEST_CIPHER_MODE_CFB
+/**
+ * \def ARCH_TEST_CIPHER_MODE_CFB
+ *
+ * Enable Cipher Feedback mode (CFB) for symmetric ciphers.
+ *
+ * Requires: ARCH_TEST_CIPHER
+ */
+#define ARCH_TEST_CIPHER_MODE_CFB
 
 /**
  * \def ARCH_TEST_CIPHER_MODE_CBC
@@ -151,11 +151,11 @@
 #define ARCH_TEST_CIPHER_MODE_CBC
 
 /**
-//  * \def ARCH_TEST_CTR_AES
-//  *
-//  * Requires: ARCH_TEST_CIPHER, ARCH_TEST_AES, ARCH_TEST_CIPHER_MODE_CTR
-//  */
-// #define ARCH_TEST_CTR_AES
+ * \def ARCH_TEST_CTR_AES
+ *
+ * Requires: ARCH_TEST_CIPHER, ARCH_TEST_AES, ARCH_TEST_CIPHER_MODE_CTR
+ */
+#define ARCH_TEST_CTR_AES
 
 /**
  * \def ARCH_TEST_CBC_AES
@@ -177,11 +177,11 @@
 #define ARCH_TEST_CBC_NO_PADDING
 
 /**
-//  * \def ARCH_TEST_CFB_AES
-//  *
-//  * Requires: ARCH_TEST_CIPHER, ARCH_TEST_AES, ARCH_TEST_CIPHER_MODE_CFB
-//  */
-// #define ARCH_TEST_CFB_AES
+ * \def ARCH_TEST_CFB_AES
+ *
+ * Requires: ARCH_TEST_CIPHER, ARCH_TEST_AES, ARCH_TEST_CIPHER_MODE_CFB
+ */
+#define ARCH_TEST_CFB_AES
 
 /**
  * \def ARCH_TEST_PKCS1V15_*
@@ -207,7 +207,7 @@
  *
  * Comment macros to disable the types
  */
-// #define ARCH_TEST_CBC_PKCS7
+#define ARCH_TEST_CBC_PKCS7
 
 /**
  * \def ARCH_TEST_ASYMMETRIC_ENCRYPTION
@@ -282,37 +282,37 @@
 */
 #define ARCH_TEST_HKDF
 
-// /**
-//  * \def ARCH_TEST_xMAC
-//  *
-//  * Enable the xMAC (Cipher/Hash/G-based Message Authentication Code) mode for block
-//  * ciphers.
-//  * Requires: ARCH_TEST_AES or ARCH_TEST_DES
-//  *
-//  * Comment macros to disable the types
-//  */
-// #define ARCH_TEST_CMAC
-// #define ARCH_TEST_GMAC
-// #define ARCH_TEST_HMAC
+/**
+ * \def ARCH_TEST_xMAC
+ *
+ * Enable the xMAC (Cipher/Hash/G-based Message Authentication Code) mode for block
+ * ciphers.
+ * Requires: ARCH_TEST_AES or ARCH_TEST_DES
+ *
+ * Comment macros to disable the types
+ */
+#define ARCH_TEST_CMAC
+#define ARCH_TEST_GMAC
+#define ARCH_TEST_HMAC
 
-// /**
-//  * \def ARCH_TEST_CCM
-//  *
-//  * Enable the Counter with CBC-MAC (CCM) mode for 128-bit block cipher.
-//  *
-//  * Requires: ARCH_TEST_AES
-//  */
-// #define ARCH_TEST_CCM
+/**
+ * \def ARCH_TEST_CCM
+ *
+ * Enable the Counter with CBC-MAC (CCM) mode for 128-bit block cipher.
+ *
+ * Requires: ARCH_TEST_AES
+ */
+#define ARCH_TEST_CCM
 
-// /**
-//  * \def ARCH_TEST_GCM
-//  *
-//  * Enable the Galois/Counter Mode (GCM) for AES.
-//  *
-//  * Requires: ARCH_TEST_AES
-//  *
-//  */
-// #define ARCH_TEST_GCM
+/**
+ * \def ARCH_TEST_GCM
+ *
+ * Enable the Galois/Counter Mode (GCM) for AES.
+ *
+ * Requires: ARCH_TEST_AES
+ *
+ */
+#define ARCH_TEST_GCM
 
 /**
  * \def ARCH_TEST_TRUNCATED_MAC
