@@ -26,7 +26,6 @@
 
 struct psa_hash_operation_s
 {
-    uint8_t driver_id;
     psa_algorithm_t alg;
     psa_hash_context_t ctx;
 };

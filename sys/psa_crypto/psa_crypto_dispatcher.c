@@ -20,122 +20,115 @@
 
 #include "kernel_defines.h"
 #include "psa/crypto.h"
-#include "include/psa_software_hashes.h"
-#include "include/psa_software_ciphers.h"
+#include "include/psa_hashes.h"
 #include "include/psa_software_key_management.h"
 #include "include/psa_crypto_se_management.h"
 #include "include/psa_crypto_se_driver.h"
 
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-#include "periph_hashes.h"
-#endif
-#if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-#include "atca_hashes.h"
-#endif
-
-#define PSA_CRYPTO_BUILTIN_DRIVER_ID    (1)
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-#define PSA_CRYPTO_PERIPH_DRIVER_ID     (2)
-#endif
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-#define PSA_CRYPTO_SE_DRIVER_ID         (3)
-#endif
-
-psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg)
 {
     psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
 
-    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-    status = periph_hash_setup(&(operation->ctx.periph_ctx), alg);
-    if (status == PSA_SUCCESS) {
-        operation->driver_id = PSA_CRYPTO_PERIPH_DRIVER_ID;
-    }
-    if (status != PSA_ERROR_NOT_SUPPORTED) {
-        return status;
-    }
+    switch(alg) {
+    #if IS_ACTIVE(CONFIG_HASHES_MD5)
+        case PSA_ALG_MD5:
+            status = psa_hashes_md5_setup(&operation->ctx.md5);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
     #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+        case PSA_ALG_SHA_1:
+            status = psa_hashes_sha1_setup(&operation->ctx.sha1);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
+    #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA224)
+        case PSA_ALG_SHA_224:
+            status = psa_hashes_sha224_setup(&operation->ctx.sha224);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
+    #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+        case PSA_ALG_SHA_256:
+            status = psa_hashes_sha256_setup(&operation->ctx.sha256);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
+    #endif
+        default:
+            (void) status;
+            (void) operation;
+            return PSA_ERROR_NOT_SUPPORTED;
+    }
 
-    #if IS_ACTIVE(CONFIG_PSA_HASHES_SOFTWARE_IMPLEMENTATION)
-    status = psa_software_hash_setup(operation, alg);
-    if (status == PSA_SUCCESS) {
-        operation->driver_id = PSA_CRYPTO_BUILTIN_DRIVER_ID;
-    }
-    if (status != PSA_ERROR_NOT_SUPPORTED) {
-        return status;
-    }
-    #endif
-
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-    status = atca_hash_setup(&(operation->ctx.atca_ctx), alg);
-    if (status == PSA_SUCCESS) {
-        operation->driver_id = PSA_CRYPTO_SE_DRIVER_ID;
-    }
-    if (status != PSA_ERROR_NOT_SUPPORTED) {
-        return status;
-    }
-    #endif
-    (void) status;
-    (void) operation;
-    (void) alg;
-    return PSA_ERROR_NOT_SUPPORTED;
+    operation->alg = alg;
+    return PSA_SUCCESS;
 }
 
-psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
-    switch(operation->driver_id) {
-    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-        case PSA_CRYPTO_PERIPH_DRIVER_ID:
-            return periph_hash_update(&(operation->ctx.periph_ctx), input, input_length);
+    switch(operation->alg) {
+    #if IS_ACTIVE(CONFIG_HASHES_MD5)
+        case PSA_ALG_MD5:
+            return psa_hashes_md5_update(&operation->ctx.md5, input, input_length);
     #endif
-
-    #if IS_ACTIVE(CONFIG_PSA_HASHES_SOFTWARE_IMPLEMENTATION)
-        case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_software_hash_update(operation, input, input_length);
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+        case PSA_ALG_SHA_1:
+            return psa_hashes_sha1_update(&operation->ctx.sha1, input, input_length);
     #endif
-
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-        case PSA_CRYPTO_SE_DRIVER_ID:
-            return atca_hash_update(&(operation->ctx.atca_ctx), input, input_length);
+    #if IS_ACTIVE(CONFIG_HASHES_SHA224)
+        case PSA_ALG_SHA_224:
+            return psa_hashes_sha224_update(&operation->ctx.sha224, input, input_length);
+    #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+        case PSA_ALG_SHA_256:
+            return psa_hashes_sha256_update(&operation->ctx.sha256, input, input_length);
     #endif
         default:
-            (void) input;
-            (void) input_length;
-            return PSA_ERROR_BAD_STATE;
+            (void) operation;
+            return PSA_ERROR_NOT_SUPPORTED;
     }
 }
 
-psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_finish(psa_hash_operation_t * operation,
                              uint8_t * hash,
                              size_t hash_size,
                              size_t * hash_length)
 {
-    switch(operation->driver_id) {
-    #if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-        case PSA_CRYPTO_PERIPH_DRIVER_ID:
-            return periph_hash_finish(&(operation->ctx.periph_ctx), hash, hash_size, hash_length);
+    switch(operation->alg) {
+    #if IS_ACTIVE(CONFIG_HASHES_MD5)
+        case PSA_ALG_MD5:
+            return psa_hashes_md5_finish(&operation->ctx.md5, hash, hash_size, hash_length);
     #endif
-
-    #if IS_ACTIVE(CONFIG_PSA_HASHES_SOFTWARE_IMPLEMENTATION)
-        case PSA_CRYPTO_BUILTIN_DRIVER_ID:
-            return psa_software_hash_finish(operation, hash, hash_size, hash_length);
+    #if IS_ACTIVE(CONFIG_HASHES_SHA1)
+        case PSA_ALG_SHA_1:
+            return psa_hashes_sha1_finish(&operation->ctx.sha1, hash, hash_size, hash_length);
     #endif
-
-    #if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-        case PSA_CRYPTO_SE_DRIVER_ID:
-            return atca_hash_finish(&(operation->ctx.atca_ctx), hash, hash_size, hash_length);
+    #if IS_ACTIVE(CONFIG_HASHES_SHA224)
+        case PSA_ALG_SHA_224:
+            return psa_hashes_sha224_finish(&operation->ctx.sha224, hash, hash_size, hash_length);
+    #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA256)
+        case PSA_ALG_SHA_256:
+            return psa_hashes_sha256_finish(&operation->ctx.sha256, hash, hash_size, hash_length);
     #endif
         default:
-            (void) hash;
-            (void) hash_size;
-            (void) hash_length;
-            return PSA_ERROR_BAD_STATE;
+            (void) operation;
+            return PSA_ERROR_NOT_SUPPORTED;
     }
 }
 
-psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
+psa_status_t psa_dispatcher_import_key( const psa_key_attributes_t *attributes,
                                             const uint8_t *data, size_t data_length,
                                             uint8_t *key_buffer, size_t key_buffer_size,
                                             size_t *key_buffer_length, size_t *bits)
@@ -172,7 +165,7 @@ psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attribut
     }
 }
 
-psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_encrypt_setup(   psa_cipher_operation_t *operation,
                                                         const psa_key_attributes_t *attributes,
                                                         const uint8_t *key_buffer,
                                                         size_t key_buffer_size,
@@ -219,7 +212,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *
     }
 }
 
-psa_status_t psa_driver_wrapper_cipher_decrypt_setup(   psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_decrypt_setup(   psa_cipher_operation_t *operation,
                                                         const psa_key_attributes_t *attributes,
                                                         const uint8_t *key_buffer,
                                                         size_t key_buffer_size,
@@ -250,7 +243,7 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(   psa_cipher_operation_t *
     }
 }
 
-psa_status_t psa_driver_wrapper_cipher_encrypt( psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_encrypt( psa_cipher_operation_t *operation,
                                                 const psa_key_attributes_t *attributes,
                                                 const uint8_t * input,
                                                 size_t input_length,

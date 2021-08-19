@@ -18,47 +18,47 @@
  * @}
  */
 
-#ifndef PSA_CRYPTO_DRIVER_WRAPPER_H
-#define PSA_CRYPTO_DRIVER_WRAPPER_H
+#ifndef PSA_CRYPTO_DISPATCHER_H
+#define PSA_CRYPTO_DISPATCHER_H
 
 #include <stdlib.h>
 #include "kernel_defines.h"
 #include "psa/crypto.h"
 
-psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg);
 
-psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_update(psa_hash_operation_t * operation,
                                             const uint8_t * input,
                                             size_t input_length);
 
-psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
+psa_status_t psa_dispatcher_hash_finish(psa_hash_operation_t * operation,
                                             uint8_t * hash,
                                             size_t hash_size,
                                             size_t * hash_length);
 
-psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
+psa_status_t psa_dispatcher_import_key( const psa_key_attributes_t *attributes,
                                             const uint8_t *data, size_t data_length,
                                             uint8_t *key_buffer, size_t key_buffer_size,
                                             size_t *key_buffer_length, size_t *bits);
 
-psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_encrypt_setup(   psa_cipher_operation_t *operation,
                                                         const psa_key_attributes_t *attributes,
                                                         const uint8_t *key_buffer,
                                                         size_t key_buffer_size,
                                                         psa_algorithm_t alg);
 
-psa_status_t psa_driver_wrapper_cipher_decrypt_setup(   psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_decrypt_setup(   psa_cipher_operation_t *operation,
                                                         const psa_key_attributes_t *attributes,
                                                         const uint8_t *key_buffer,
                                                         size_t key_buffer_size,
                                                         psa_algorithm_t alg);
 
-psa_status_t psa_driver_wrapper_cipher_set_iv(  psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_set_iv(  psa_cipher_operation_t *operation,
                                                 const uint8_t *iv,
                                                 size_t iv_length);
 
-psa_status_t psa_driver_wrapper_cipher_encrypt( psa_cipher_operation_t *operation,
+psa_status_t psa_dispatcher_cipher_encrypt( psa_cipher_operation_t *operation,
                                                 const psa_key_attributes_t *attributes,
                                                 const uint8_t * input,
                                                 size_t input_length,
@@ -66,4 +66,4 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_cipher_operation_t *operatio
                                                 size_t output_size,
                                                 size_t * output_length);
 
-#endif /* PSA_CRYPTO_DRIVER_WRAPPER_H */
+#endif /* PSA_CRYPTO_DISPATCHER_H */

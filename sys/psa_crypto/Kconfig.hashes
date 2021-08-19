@@ -12,11 +12,12 @@ if HASHES_MD5
 
 choice HASHES_MD5_IMPLEMENTATION
     bool "MD5 implementation"
-    default RIOT_HASH_MD5
+    default RIOT_HASHES_MD5
 
-config RIOT_HASH_MD5
-    bool "Software implemented"
+config RIOT_HASHES_MD5
+    bool "RIOT Hash Module"
     select MODULE_HASHES_MD5
+    select MODULE_PSA_RIOT_HASHES_MD5
     select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
@@ -30,16 +31,18 @@ if HASHES_SHA1
 
 choice HASHES_SHA1_IMPLEMENTATION
     bool "SHA-1 implementation"
-    default PERIPH_HASH_SHA1
+    default PERIPH_HASHES_SHA1
 
-config PERIPH_HASH_SHA1
+config PERIPH_HASHES_SHA1
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA1
     select PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_SHA1
 
-config RIOT_HASH_SHA1
-    bool "Software implemented"
+config RIOT_HASHES_SHA1
+    bool "RIOT Hash Module"
     select MODULE_HASHES_SHA1
+    select MODULE_PSA_RIOT_HASHES_SHA1
     select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
@@ -53,16 +56,18 @@ if HASHES_SHA224
 
 choice HASHES_224_IMPLEMENTATION
     bool "SHA-224 implementation"
-    default PERIPH_HASH_SHA224
+    default PERIPH_HASHES_SHA224
 
-config PERIPH_HASH_SHA224
+config PERIPH_HASHES_SHA224
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA224
     select PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_SHA224
 
-config RIOT_HASH_SHA224
-    bool "Software implemented"
+config RIOT_HASHES_SHA224
+    bool "RIOT Hash Module"
     select MODULE_HASHES_SHA224
+    select MODULE_PSA_RIOT_HASHES_SHA224
     select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
@@ -76,27 +81,22 @@ if HASHES_SHA256
 
 choice HASHES_256_IMPLEMENTATION
     bool "SHA-256 implementation"
-    default PERIPH_HASH_SHA256
+    default PERIPH_HASHES_SHA256
 
-config PERIPH_HASH_SHA256
+config PERIPH_HASHES_SHA256
     bool "Hardware accelerated"
     depends on HAS_HW_HASH_SHA256
     select PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_SHA256
 
-config CRYPTOAUTHLIB_HASH_SHA256
-    bool "Microchip Cryptoauth Package"
-    select PACKAGE_CRYPTOAUTHLIB
-    select MODULE_CRYPTOAUTHLIB_HASHES
-    select SE_HASHES
-
-config RIOT_HASH_SHA256
-    bool "Software implemented"
+config RIOT_HASHES_SHA256
+    bool "RIOT Hash Module"
     select MODULE_HASHES_SHA256
-    select MODULE_PSA_SOFTWARE_HASHES
+    select MODULE_PSA_RIOT_HASHES_SHA256
     select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
-config TINYCRYPT_HASHES
-    bool "TinyCrypt library as PSA Backend"
+config TINYCRYPT_HASHES_SHA256
+    bool "TinyCrypt Library"
     select PACKAGE_TINYCRYPT
     select MODULE_PSA_TINYCRYPT_HASHES
     select PSA_HASHES_SOFTWARE_IMPLEMENTATION
@@ -108,8 +108,3 @@ config PSA_HASHES_SOFTWARE_IMPLEMENTATION
     bool
     help
         Indicates use of a PSA Software implementation
-
-config SE_HASHES
-    bool
-    help
-        Indicates use of a secure element.

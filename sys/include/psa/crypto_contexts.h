@@ -23,30 +23,27 @@
 
 #include "kernel_defines.h"
 
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-#include "periph_hashes.h"
-#endif
-
-#if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-#include "atca_hashes.h"
-#endif
-
-#include "crypto_software_contexts.h"
+#include "psa/crypto_includes.h"
 
 typedef union {
     unsigned dummy; /* Make the union non-empty even with no supported algorithms. */
-    psa_software_hash_operation_t sw_ctx;
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-    psa_hash_periph_operation_t periph_ctx;
+#if IS_ACTIVE(CONFIG_HASHES_MD5)
+    psa_hashes_md5_ctx_t md5;
 #endif
-#if IS_ACTIVE(CONFIG_MODULE_CRYPTOAUTHLIB_HASHES)
-    psa_hash_atca_operation_t atca_ctx;
+#if IS_ACTIVE(CONFIG_HASHES_SHA1)
+    psa_hashes_sha1_ctx_t sha1;
+#endif
+#if IS_ACTIVE(CONFIG_HASHES_SHA224)
+    psa_hashes_sha224_ctx_t sha224;
+#endif
+#if IS_ACTIVE(CONFIG_HASHES_SHA256)
+    psa_hashes_sha256_ctx_t sha256;
 #endif
 } psa_hash_context_t;
 
 typedef union {
     unsigned dummy;
-    psa_software_cipher_operation_t sw_ctx;
+    // psa_software_cipher_operation_t sw_ctx;
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     uint64_t se_key_slot;
 #endif
