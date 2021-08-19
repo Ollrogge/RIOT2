@@ -91,18 +91,18 @@ config PERIPH_HASHES
     bool
     depends on HAS_CPU_NRF52
     select MODULE_PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_COMMON
+    select MODULE_PERIPH_PSA_UTIL
 
-config PERIPH_HASH_SHA1
+config MODULE_PERIPH_HASHES_SHA1
     bool
-    depends on HAS_CPU_NRF52
 
-config PERIPH_HASH_SHA224
+config MODULE_PERIPH_HASHES_SHA224
     bool
-    depends on HAS_CPU_NRF52
 
-config PERIPH_HASH_SHA256
+config MODULE_PERIPH_HASHES_SHA256
     bool
-    depends on HAS_CPU_NRF52
+
 
 ## Definition of specific features
 config HAS_CPU_NRF52
@@ -132,6 +132,16 @@ config CC_HASH_SHA256
 
 config MOD_PERIPH_HASH_SHA256
     depends on HAS_CPU_NRF52
+
+config MODULE_PERIPH_HASHES_COMMON
+    bool
+    help
+        Build common hash functions
+
+config MODULE_PERIPH_PSA_UTIL
+    bool
+    help
+        Build PSA helper functions
 
 rsource "periph/Kconfig"
 rsource "vectors/Kconfig"
