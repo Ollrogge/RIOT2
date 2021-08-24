@@ -32,14 +32,16 @@ extern "C" {
  * @{
  */
 static const i2c_conf_t i2c_config[] = {
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     {
-        .dev = NRF_TWIM0,
+        .dev = NRF_TWIM1,
         .scl = 28,
         .sda = 29,
         .speed = I2C_SPEED_NORMAL
     },
+#endif
     {
-        .dev = NRF_TWIM1,
+        .dev = NRF_TWIM0,
         .scl = 27,
         .sda = 26,
         .speed = I2C_SPEED_NORMAL

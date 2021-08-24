@@ -20,6 +20,7 @@
 #ifndef ATCA_PARAMS_H
 #define ATCA_PARAMS_H
 
+#include "kernel_defines.h"
 #include "board.h"
 #include "periph/i2c.h"
 #include "atca.h"
@@ -71,6 +72,7 @@ extern "C" {
                                             .rx_retries = ATCA_RX_RETRIES }
 #endif
 
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 #ifndef ATCA_PARAMS_DEV1
 #define ATCA_PARAMS_DEV1                {   .iface_type = ATCA_I2C_IFACE, \
                                             .devtype = ATCA_DEVTYPE, \
@@ -80,6 +82,7 @@ extern "C" {
                                             .wake_delay = 1500, \
                                             .rx_retries = ATCA_RX_RETRIES }
 #endif
+#endif
 
 /**@}*/
 
@@ -88,8 +91,10 @@ extern "C" {
  */
 static const ATCAIfaceCfg atca_params[] =
 {
-    ATCA_PARAMS_DEV0,
-    ATCA_PARAMS_DEV1
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+    ATCA_PARAMS_DEV1,
+#endif
+    ATCA_PARAMS_DEV0
 };
 
 #ifdef __cplusplus
