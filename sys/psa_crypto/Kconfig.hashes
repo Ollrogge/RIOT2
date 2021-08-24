@@ -18,7 +18,6 @@ config RIOT_HASHES_MD5
     bool "RIOT Hash Module"
     select MODULE_HASHES_MD5
     select MODULE_PSA_RIOT_HASHES_MD5
-    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -35,7 +34,7 @@ choice HASHES_SHA1_IMPLEMENTATION
 
 config PERIPH_HASHES_SHA1
     bool "Hardware accelerated"
-    depends on HAS_HW_HASH_SHA1
+    depends on HAS_PERIPH_HASH_SHA1
     select PERIPH_HASHES
     select MODULE_PERIPH_HASHES_SHA1
 
@@ -43,7 +42,6 @@ config RIOT_HASHES_SHA1
     bool "RIOT Hash Module"
     select MODULE_HASHES_SHA1
     select MODULE_PSA_RIOT_HASHES_SHA1
-    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -60,7 +58,7 @@ choice HASHES_224_IMPLEMENTATION
 
 config PERIPH_HASHES_SHA224
     bool "Hardware accelerated"
-    depends on HAS_HW_HASH_SHA224
+    depends on HAS_PERIPH_HASH_SHA224
     select PERIPH_HASHES
     select MODULE_PERIPH_HASHES_SHA224
 
@@ -68,7 +66,6 @@ config RIOT_HASHES_SHA224
     bool "RIOT Hash Module"
     select MODULE_HASHES_SHA224
     select MODULE_PSA_RIOT_HASHES_SHA224
-    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 endchoice
 
@@ -85,7 +82,7 @@ choice HASHES_256_IMPLEMENTATION
 
 config PERIPH_HASHES_SHA256
     bool "Hardware accelerated"
-    depends on HAS_HW_HASH_SHA256
+    depends on HAS_PERIPH_HASH_SHA256
     select PERIPH_HASHES
     select MODULE_PERIPH_HASHES_SHA256
 
@@ -93,18 +90,11 @@ config RIOT_HASHES_SHA256
     bool "RIOT Hash Module"
     select MODULE_HASHES_SHA256
     select MODULE_PSA_RIOT_HASHES_SHA256
-    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
 
 config TINYCRYPT_HASHES_SHA256
     bool "TinyCrypt Library"
     select PACKAGE_TINYCRYPT
-    select MODULE_PSA_TINYCRYPT_HASHES
-    select PSA_HASHES_SOFTWARE_IMPLEMENTATION
+    select MODULE_PSA_TINYCRYPT_HASHES_SHA256
 
 endchoice
 endif # HASHES_SHA256
-
-config PSA_HASHES_SOFTWARE_IMPLEMENTATION
-    bool
-    help
-        Indicates use of a PSA Software implementation

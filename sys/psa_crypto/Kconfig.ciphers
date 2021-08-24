@@ -12,15 +12,19 @@ if CIPHER_AES_128
 
 choice CIPHER_AES_128_IMPLEMENTATION
     bool "AES-128 implementation"
-    default BUILTIN_CIPHER_AES_128
+    default PERIPH_CIPHER_AES_128
 
-config BUILTIN_CIPHER_AES_128
-    bool "Software implemented"
+config RIOT_CIPHER_AES_128
+    bool "RIOT Cipher Module"
     select MODULE_CRYPTO
     select MODULE_CRYPTO_AES_128
-    select MODULE_CIPHER_MODES
-    select MODULE_PSA_SOFTWARE_CIPHER
-    select PSA_CIPHER_SOFTWARE_IMPLEMENTATION
+    select MODULE_PSA_RIOT_CIPHER_AES_CBC
+
+config PERIPH_CIPHER_AES_128
+    bool "Hardware Peripheral Implementation"
+    depends on HAS_PERIPH_CIPHER_AES_128
+    select PERIPH_CIPHER_AES
+    select PERIPH_CIPHER_MODE_CBC
 
 config CRYPTOAUTHLIB_CIPHER_AES_128
     bool "Microchip Cryptoauthlib"
@@ -28,11 +32,10 @@ config CRYPTOAUTHLIB_CIPHER_AES_128
     select MODULE_PSA_SE_DRIVER
     select PSA_CRYPTO_SECURE_ELEMENT
 
-config TINYCRYPT_CIPHER
+config PSA_TINYCRYPT_CIPHER_AES_128
     bool "TinyCrypt library as PSA Backend"
     select PACKAGE_TINYCRYPT
-    select MODULE_PSA_TINYCRYPT_CIPHER
-    select PSA_CIPHER_SOFTWARE_IMPLEMENTATION
+    select MODULE_PSA_TINYCRYPT_CIPHER_AES_CBC
 
 endchoice
 
@@ -45,14 +48,13 @@ if CIPHER_AES_192
 
 choice CIPHER_AES_192_IMPLEMENTATION
     bool "AES-192 implementation"
-    default BUILTIN_CIPHER_AES_192
+    default RIOT_CIPHER_AES_192
 
-config BUILTIN_CIPHER_AES_192
-    bool "Software implemented"
+config RIOT_CIPHER_AES_192
+    bool "RIOT Cipher Module"
     select MODULE_CRYPTO
-    select BUILTIN_CIPHER
     select MODULE_CRYPTO_AES_192
-    select MODULE_CIPHER_MODES
+    select MODULE_PSA_RIOT_CIPHER_AES_CBC
 
 endchoice
 
@@ -65,23 +67,17 @@ if CIPHER_AES_256
 
 choice CIPHER_AES_256_IMPLEMENTATION
     bool "AES-256 implementation"
-    default BUILTIN_CIPHER_AES_256
+    default RIOT_CIPHER_AES_256
 
-config BUILTIN_CIPHER_AES_256
-    bool "Software implemented"
+config RIOT_CIPHER_AES_256
+    bool "RIOT Cipher Module"
     select MODULE_CRYPTO
-    select BUILTIN_CIPHER
     select MODULE_CRYPTO_AES_256
-    select MODULE_CIPHER_MODES
+    select MODULE_PSA_RIOT_CIPHER_AES_CBC
 
 endchoice
 
 endif # CIPHER_AES_256
-
-config PSA_CIPHER_SOFTWARE_IMPLEMENTATION
-    bool
-    help
-        Indicates use of a software implemented cipher operation
 
 config PSA_CRYPTO_SECURE_ELEMENT
     bool

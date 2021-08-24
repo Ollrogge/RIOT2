@@ -9,7 +9,7 @@ ifneq (,$(filter bluetil_%,$(USEMODULE)))
   DIRS += net/ble/bluetil
 endif
 ifneq (,$(filter cipher_modes,$(USEMODULE)))
-  DIRS += crypto/modes
+  DIRS += crypto/cipher_modes
 endif
 ifneq (,$(filter constfs,$(USEMODULE)))
   DIRS += fs/constfs

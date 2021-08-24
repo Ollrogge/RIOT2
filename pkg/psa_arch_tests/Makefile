@@ -7,6 +7,8 @@ PKG_LICENSE=Apache-2.0
 
 include $(RIOTBASE)/pkg/pkg.mk
 
+$(info $$usemodule is [${USEMODULE}])
+
 INCLUDE_PATHS=$(RIOTBASE)/cpu/$(CPU)/include;$(RIOTBASE)/sys/include;$(RIOTBASE)/core/include;$(RIOTBASE)/sys/psa_crypto
 
 ifneq (,$(filter cryptoauthlib_contrib,$(USEMODULE)))
@@ -14,7 +16,7 @@ ifneq (,$(filter cryptoauthlib_contrib,$(USEMODULE)))
 endif
 
 ifneq (,$(filter psa_tinycrypt_%, $(USEMODULE)))
-  INCLUDE_PATHS += ;$(PKGDIRBASE)/tinycrypt/lib/include
+  INCLUDE_PATHS += ;$(PKGDIRBASE)/tinycrypt/lib/include;$(RIOTBASE)/pkg/tinycrypt/include
 endif
 
 # $(info $$Usemodule is [${USEMODULE}])

@@ -43,9 +43,10 @@ typedef union {
 
 typedef union {
     unsigned dummy;
-    // psa_software_cipher_operation_t sw_ctx;
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     uint64_t se_key_slot;
+#elif IS_ACTIVE(CONFIG_CIPHER_AES_128)
+    psa_cipher_aes_ctx_t aes;
 #endif
 } psa_cipher_context_t;
 

@@ -64,10 +64,10 @@ static inline struct psa_key_attributes_s psa_key_attributes_init(void)
 
 struct psa_cipher_operation_s
 {
-    uint8_t driver_id;
     uint8_t iv_required : 1;
     uint8_t iv_set : 1;
     uint8_t default_iv_length;
+    psa_algorithm_t alg;
     psa_cipher_context_t ctx;
 };
 

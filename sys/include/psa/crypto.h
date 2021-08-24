@@ -22,6 +22,8 @@
 #define PSA_CRYPTO_H
 
 #include <stdlib.h>
+#include <string.h>
+
 #include "crypto_sizes.h"
 #include "crypto_struct.h"
 #include "crypto_values.h"

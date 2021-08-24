@@ -5,6 +5,11 @@
 # directory for more details.
 #
 
-config MODULE_PSA_SOFTWARE_CIPHER
+config MODULE_PSA_RIOT_CIPHER_AES_CBC
     bool
     depends on MODULE_PSA_CRYPTO
+    select MODULE_PSA_RIOT_CIPHER
+    select MODULE_CIPHER_MODES_CBC
+
+config MODULE_PSA_RIOT_CIPHER
+    bool "PSA Cipher APIs"

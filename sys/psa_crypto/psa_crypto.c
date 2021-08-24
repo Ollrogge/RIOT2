@@ -23,7 +23,7 @@
 #include "include/psa_crypto_se_driver.h"
 #include "include/psa_crypto_se_management.h"
 #include "include/psa_crypto_slot_management.h"
-#include "include/psa_crypto_dispatcher.h"
+#include "include/psa_crypto_driver_wrapper.h"
 
 #include "kernel_defines.h"
 
@@ -338,10 +338,6 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
                                 PSA_KEY_USAGE_ENCRYPT :
                                 PSA_KEY_USAGE_DECRYPT );
 
-    if (operation->driver_id != 0) {
-        return PSA_ERROR_BAD_STATE;
-    }
-
     if (!PSA_ALG_IS_CIPHER(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -365,10 +361,10 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
     psa_key_attributes_t attr = slot->attr;
 
     if (cipher_operation == PSA_CIPHER_ENCRYPT) {
-        status = psa_dispatcher_cipher_encrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
+        status = psa_driver_wrapper_cipher_encrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
     }
     else if (cipher_operation == PSA_CIPHER_DECRYPT) {
-        status = psa_dispatcher_cipher_decrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
+        status = psa_driver_wrapper_cipher_decrypt_setup(operation, &attr, slot->key.data, slot->key.bytes, alg);
     }
 
     if (status != PSA_SUCCESS) {
@@ -413,29 +409,29 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
                                 size_t * output_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    psa_cipher_operation_t operation = psa_cipher_operation_init();
     psa_key_attributes_t attr = psa_key_attributes_init();
-    size_t iv_length;
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+
+    if (!PSA_ALG_IS_CIPHER(alg)) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
 
     status = psa_get_key_attributes(key, &attr);
     if (status != PSA_SUCCESS) {
         return PSA_ERROR_INVALID_HANDLE;
     }
 
-    status = psa_cipher_encrypt_setup(&operation, key, alg);
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
     if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        if (unlock_status != PSA_SUCCESS) {
+            status = unlock_status;
+        }
         return status;
     }
 
-    if (operation.iv_required) {
-        /* Generates an IV and stores it in the first bytes of the output vector */
-        status = psa_cipher_generate_iv(&operation, output, operation.default_iv_length, &iv_length);
-        if (status != PSA_SUCCESS) {
-            return status;
-        }
-    }
-
-    return psa_dispatcher_cipher_encrypt(&operation, &attr, input, input_length, output, output_size, output_length);
+    return psa_driver_wrapper_cipher_encrypt(slot, alg, input, input_length, output, output_size, output_length);
 }
 
 psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,
@@ -468,10 +464,6 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
         0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
     };
-
-    if (operation->driver_id == 0) {
-        return PSA_ERROR_BAD_STATE;
-    }
 
     if (!operation->iv_required || operation->iv_set) {
         return PSA_ERROR_BAD_STATE;
@@ -639,7 +631,7 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
     if (!PSA_ALG_IS_HASH(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-    psa_status_t status = psa_dispatcher_hash_setup(operation, alg);
+    psa_status_t status = psa_driver_wrapper_hash_setup(operation, alg);
     if (status == PSA_SUCCESS) {
         operation->alg = alg;
     }
@@ -655,7 +647,7 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
         return PSA_ERROR_BAD_STATE;
     }
 
-    psa_status_t status = psa_dispatcher_hash_update(operation, input, input_length);
+    psa_status_t status = psa_driver_wrapper_hash_update(operation, input, input_length);
 
     if (status != PSA_SUCCESS) {
         psa_hash_abort(operation);
@@ -678,7 +670,7 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-    psa_status_t status = psa_dispatcher_hash_finish(operation, hash, hash_size, hash_length);
+    psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash, hash_size, hash_length);
 
     if (status == PSA_SUCCESS) {
         *hash_length = actual_hash_length;
@@ -973,7 +965,7 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     }
 
     bits = slot->attr.bits;
-    status = psa_dispatcher_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
+    status = psa_driver_wrapper_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
 
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
