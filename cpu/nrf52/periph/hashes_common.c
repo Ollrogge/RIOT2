@@ -1,5 +1,5 @@
 #include "psa/crypto.h"
-#include "psa_periph_util.h"
+#include "psa_periph_error.h"
 #include "cryptocell_util.h"
 #include "cryptocell_incl/crys_hash.h"
 
@@ -9,7 +9,7 @@ psa_status_t common_hash_setup(CRYS_HASHUserContext_t * ctx, CRYS_HASH_Operation
 {
     int ret = CRYS_HASH_Init(ctx, mode);
     if (ret != CRYS_OK) {
-        return cc310_to_psa_error(ret);
+        return CRYS_to_psa_error(ret);
     }
 
     return PSA_SUCCESS;
@@ -40,7 +40,7 @@ psa_status_t common_hash_update(CRYS_HASHUserContext_t * ctx,
     } while ((input_length > 0) && (ret == CRYS_OK));
 
     if (ret != CRYS_OK) {
-        return cc310_to_psa_error(ret);
+        return CRYS_to_psa_error(ret);
     }
     return PSA_SUCCESS;
 }
@@ -52,7 +52,7 @@ psa_status_t common_hash_finish(CRYS_HASHUserContext_t * ctx, uint8_t * hash)
     cryptocell_disable();
 
     if (ret != CRYS_OK) {
-        return cc310_to_psa_error(ret);
+        return CRYS_to_psa_error(ret);
     }
 
     return PSA_SUCCESS;

@@ -5,8 +5,10 @@
 # directory for more details.
 #
 
-config MOD_LIB_CRYPTOCELL
+config MODULE_LIB_CRYPTOCELL
     bool
-    default y if MODULE_PERIPH_HASHES
+    default y if MODULE_PERIPH_HASHES || MODULE_PERIPH_AES_CBC
     depends on CPU_FAM_NRF52
     depends on TEST_KCONFIG
+    select MODULE_PERIPH_CRYPTOCELL_SETUP
+    select MODULE_PERIPH_CRYPTOCELL_UTIL

@@ -74,26 +74,37 @@ config HAS_ETHERNET
         Indicates that Ethernet connectivity is present.
 
 # Hash related features
-config HAS_HW_HASH_MD5
+config HAS_PERIPH_HASH_MD5
     bool
     help
         Indicates that there is MD5 hardware acceleration present.
 
-config HAS_HW_HASH_SHA1
+config HAS_PERIPH_HASH_SHA1
     bool
     help
         Indicates that there is SHA-1 hardware acceleration present.
 
-config HAS_HW_HASH_SHA224
+config HAS_PERIPH_HASH_SHA224
     bool
     help
         Indicates that there is SHA-224 hardware acceleration present.
 
-config HAS_HW_HASH_SHA256
+config HAS_PERIPH_HASH_SHA256
     bool
     help
         Indicates that there is SHA-256 hardware acceleration present.
-        
+
+# Cipher AES
+config HAS_PERIPH_CIPHER_AES_128
+    bool
+    help
+        Indicates that there is AES 128 hardware acceleration present
+
+config HAS_PERIPH_CIPHER_AES_CBC
+    bool
+    help
+        Indicates that there is AES CBC hardware acceleration present
+
 config HAS_HIGHLEVEL_STDIO
     bool
     help

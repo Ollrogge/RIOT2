@@ -18,7 +18,7 @@
  */
 #include "kernel_defines.h"
 
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+#if IS_ACTIVE(CONFIG_MODULE_LIB_CRYPTOCELL)
 #include <stdio.h>
 #include "vendor/nrf52840.h"
 #include "cryptocell_incl/sns_silib.h"

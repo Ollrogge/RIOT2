@@ -84,6 +84,7 @@ PSEUDOMODULES += ipv4
 PSEUDOMODULES += ipv6
 PSEUDOMODULES += l2filter_blacklist
 PSEUDOMODULES += l2filter_whitelist
+PSEUDOMODULES += lib_cryptocell
 PSEUDOMODULES += libstdcpp
 PSEUDOMODULES += lib_cryptocell
 PSEUDOMODULES += lis2dh12_i2c

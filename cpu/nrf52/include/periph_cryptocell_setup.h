@@ -1,5 +1,5 @@
-#ifndef ARMCC_SETUP_H
-#define ARMCC_SETUP_H
+#ifndef PERIPH_CRYPTOCELL_SETUP_H
+#define PERIPH_CRYPTOCELL_SETUP_H
 
 /**
  * Enables CryptoCell module, IRQs and crypto libraries on nrf52840.
@@ -13,4 +13,4 @@ void cryptocell_setup(void);
  */
 void cryptocell_terminate(void);
 
-#endif /*ARMCC_SETUP_H*/
+#endif /* PERIPH_CRYPTOCELL_SETUP_H */

@@ -21,8 +21,8 @@
 #include "cpu.h"
 #include "board.h"
 #include "kernel_defines.h"
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
-#include "armcc_setup.h"
+#if IS_ACTIVE(CONFIG_MODULE_LIB_CRYPTOCELL)
+#include "periph_cryptocell_setup.h"
 #endif
 
 void board_init(void)
@@ -34,7 +34,7 @@ void board_init(void)
     /* initialize the CPU */
     cpu_init();
 
-#if IS_ACTIVE(CONFIG_PERIPH_HASHES)
+#if IS_ACTIVE(CONFIG_MODULE_LIB_CRYPTOCELL)
     cryptocell_setup();
 #endif
 }

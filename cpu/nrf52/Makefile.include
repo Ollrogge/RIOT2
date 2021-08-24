@@ -42,7 +42,7 @@ LINKER_SCRIPT ?= cortexm.ld
 
 VECTORS_O ?= $(BINDIR)/nrf52_vectors/vectors_$(CPU_MODEL).o
 
-ifneq (, $(CONFIG_PERIPH_HASHES))
+ifneq (,$(filter lib_cryptocell,$(USEMODULE)))
   ARCHIVES += $(RIOTCPU)/nrf52/cryptocell_lib/libnrf_cc310_0.9.12.a
 endif
 
