@@ -2,12 +2,9 @@ INCLUDES += -I$(PKGDIRBASE)/tinycrypt/lib/include
 
 ifneq (,$(filter psa_crypto, $(USEMODULE)))
   INCLUDES += -I$(RIOTBASE)/sys/psa_crypto/include
+  INCLUDES += -I$(RIOTBASE)/pkg/tinycrypt/include
 endif
 
-ifneq (,$(filter psa_tinycrypt_hashes, $(USEMODULE)))
-  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_tinycrypt_hashes
-endif
-
-ifneq (,$(filter psa_tinycrypt_cipher, $(USEMODULE)))
-  DIRS += $(RIOTPKG)/tinycrypt/psa/psa_cipher
+ifneq (,$(filter psa_tinycrypt_%, $(USEMODULE)))
+  DIRS += $(RIOTPKG)/tinycrypt/psa_tinycrypt
 endif

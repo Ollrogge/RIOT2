@@ -10,5 +10,4 @@ config PACKAGE_TINYCRYPT
     depends on TEST_KCONFIG
     depends on HAS_ARCH_32BIT
 
-rsource "psa/psa_tinycrypt_hashes/Kconfig"
-rsource "psa/psa_cipher/Kconfig"
+rsource "psa_tinycrypt/Kconfig"

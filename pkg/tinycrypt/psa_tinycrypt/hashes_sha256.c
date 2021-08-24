@@ -26,7 +26,7 @@ psa_status_t psa_hashes_sha256_setup(psa_hashes_sha256_ctx_t * ctx)
 {
     int status;
 
-    status = tc_sha256_init((TCSha256State_t *) ctx);
+    status = tc_sha256_init((struct tc_sha256_state_struct *) ctx);
     if (status != TC_CRYPTO_SUCCESS) {
         /* Init fails, when a Nullpointer is passed, which translates to
         an invalid argument error */
@@ -42,7 +42,7 @@ psa_status_t psa_hashes_sha256_update(psa_hashes_sha256_ctx_t * ctx,
 {
     int status;
 
-    status = tc_sha256_update((TCSha256State_t *) ctx, input, input_length);
+    status = tc_sha256_update((struct tc_sha256_state_struct *) ctx, input, input_length);
 
     if (status != TC_CRYPTO_SUCCESS) {
         /* Update fails, when a Nullpointer is passed, which translates to
@@ -60,7 +60,7 @@ psa_status_t psa_hashes_sha256_finish(psa_hashes_sha256_ctx_t * ctx,
 {
     int status;
 
-    status = tc_sha256_final(hash, (TCSha256State_t *) ctx);
+    status = tc_sha256_final(hash, (struct tc_sha256_state_struct *) ctx);
 
     if (status != TC_CRYPTO_SUCCESS) {
         /* Final fails, when a Nullpointer is passed, which translates to
