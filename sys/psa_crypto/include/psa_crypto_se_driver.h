@@ -930,7 +930,7 @@ typedef psa_status_t (*psa_drv_se_destroy_key_t)(
  * \retval #PSA_ERROR_CORRUPTION_DETECTED
  */
 typedef psa_status_t (*psa_drv_se_export_key_t)(psa_drv_se_context_t *drv_context,
-                                                psa_key_slot_number_t key,
+                                                psa_key_slot_number_t key_slot,
                                                 uint8_t *p_data,
                                                 size_t data_size,
                                                 size_t *p_data_length);

@@ -135,6 +135,59 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
     }
 }
 
+psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *attributes,
+                                                    uint8_t *key_buffer,
+                                                    size_t key_buffer_size,
+                                                    uint8_t * data,
+                                                    size_t data_size,
+                                                    size_t * data_length)
+{
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (drv->key_management == NULL || drv->key_management->p_export_public == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+        return drv->key_management->p_export_public(drv_context, *((psa_key_slot_number_t*)key_buffer), data, data_size, data_length);
+    }
+#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+
+    (void) attributes;
+    (void) key_buffer;
+    (void) key_buffer_size;
+    (void) data;
+    (void) data_size;
+    (void) data_length;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
+psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attributes,
+                                                uint8_t *key_buffer, size_t key_buffer_size,
+                                                size_t *key_buffer_length)
+{
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (drv->key_management == NULL || drv->key_management->p_generate == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+        size_t pubkey_length = 0;
+        return drv->key_management->p_generate(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, NULL, 0, &pubkey_length);
+    }
+#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+
+    (void) attributes;
+    (void) key_buffer;
+    (void) key_buffer_size;
+    (void) key_buffer_length;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
 psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
                                             const uint8_t *data, size_t data_length,
                                             uint8_t *key_buffer, size_t key_buffer_size,
@@ -152,7 +205,7 @@ psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attribut
             return PSA_ERROR_NOT_SUPPORTED;
         }
         *bits = PSA_MAX_KEY_BITS + 1;
-        status = drv->key_management->p_import(drv_context, *(psa_key_slot_number_t*)key_buffer, attributes, data, data_length, bits);
+        status = drv->key_management->p_import(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, data, data_length, bits);
         if (status != PSA_SUCCESS) {
             return status;
         }
@@ -288,4 +341,68 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
         (void) output_length;
         return PSA_ERROR_INVALID_ARGUMENT;
     }
+}
+
+psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attributes,
+                                            psa_algorithm_t alg,
+                                            const uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            const uint8_t * data,
+                                            size_t data_length,
+                                            uint8_t * signature,
+                                            size_t signature_size,
+                                            size_t * signature_length)
+{
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (drv->asymmetric == NULL || drv->asymmetric->p_sign == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+        return drv->asymmetric->p_sign(drv_context, *((psa_key_slot_number_t*)key_buffer), alg, data, data_length, signature, signature_size, signature_length);
+    }
+#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+    (void) attributes;
+    (void) key_buffer;
+    (void) key_buffer_size;
+    (void) data;
+    (void) data_length;
+    (void) signature;
+    (void) signature_size;
+    (void) signature_length;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
+psa_status_t psa_driver_wrapper_verify_hash(  const psa_key_attributes_t *attributes,
+                                            psa_algorithm_t alg,
+                                            const uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            const uint8_t * data,
+                                            size_t data_length,
+                                            const uint8_t * signature,
+                                            size_t signature_length)
+{
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (drv->asymmetric == NULL || drv->asymmetric->p_verify == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+        return drv->asymmetric->p_verify(drv_context, *((psa_key_slot_number_t*)key_buffer), alg, data, data_length, signature, signature_length);
+    }
+#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+    (void) attributes;
+    (void) key_buffer;
+    (void) key_buffer_size;
+    (void) data;
+    (void) data_length;
+    (void) signature;
+    (void) signature_length;
+    return PSA_ERROR_NOT_SUPPORTED;
 }

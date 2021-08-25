@@ -78,8 +78,3 @@ config RIOT_CIPHER_AES_256
 endchoice
 
 endif # CIPHER_AES_256
-
-config PSA_CRYPTO_SECURE_ELEMENT
-    bool
-    help
-        Indicates a Secure Element is being used

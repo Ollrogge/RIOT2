@@ -34,7 +34,18 @@ typedef /* implementation-defined type */ uint32_t psa_aead_operation_t;
 typedef uint32_t psa_algorithm_t;
 
 typedef uint8_t psa_dh_family_t;
+
+/** The type of PSA elliptic curve family identifiers.
+ *
+ * The curve identifier is required to create an ECC key using the
+ * PSA_KEY_TYPE_ECC_KEY_PAIR() or PSA_KEY_TYPE_ECC_PUBLIC_KEY()
+ * macros.
+ *
+ * Values defined by this standard will never be in the range 0x80-0xff.
+ * Vendors who define additional families must use an encoding in this range.
+ */
 typedef uint8_t psa_ecc_family_t;
+
 typedef /* implementation-defined type */ uint32_t psa_key_derivation_operation_t;
 typedef uint16_t psa_key_derivation_step_t;
 typedef uint32_t psa_key_id_t;

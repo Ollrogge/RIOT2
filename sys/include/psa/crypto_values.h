@@ -92,11 +92,15 @@
 
 #define PSA_ALG_IS_DETERMINISTIC_ECDSA(alg) /* specification-defined value */
 #define PSA_ALG_IS_ECDH(alg) /* specification-defined value */
-#define PSA_ALG_IS_ECDSA(alg) /* specification-defined value */
+
+#define PSA_ALG_IS_ECDSA(alg) \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_SIGN)
+
 #define PSA_ALG_IS_FFDH(alg) /* specification-defined value */
 
 #define PSA_ALG_IS_HASH(alg) \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_HASH)
+
 #define PSA_ALG_HMAC_GET_HASH(hmac_alg)                             \
     (PSA_ALG_CATEGORY_HASH | ((hmac_alg) & PSA_ALG_HASH_MASK))
 
@@ -143,14 +147,38 @@
 #define PSA_ALG_GCM                 ((psa_algorithm_t)0x05500200)
 
 #define PSA_ALG_RSA_PKCS1V15_SIGN_RAW   ((psa_algorithm_t) 0x06000200)
-#define PSA_ALG_ECDSA_ANY               ((psa_algorithm_t) 0x06000600)
+
+#define PSA_ALG_ECDSA_BASE      ((psa_algorithm_t) 0x06000600)
+/** ECDSA signature with hashing.
+ *
+ * This is the ECDSA signature scheme defined by ANSI X9.62,
+ * with a random per-message secret number (*k*).
+ *
+ * The representation of the signature as a byte string consists of
+ * the concatentation of the signature values *r* and *s*. Each of
+ * *r* and *s* is encoded as an *N*-octet string, where *N* is the length
+ * of the base point of the curve in octets. Each value is represented
+ * in big-endian order (most significant octet first).
+ *
+ * \param hash_alg      A hash algorithm (\c PSA_ALG_XXX value such that
+ *                      #PSA_ALG_IS_HASH(\p hash_alg) is true).
+ *                      This includes #PSA_ALG_ANY_HASH
+ *                      when specifying the algorithm in a usage policy.
+ *
+ * \return              The corresponding ECDSA signature algorithm.
+ * \return              Unspecified if \p hash_alg is not a supported
+ *                      hash algorithm.
+ */
+#define PSA_ALG_ECDSA(hash_alg)                                 \
+    (PSA_ALG_ECDSA_BASE | ((hash_alg) & PSA_ALG_HASH_MASK))
+
+#define PSA_ALG_ECDSA_ANY       PSA_ALG_ECDSA_BASE
 
 #define PSA_ALG_RSA_PKCS1V15_CRYPT ((psa_algorithm_t)0x07000200)
 #define PSA_ALG_FFDH ((psa_algorithm_t)0x09010000)
 #define PSA_ALG_ECDH ((psa_algorithm_t)0x09020000)
 
 #define PSA_ALG_DETERMINISTIC_ECDSA(hash_alg) /* specification-defined value */
-#define PSA_ALG_ECDSA(hash_alg) /* specification-defined value */
 #define PSA_ALG_FULL_LENGTH_MAC(mac_alg) /* specification-defined value */
 #define PSA_ALG_RSA_OAEP(hash_alg) /* specification-defined value */
 #define PSA_ALG_RSA_PKCS1V15_SIGN(hash_alg) /* specification-defined value */
@@ -256,13 +284,6 @@
 #define PSA_ECC_FAMILY_SECT_R1 ((psa_ecc_family_t) 0x22)
 #define PSA_ECC_FAMILY_SECT_R2 ((psa_ecc_family_t) 0x2b)
 
-#define PSA_EXPORT_KEY_OUTPUT_SIZE(key_type, key_bits) \
-/* implementation-defined value */
-#define PSA_EXPORT_KEY_PAIR_MAX_SIZE /* implementation-defined value */
-#define PSA_EXPORT_PUBLIC_KEY_MAX_SIZE /* implementation-defined value */
-#define PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(key_type, key_bits) \
-/* implementation-defined value */
-
 #define PSA_HASH_BLOCK_LENGTH(alg) /* implementation-defined value */
 #define PSA_HASH_MAX_SIZE (64) /* implementation-defined value */
 #define PSA_HASH_SUSPEND_ALGORITHM_FIELD_LENGTH ((size_t)4)
@@ -343,9 +364,32 @@
 #define PSA_KEY_TYPE_DH_KEY_PAIR(group) /* specification-defined value */
 #define PSA_KEY_TYPE_DH_PUBLIC_KEY(group) /* specification-defined value */
 #define PSA_KEY_TYPE_ECC_GET_FAMILY(type) /* specification-defined value */
+
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE            ((psa_key_type_t)0x4100)
 #define PSA_KEY_TYPE_ECC_KEY_PAIR_BASE              ((psa_key_type_t)0x7100)
 #define PSA_KEY_TYPE_ECC_CURVE_MASK                 ((psa_key_type_t)0x00ff)
+/** Elliptic curve key pair.
+ *
+ * The size of an elliptic curve key is the bit size associated with the curve,
+ * i.e. the bit size of *q* for a curve over a field *F<sub>q</sub>*.
+ * See the documentation of `PSA_ECC_FAMILY_xxx` curve families for details.
+ *
+ * \param curve     A value of type ::psa_ecc_family_t that
+ *                  identifies the ECC curve to be used.
+ */
+#define PSA_KEY_TYPE_ECC_KEY_PAIR(curve)         \
+    (PSA_KEY_TYPE_ECC_KEY_PAIR_BASE | (curve))
+/** Elliptic curve public key.
+ *
+ * The size of an elliptic curve public key is the same as the corresponding
+ * private key (see #PSA_KEY_TYPE_ECC_KEY_PAIR and the documentation of
+ * `PSA_ECC_FAMILY_xxx` curve families).
+ *
+ * \param curve     A value of type ::psa_ecc_family_t that
+ *                  identifies the ECC curve to be used.
+ */
+#define PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve)              \
+    (PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE | (curve))
 
 /** Elliptic curve key pair. */
 #define PSA_KEY_TYPE_ECC_KEY_PAIR(curve)         \
@@ -370,15 +414,29 @@
     (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
      PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
 
+/** The public key type corresponding to a key pair type.
+ *
+ * You may also pass a key pair type as \p type, it will be left unchanged.
+ *
+ * \param type      A public key type or key pair type.
+ *
+ * \return          The corresponding public key type.
+ *                  If \p type is not a public key or a key pair,
+ *                  the return value is undefined.
+ */
+#define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type)        \
+    ((type) & ~PSA_KEY_TYPE_CATEGORY_FLAG_PAIR)
+
 #define PSA_KEY_TYPE_HMAC ((psa_key_type_t)0x1100)
 #define PSA_KEY_TYPE_IS_ASYMMETRIC(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_KEY_PAIR(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_PUBLIC_KEY(type) /* specification-defined value */
-//#define PSA_KEY_TYPE_IS_ECC(type) /* specification-defined value */
-//#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type) /* specification-defined value */
-//#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_KEY_PAIR(type) /* specification-defined value */
+
+#define PSA_KEY_TYPE_IS_KEY_PAIR(type) \
+    (   (type == PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1)) || \
+        (type == PSA_KEY_TYPE_RSA_KEY_PAIR))
+
 #define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_RSA(type) /* specification-defined value */
 
@@ -393,8 +451,7 @@
 #define PSA_KEY_TYPE_KEY_PAIR_OF_PUBLIC_KEY(type) \
 /* specification-defined value */
 #define PSA_KEY_TYPE_NONE ((psa_key_type_t)0x0000)
-#define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) \
-/* specification-defined value */
+
 #define PSA_KEY_TYPE_RAW_DATA ((psa_key_type_t)0x1001)
 #define PSA_KEY_TYPE_RSA_KEY_PAIR ((psa_key_type_t)0x7001)
 #define PSA_KEY_TYPE_RSA_PUBLIC_KEY ((psa_key_type_t)0x4001)
@@ -419,8 +476,6 @@
 #define PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(key_type, key_bits) \
 /* implementation-defined value */
 #define PSA_SIGNATURE_MAX_SIZE /* implementation-defined value */
-#define PSA_SIGN_OUTPUT_SIZE(key_type, key_bits, alg) \
-/* implementation-defined value */
 #define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
 
 /* TODO: Adapt max key length to algorithm in use */

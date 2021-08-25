@@ -37,6 +37,36 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
                                             size_t hash_size,
                                             size_t * hash_length);
 
+psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attributes,
+                                            psa_algorithm_t alg,
+                                            uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            const uint8_t * hash,
+                                            size_t hash_length,
+                                            uint8_t * signature,
+                                            size_t signature_size,
+                                            size_t * signature_length);
+
+psa_status_t psa_driver_wrapper_verify_hash(  const psa_key_attributes_t *attributes,
+                                            psa_algorithm_t alg,
+                                            const uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            const uint8_t * data,
+                                            size_t data_length,
+                                            const uint8_t * signature,
+                                            size_t signature_length);
+
+psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *attributes,
+                                                    uint8_t *key_buffer,
+                                                    size_t key_buffer_size,
+                                                    uint8_t * data,
+                                                    size_t data_size,
+                                                    size_t * data_length);
+
+psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attributes,
+                                                uint8_t *key_buffer, size_t key_buffer_size,
+                                                size_t *key_buffer_length);
+
 psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
                                             const uint8_t *data, size_t data_length,
                                             uint8_t *key_buffer, size_t key_buffer_size,

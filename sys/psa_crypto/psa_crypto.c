@@ -508,118 +508,7 @@ psa_status_t psa_cipher_update(psa_cipher_operation_t * operation,
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-psa_status_t psa_copy_key(psa_key_id_t source_key,
-                          const psa_key_attributes_t * attributes,
-                          psa_key_id_t * target_key)
-{
-    (void) source_key;
-    (void) attributes;
-    (void) target_key;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
 
-psa_status_t psa_destroy_key(psa_key_id_t key)
-{
-    psa_status_t status;
-    psa_key_slot_t *slot;
-
-    status = psa_get_and_lock_key_slot(key, &slot);
-    if (status != PSA_SUCCESS) {
-        return status;
-    }
-    if (slot->lock_count > 1) {
-        return PSA_ERROR_GENERIC_ERROR;
-    }
-
-    return psa_wipe_key_slot(slot);
-}
-
-psa_status_t psa_export_key(psa_key_id_t key,
-                            uint8_t * data,
-                            size_t data_size,
-                            size_t * data_length)
-{
-    (void) key;
-    (void) data;
-    (void) data_size;
-    (void) data_length;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_status_t psa_export_public_key(psa_key_id_t key,
-                                   uint8_t * data,
-                                   size_t data_size,
-                                   size_t * data_length)
-{
-    (void) key;
-    (void) data;
-    (void) data_size;
-    (void) data_length;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
-                              psa_key_id_t * key)
-{
-    (void) attributes;
-    (void) key;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_status_t psa_generate_random(uint8_t * output,
-                                 size_t output_size)
-{
-    (void) output;
-    (void) output_size;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes)
-{
-    return attributes->policy.alg;
-}
-
-psa_status_t psa_get_key_attributes(psa_key_id_t key,
-                                    psa_key_attributes_t * attributes)
-{
-    psa_status_t status;
-    psa_key_slot_t *slot = NULL;
-
-    status = psa_get_and_lock_key_slot(key, &slot);
-    if (status != PSA_SUCCESS) {
-        return status;
-    }
-
-    *attributes = slot->attr;
-
-    status = psa_unlock_key_slot(slot);
-    return status;
-}
-
-size_t psa_get_key_bits(const psa_key_attributes_t * attributes)
-{
-    return attributes->bits;
-}
-
-psa_key_id_t psa_get_key_id(const psa_key_attributes_t * attributes)
-{
-    return attributes->id;
-}
-
-psa_key_lifetime_t psa_get_key_lifetime(const psa_key_attributes_t * attributes)
-{
-    return attributes->lifetime;
-}
-
-psa_key_type_t psa_get_key_type(const psa_key_attributes_t * attributes)
-{
-    return attributes->type;
-}
-
-psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
-{
-    return attributes->policy.usage;
-}
 
 psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
                             psa_algorithm_t alg)
@@ -894,7 +783,6 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
         psa_key_slot_number_t slot_number;
         status = psa_find_free_se_slot(attributes, method, *p_drv, &slot_number);
         if (status != PSA_SUCCESS) {
-            printf("Line: %d, status: %ld\n", __LINE__, status);
             return status;
         }
         /* TODO: Start transaction for persistent key storage */
@@ -943,6 +831,173 @@ static void psa_fail_key_creation(psa_key_slot_t *slot, psa_se_drv_data_t *drive
     /* TODO: Destroy key in secure element (see mbedtls code) */
     /* TODO: Secure Element stop transaction */
     psa_wipe_key_slot(slot);
+}
+
+psa_status_t psa_copy_key(psa_key_id_t source_key,
+                          const psa_key_attributes_t * attributes,
+                          psa_key_id_t * target_key)
+{
+    (void) source_key;
+    (void) attributes;
+    (void) target_key;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
+psa_status_t psa_destroy_key(psa_key_id_t key)
+{
+    psa_status_t status;
+    psa_key_slot_t *slot;
+
+    status = psa_get_and_lock_key_slot(key, &slot);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+    if (slot->lock_count > 1) {
+        return PSA_ERROR_GENERIC_ERROR;
+    }
+
+    return psa_wipe_key_slot(slot);
+}
+
+psa_status_t psa_export_key(psa_key_id_t key,
+                            uint8_t * data,
+                            size_t data_size,
+                            size_t * data_length)
+{
+    (void) key;
+    (void) data;
+    (void) data_size;
+    (void) data_length;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
+psa_status_t psa_export_public_key(psa_key_id_t key,
+                                   uint8_t * data,
+                                   size_t data_size,
+                                   size_t * data_length)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+
+    if ((data_size == 0) || (data_size < PSA_EXPORT_PUBLIC_KEY_MAX_SIZE)) {
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    *data_length = 0;
+
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, 0, 0);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        if (unlock_status != PSA_SUCCESS) {
+            status = unlock_status;
+        }
+        return status;
+    }
+
+    if (!PSA_KEY_TYPE_IS_ECC(slot->attr.type)) {
+        status = PSA_ERROR_INVALID_ARGUMENT;
+        unlock_status = psa_unlock_key_slot(slot);
+        return status;
+    }
+
+    psa_key_attributes_t attributes = slot->attr;
+
+    status = psa_driver_wrapper_export_public_key(&attributes, slot->key.data, slot->key.bytes, data, data_size, data_length);
+
+    unlock_status = psa_unlock_key_slot(slot);
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
+}
+
+psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
+                              psa_key_id_t * key)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot = NULL;
+    psa_se_drv_data_t *driver = NULL;
+    *key = 0;
+
+    if (psa_get_key_bits(attributes) == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    /* Find empty slot */
+    status = psa_start_key_creation(PSA_KEY_CREATION_GENERATE, attributes, &slot, &driver);
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+        return status;
+    }
+
+    status = psa_driver_wrapper_generate_key(attributes, slot->key.data, slot->key.bytes, &slot->key.bytes);
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+        return status;
+    }
+
+    status = psa_finish_key_creation(slot, driver, key);
+
+    if (status != PSA_SUCCESS) {
+        psa_fail_key_creation(slot, driver);
+    }
+
+    return status;
+}
+
+psa_status_t psa_generate_random(uint8_t * output,
+                                 size_t output_size)
+{
+    (void) output;
+    (void) output_size;
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
+psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes)
+{
+    return attributes->policy.alg;
+}
+
+psa_status_t psa_get_key_attributes(psa_key_id_t key,
+                                    psa_key_attributes_t * attributes)
+{
+    psa_status_t status;
+    psa_key_slot_t *slot = NULL;
+
+    status = psa_get_and_lock_key_slot(key, &slot);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    *attributes = slot->attr;
+
+    status = psa_unlock_key_slot(slot);
+    return status;
+}
+
+size_t psa_get_key_bits(const psa_key_attributes_t * attributes)
+{
+    return attributes->bits;
+}
+
+psa_key_id_t psa_get_key_id(const psa_key_attributes_t * attributes)
+{
+    return attributes->id;
+}
+
+psa_key_lifetime_t psa_get_key_lifetime(const psa_key_attributes_t * attributes)
+{
+    return attributes->lifetime;
+}
+
+psa_key_type_t psa_get_key_type(const psa_key_attributes_t * attributes)
+{
+    return attributes->type;
+}
+
+psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
+{
+    return attributes->policy.usage;
 }
 
 psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
@@ -1250,14 +1305,35 @@ psa_status_t psa_sign_hash(psa_key_id_t key,
                            size_t signature_size,
                            size_t * signature_length)
 {
-    (void) key;
-    (void) alg;
-    (void) hash;
-    (void) hash_length;
-    (void) signature;
-    (void) signature_size;
-    (void) signature_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+
+    if (!PSA_ALG_IS_ECDSA(alg)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (hash_length != PSA_HASH_LENGTH(alg)) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, PSA_KEY_USAGE_SIGN_HASH, alg);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        return status;
+    }
+
+    if (!PSA_KEY_TYPE_IS_KEY_PAIR(slot->attr.type)) {
+        unlock_status = psa_unlock_key_slot(slot);
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    psa_key_attributes_t attributes = slot->attr;
+
+    status = psa_driver_wrapper_sign_hash(&attributes, alg, slot->key.data, slot->key.bytes, hash, hash_length, signature, signature_size, signature_length);
+
+    unlock_status = psa_unlock_key_slot(slot);
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
 psa_status_t psa_sign_message(psa_key_id_t key,
@@ -1285,13 +1361,35 @@ psa_status_t psa_verify_hash(psa_key_id_t key,
                              const uint8_t * signature,
                              size_t signature_length)
 {
-    (void) key;
-    (void) alg;
-    (void) hash;
-    (void) hash_length;
-    (void) signature;
-    (void) signature_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+
+    if (!PSA_ALG_IS_ECDSA(alg)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (hash_length != PSA_HASH_LENGTH(alg)) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, PSA_KEY_USAGE_VERIFY_HASH, alg);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        return status;
+    }
+
+    if (!PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
+        unlock_status = psa_unlock_key_slot(slot);
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    psa_key_attributes_t attributes = slot->attr;
+
+    status = psa_driver_wrapper_verify_hash(&attributes, alg, slot->key.data, slot->key.bytes, hash, hash_length, signature, signature_length);
+
+    unlock_status = psa_unlock_key_slot(slot);
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
 psa_status_t psa_verify_message(psa_key_id_t key,
