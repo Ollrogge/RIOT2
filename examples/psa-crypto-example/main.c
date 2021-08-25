@@ -148,6 +148,72 @@ static void test_prim_se(void)
 }
 #endif
 
+static void test_sign_verify(void)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_key_id_t privkey_id;
+    psa_key_attributes_t privkey_attr = psa_key_attributes_init();
+    psa_key_id_t pubkey_id;
+    psa_key_attributes_t pubkey_attr = psa_key_attributes_init();
+
+    psa_key_lifetime_t lifetime = 0x00000100;
+    psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH;
+    psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
+    psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
+    psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
+
+    uint8_t public_key[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE] = { 0 };
+    size_t pubkey_length;
+
+    uint8_t signature[PSA_SIGN_OUTPUT_SIZE(type, bits, alg)];
+    size_t sig_length;
+    uint8_t msg[PSA_HASH_LENGTH(PSA_ALG_SHA_256)] = { 0x0b };
+
+    psa_set_key_lifetime(&privkey_attr, lifetime);
+    psa_set_key_algorithm(&privkey_attr, alg);
+    psa_set_key_usage_flags(&privkey_attr, usage);
+    psa_set_key_type(&privkey_attr, type);
+    psa_set_key_bits(&privkey_attr, bits);
+
+    status = psa_generate_key(&privkey_attr, &privkey_id);
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Generate Key failed: %ld\n", status);
+        return;
+    }
+
+    status = psa_export_public_key(privkey_id, public_key, sizeof(public_key), &pubkey_length);
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Export Public Key failed: %ld\n", status);
+        return;
+    }
+
+    lifetime = 0x80000000;
+    psa_set_key_lifetime(&pubkey_attr, lifetime);
+    psa_set_key_algorithm(&pubkey_attr, alg);
+    psa_set_key_usage_flags(&pubkey_attr, PSA_KEY_USAGE_VERIFY_HASH);
+    psa_set_key_bits(&pubkey_attr, 512);
+    psa_set_key_type(&pubkey_attr, PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1));
+
+    status = psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id);
+    if (status != PSA_SUCCESS) {
+        printf("PSA Import Public Key failed: %ld\n", status);
+        return;
+    }
+
+    status = psa_sign_hash(privkey_id, alg, msg, sizeof(msg), signature, sizeof(signature), &sig_length);
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Sign hash failed: %ld\n", status);
+        return;
+    }
+
+    status = psa_verify_hash(pubkey_id, alg, msg, sizeof(msg), signature, sig_length);
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Verify hash failed: %ld\n", status);
+        return;
+    }
+    puts("Sign Verify Successful");
+}
+
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 static void test_sec_se(void)
 {
@@ -192,6 +258,8 @@ static void test_sec_se(void)
 int main(void)
 {
     psa_crypto_init();
+
+    test_sign_verify();
 #if !IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     test_cipher_aes_cbc();
 #endif
