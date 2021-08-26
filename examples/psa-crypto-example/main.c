@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Freie Universität Berlin
+ * Copyright (C) 2021 Freie Universität Berlin
  *
  * This file is subject to the terms and conditions of the GNU Lesser
  * General Public License v2.1. See the file LICENSE in the top level
@@ -11,7 +11,7 @@
  * @{
  *
  * @file
- * @brief       Hello World application
+ * @brief       PSA Crypto Example Application
  *
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Ludwig Knüpfer <ludwig.knuepfer@fu-berlin.de>
@@ -64,7 +64,7 @@ static uint8_t CBC_CIPHER_LEN = 32;
 #endif
 
 #if !IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-static void test_cipher_aes_cbc(void)
+static void example_cipher_aes_cbc(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_attributes_t attr = psa_key_attributes_init();
@@ -109,7 +109,7 @@ static void test_cipher_aes_cbc(void)
 #endif
 
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-static void test_prim_se(void)
+static void example_prim_se(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_attributes_t attr = psa_key_attributes_init();
@@ -148,7 +148,8 @@ static void test_prim_se(void)
 }
 #endif
 
-static void test_sign_verify(void)
+#if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
+static void example_sign_verify(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_id_t privkey_id;
@@ -213,9 +214,10 @@ static void test_sign_verify(void)
     }
     puts("Sign Verify Successful");
 }
+#endif
 
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
-static void test_sec_se(void)
+static void example_sec_se(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
 
@@ -259,15 +261,17 @@ int main(void)
 {
     psa_crypto_init();
 
-    test_sign_verify();
+#if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
+    example_sign_verify();
+#endif
 #if !IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-    test_cipher_aes_cbc();
+    example_cipher_aes_cbc();
 #endif
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-    test_prim_se();
+    example_prim_se();
 #endif
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
-    test_sec_se();
+    example_sec_se();
 #endif
     return 0;
 }

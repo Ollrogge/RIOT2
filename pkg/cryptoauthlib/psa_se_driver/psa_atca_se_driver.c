@@ -166,7 +166,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
     ATCADevice dev = NULL;
     ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
 
-    uint8_t buf_in[ECC_P256_PUB_KEY_SIZE] = {0};
+    uint8_t buf_in[32] = {0};
 
     if (!ALG_IS_SUPPORTED(attributes->policy.alg)) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -182,7 +182,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
     }
 
     if (key_slot == ATCA_TEMPKEY_KEYID) {
-        /* This implementation only uses the device's TEMPKEY Register for key import, which only accepts input sizes of 32 or 64 Bytes, so we copy a smaller key into a 64 Byte buffer that is padded with zeros */
+        /* This implementation only uses the device's TEMPKEY Register for key import, which only accepts input sizes of 32 or 64 Bytes, so we copy a smaller key into a 32 Byte buffer that is padded with zeros */
         memcpy(buf_in, data, data_length);
         status = calib_nonce_load(dev, NONCE_MODE_TARGET_TEMPKEY, buf_in, sizeof(buf_in));
 

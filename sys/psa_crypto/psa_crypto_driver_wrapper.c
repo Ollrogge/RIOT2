@@ -334,6 +334,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
 #endif
         default:
         (void) slot;
+        (void) alg;
         (void) input;
         (void) input_length;
         (void) output;
@@ -366,6 +367,7 @@ psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attribut
     }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
     (void) attributes;
+    (void) alg;
     (void) key_buffer;
     (void) key_buffer_size;
     (void) data;
@@ -398,6 +400,7 @@ psa_status_t psa_driver_wrapper_verify_hash(  const psa_key_attributes_t *attrib
     }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
     (void) attributes;
+    (void) alg;
     (void) key_buffer;
     (void) key_buffer_size;
     (void) data;
