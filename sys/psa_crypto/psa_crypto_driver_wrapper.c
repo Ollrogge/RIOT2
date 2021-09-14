@@ -272,7 +272,7 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(psa_cipher_operation_t *ope
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-#if IS_ACTIVE(CONFIG_CIPHER_AES_128)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_MODE_CBC)
 static psa_status_t psa_cipher_cbc_encrypt( psa_key_slot_t *slot,
                                             psa_algorithm_t alg,
                                             const uint8_t * input,
@@ -328,7 +328,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
     switch(alg) {
-#if IS_ACTIVE(CONFIG_CIPHER_AES_128)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_MODE_CBC)
         case PSA_ALG_CBC_NO_PADDING:
             return psa_cipher_cbc_encrypt(slot, alg, input, input_length, output, output_size, output_length);
 #endif

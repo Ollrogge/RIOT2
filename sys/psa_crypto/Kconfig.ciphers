@@ -5,26 +5,22 @@
 # directory for more details.
 #
 
-menuconfig CIPHER_AES_128
-    bool "AES-128"
+menuconfig CIPHER_AES_128_ECB
+    bool "AES-128 ECB"
+    select PSA_CIPHER_MODE_ECB
+    select PSA_CIPHER_AES
 
-if CIPHER_AES_128
+if CIPHER_AES_128_ECB
 
-choice CIPHER_AES_128_IMPLEMENTATION
-    bool "AES-128 implementation"
-    default PERIPH_CIPHER_AES_128
+choice CIPHER_AES_128_ECB_IMPLEMENTATION
+    bool "AES-128 Implementation"
+    default RIOT_CIPHER_AES_128_ECB
 
-config RIOT_CIPHER_AES_128
+config RIOT_CIPHER_AES_128_ECB
     bool "RIOT Cipher Module"
     select MODULE_CRYPTO
     select MODULE_CRYPTO_AES_128
-    select MODULE_PSA_RIOT_CIPHER_AES_CBC
-
-config PERIPH_CIPHER_AES_128
-    bool "Hardware Peripheral Implementation"
-    depends on HAS_PERIPH_CIPHER_AES_128
-    select PERIPH_CIPHER_AES
-    select PERIPH_CIPHER_MODE_CBC
+    select MODULE_PSA_RIOT_CIPHER_AES_ECB
 
 config CRYPTOAUTHLIB_CIPHER_AES_128
     bool "Microchip Cryptoauthlib"
@@ -32,25 +28,54 @@ config CRYPTOAUTHLIB_CIPHER_AES_128
     select MODULE_PSA_SE_DRIVER
     select PSA_CRYPTO_SECURE_ELEMENT
 
-config PSA_TINYCRYPT_CIPHER_AES_128
-    bool "TinyCrypt library as PSA Backend"
+endchoice
+
+endif # CIPHER_AES_128_ECB
+
+menuconfig CIPHER_AES_128_CBC
+    bool "AES-128 CBC"
+    select PSA_CIPHER_MODE_CBC
+    select PSA_CIPHER_AES
+
+if CIPHER_AES_128_CBC
+
+choice CIPHER_AES_128_CBC_IMPLEMENTATION
+    bool "AES-128 CBC Implementation"
+    default PERIPH_CIPHER_AES_128_CBC
+
+config RIOT_CIPHER_AES_128_CBC
+    bool "RIOT Cipher Module"
+    select MODULE_CRYPTO
+    select MODULE_CRYPTO_AES_128
+    select MODULE_PSA_RIOT_CIPHER_AES_CBC
+
+config PERIPH_CIPHER_AES_128_CBC
+    bool "Hardware Accelerated"
+    depends on HAS_PERIPH_CIPHER_AES_128_CBC
+    select PERIPH_CIPHER_AES
+    select PERIPH_CIPHER_MODE_CBC
+
+config PSA_TINYCRYPT_CIPHER_AES_128_CBC
+    bool "TinyCrypt Library"
     select PACKAGE_TINYCRYPT
     select MODULE_PSA_TINYCRYPT_CIPHER_AES_CBC
 
 endchoice
 
-endif # CIPHER_AES_128
+endif # CIPHER_AES_128_CBC
 
-menuconfig CIPHER_AES_192
-    bool "AES-192"
+menuconfig CIPHER_AES_192_CBC
+    bool "AES-192 CBC"
+    select PSA_CIPHER_MODE_CBC
+    select PSA_CIPHER_AES
 
-if CIPHER_AES_192
+if CIPHER_AES_192_CBC
 
-choice CIPHER_AES_192_IMPLEMENTATION
-    bool "AES-192 implementation"
-    default RIOT_CIPHER_AES_192
+choice CIPHER_AES_192_CBC_IMPLEMENTATION
+    bool "AES-192 Implementation"
+    default RIOT_CIPHER_AES_192_CBC
 
-config RIOT_CIPHER_AES_192
+config RIOT_CIPHER_AES_192_CBC
     bool "RIOT Cipher Module"
     select MODULE_CRYPTO
     select MODULE_CRYPTO_AES_192
@@ -60,16 +85,18 @@ endchoice
 
 endif # CIPHER_AES_192
 
-menuconfig CIPHER_AES_256
-    bool "AES-256"
+menuconfig CIPHER_AES_256_CBC
+    bool "AES-256 CBC"
+    select PSA_CIPHER_MODE_CBC
+    select PSA_CIPHER_AES
 
-if CIPHER_AES_256
+if CIPHER_AES_256_CBC
 
-choice CIPHER_AES_256_IMPLEMENTATION
-    bool "AES-256 implementation"
-    default RIOT_CIPHER_AES_256
+choice CIPHER_AES_256_CBC_IMPLEMENTATION
+    bool "AES-256 Implementation"
+    default RIOT_CIPHER_AES_256_CBC
 
-config RIOT_CIPHER_AES_256
+config RIOT_CIPHER_AES_256_CBC
     bool "RIOT Cipher Module"
     select MODULE_CRYPTO
     select MODULE_CRYPTO_AES_256
@@ -77,4 +104,19 @@ config RIOT_CIPHER_AES_256
 
 endchoice
 
-endif # CIPHER_AES_256
+endif # CIPHER_AES_256_CBC
+
+config PSA_CIPHER_MODE_ECB
+    bool
+    help
+        Indicates use of ECB Cipher Mode
+
+config PSA_CIPHER_MODE_CBC
+    bool
+    help
+        Indicates use of CBC Cipher Mode
+
+config PSA_CIPHER_AES
+    bool
+    help
+        Indicates use of an AES Key

@@ -12,21 +12,21 @@ menuconfig MODULE_PSA_CRYPTO
 if MODULE_PSA_CRYPTO
 
 menuconfig PSA_HASHES
-    bool "PSA Hashes Implementations"
+    bool "PSA Hashes"
 
 if PSA_HASHES
 rsource "Kconfig.hashes"
 endif # PSA_HASHES
 
 menuconfig PSA_CIPHERS
-    bool "PSA Cipher Implementations"
+    bool "PSA Cipher"
 
 if PSA_CIPHERS
 rsource "Kconfig.ciphers"
 endif # PSA_CIPHERS
 
 menuconfig PSA_ASYMMETRIC
-    bool "PSA Assymmetric Crypto Implementations"
+    bool "PSA Asymmetric Crypto"
 
 if PSA_ASYMMETRIC
 rsource "Kconfig.asymmetric"

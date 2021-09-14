@@ -63,7 +63,7 @@ static uint8_t __attribute__((aligned)) CBC_CIPHER[] = {
 static uint8_t CBC_CIPHER_LEN = 32;
 #endif
 
-#if !IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_CIPHER_AES_128_CBC)
 static void example_cipher_aes_cbc(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
@@ -264,7 +264,7 @@ int main(void)
 #if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
     example_sign_verify();
 #endif
-#if !IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_CIPHER_AES_128_CBC)
     example_cipher_aes_cbc();
 #endif
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)

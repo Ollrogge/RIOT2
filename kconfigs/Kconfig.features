@@ -95,15 +95,10 @@ config HAS_PERIPH_HASH_SHA256
         Indicates that there is SHA-256 hardware acceleration present.
 
 # Cipher AES
-config HAS_PERIPH_CIPHER_AES_128
+config HAS_PERIPH_CIPHER_AES_128_CBC
     bool
     help
-        Indicates that there is AES 128 hardware acceleration present
-
-config HAS_PERIPH_CIPHER_AES_CBC
-    bool
-    help
-        Indicates that there is AES CBC hardware acceleration present
+        Indicates that there is AES 128 CBC hardware acceleration present
 
 config HAS_HIGHLEVEL_STDIO
     bool

@@ -149,6 +149,7 @@
 #define PSA_ALG_RSA_PKCS1V15_SIGN_RAW   ((psa_algorithm_t) 0x06000200)
 
 #define PSA_ALG_ECDSA_BASE      ((psa_algorithm_t) 0x06000600)
+
 /** ECDSA signature with hashing.
  *
  * This is the ECDSA signature scheme defined by ANSI X9.62,
@@ -456,6 +457,7 @@
 #define PSA_KEY_TYPE_RSA_KEY_PAIR ((psa_key_type_t)0x7001)
 #define PSA_KEY_TYPE_RSA_PUBLIC_KEY ((psa_key_type_t)0x4001)
 #define PSA_KEY_TYPE_SM4 ((psa_key_type_t)0x2405)
+
 #define PSA_KEY_USAGE_CACHE ((psa_key_usage_t)0x00000004)
 #define PSA_KEY_USAGE_COPY ((psa_key_usage_t)0x00000002)
 #define PSA_KEY_USAGE_DECRYPT ((psa_key_usage_t)0x00000200)
