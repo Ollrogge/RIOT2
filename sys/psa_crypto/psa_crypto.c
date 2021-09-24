@@ -275,7 +275,7 @@ static int psa_key_algorithm_permits(psa_key_type_t type, psa_algorithm_t policy
     return 0;
 }
 
-static psa_status_t psa_key_policy_permits( const psa_key_policy_t *policy, psa_key_type_t type, psa_algorithm_t alg)
+static psa_status_t psa_key_policy_permits (const psa_key_policy_t *policy, psa_key_type_t type, psa_algorithm_t alg)
 {
     if (alg == 0) {
         return PSA_ERROR_INVALID_ARGUMENT;
@@ -283,9 +283,8 @@ static psa_status_t psa_key_policy_permits( const psa_key_policy_t *policy, psa_
     if (psa_key_algorithm_permits(type, policy->alg, alg)) {
         return PSA_SUCCESS;
     }
-    else {
-        return PSA_ERROR_NOT_PERMITTED;
-    }
+
+    return PSA_ERROR_NOT_PERMITTED;
 }
 
 static psa_status_t psa_get_and_lock_key_slot_with_policy(

@@ -187,6 +187,6 @@ psa_status_t psa_validate_key_persistence(psa_key_lifetime_t lifetime)
     if (PSA_KEY_LIFETIME_IS_VOLATILE(lifetime)) {
         return PSA_SUCCESS;
     }
-    /* TODO: Persistent key storage not implemented, yet */
+    /* TODO: Implement persistent key storage */
     return PSA_ERROR_NOT_SUPPORTED;
 }

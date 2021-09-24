@@ -98,9 +98,6 @@ static void example_cipher_aes_cbc(void)
 
     if (memcmp(cipher_out + iv_size, CBC_CIPHER, CBC_CIPHER_LEN)) {
         puts("CBC Encryption failed");
-        for (size_t i = 0; i < combined_output_size; i++) {
-            printf("0x%02x\n", cipher_out[i]);
-        }
     }
     else {
         puts("CBC Encryption successful");
