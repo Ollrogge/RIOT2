@@ -36,25 +36,19 @@ void auto_init_atca(void)
 {
     DEBUG("Auto Init ATCA");
     for (unsigned i = 0; i < ATCA_NUMOF; i++) {
-        if (atcab_init((ATCAIfaceCfg *)&atca_params[i]) != ATCA_SUCCESS) {
+        if (atcab_init((ATCAIfaceCfg *)&atca_params[i].cfg) != ATCA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error initializing cryptoauth device #%u\n", i);
             continue;
         }
 
 #if IS_ACTIVE(CONFIG_MODULE_PSA_CRYPTO)
         DEBUG("Registering Driver");
-        psa_key_location_t location = (i == 0) ? PSA_KEY_LOCATION_PRIMARY_SECURE_ELEMENT : PSA_KEY_LOCATION_SECONDARY_SE_MIN;
-
         if (i >= PSA_MAX_SE_COUNT) {
             LOG_ERROR("[auto_init_atca] PSA Crypto – too many secure elements #%u\n", i + 1);
             continue;
         }
 
-        if (location == PSA_KEY_LOCATION_SECONDARY_SE_MIN) {
-            location += i - 1;
-        }
-
-        if (psa_register_secure_element(location, &atca_methods, (ATCAIfaceCfg *) &atca_params[i]) != PSA_SUCCESS) {
+        if (psa_register_secure_element(atca_params[i].atca_loc, &atca_methods, (ATCAIfaceCfg *) &atca_params[i].cfg) != PSA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error registering cryptoauth PSA driver for device #%u\n", i);
             continue;
         }

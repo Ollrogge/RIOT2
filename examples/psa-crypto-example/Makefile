@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = hello-world
+APPLICATION = psa-crypto
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native

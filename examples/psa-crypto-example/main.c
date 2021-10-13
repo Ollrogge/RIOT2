@@ -110,7 +110,7 @@ static void example_prim_se(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     psa_key_attributes_t attr = psa_key_attributes_init();
-    psa_key_lifetime_t lifetime = 0x00000100;
+    psa_key_lifetime_t lifetime = 0x80000000;
     psa_key_id_t key_id = 0;
     psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
 
@@ -219,7 +219,7 @@ static void example_sec_se(void)
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
 
     psa_key_attributes_t attr = psa_key_attributes_init();
-    psa_key_lifetime_t lifetime = 0x80000000;
+    psa_key_lifetime_t lifetime = 0x80000100;
     psa_key_id_t key_id = 0;
     psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
 

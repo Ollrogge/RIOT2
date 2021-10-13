@@ -26,6 +26,10 @@
 #include "atca.h"
 #include "cryptoauthlib.h"
 
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#include "psa/crypto_values.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,9 +53,13 @@ extern "C" {
 #ifndef ATCA_PARAM_I2C_DEV0
 #define ATCA_PARAM_I2C_DEV0      I2C_DEV(0)
 #endif
+
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 #ifndef ATCA_PARAM_I2C_DEV1
 #define ATCA_PARAM_I2C_DEV1      I2C_DEV(1)
 #endif
+#endif
+
 #ifndef ATCA_PARAM_ADDR
 #define ATCA_PARAM_ADDR          (ATCA_I2C_ADDR)
 #endif
@@ -60,6 +68,11 @@ extern "C" {
 #endif
 #ifndef ATCA_DEVTYPE
 #define ATCA_DEVTYPE            (ATECC608A)
+#endif
+
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#define PSA_ATCA_LOCATION_DEV0  (PSA_KEY_LOCATION_SE_MIN + ATCA_PARAM_I2C_DEV0)
+#define PSA_ATCA_LOCATION_DEV1  (PSA_KEY_LOCATION_SE_MIN + ATCA_PARAM_I2C_DEV1)
 #endif
 
 #ifndef ATCA_PARAMS_DEV0
@@ -86,15 +99,30 @@ extern "C" {
 
 /**@}*/
 
+typedef struct {
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    psa_key_location_t atca_loc;
+#endif
+    ATCAIfaceCfg cfg;
+} atca_params_t;
+
 /**
  * @brief   Allocation of ATCA device descriptors
  */
-static const ATCAIfaceCfg atca_params[] =
+static const atca_params_t atca_params[] =
 {
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
-    ATCA_PARAMS_DEV1,
+    {
+        .atca_loc = PSA_ATCA_LOCATION_DEV1,
+        .cfg = ATCA_PARAMS_DEV1
+    },
 #endif
-    ATCA_PARAMS_DEV0
+    {
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+        .atca_loc = PSA_ATCA_LOCATION_DEV0,
+#endif
+        .cfg = ATCA_PARAMS_DEV0
+    }
 };
 
 #ifdef __cplusplus

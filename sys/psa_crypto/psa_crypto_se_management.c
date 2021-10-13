@@ -19,7 +19,7 @@ psa_status_t psa_register_secure_element(psa_key_location_t location, const psa_
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    if (location > PSA_KEY_LOCATION_SECONDARY_SE_MAX) {
+    if (location > PSA_KEY_LOCATION_SE_MAX) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 

@@ -331,8 +331,8 @@
 
 #define PSA_KEY_LOCATION_VENDOR_FLAG            ((psa_key_location_t)0x800000)
 
-#define PSA_KEY_LOCATION_SECONDARY_SE_MIN (PSA_KEY_LOCATION_VENDOR_FLAG)
-#define PSA_KEY_LOCATION_SECONDARY_SE_MAX ((psa_key_location_t) 0x8000ff)
+#define PSA_KEY_LOCATION_SE_MIN (PSA_KEY_LOCATION_VENDOR_FLAG)
+#define PSA_KEY_LOCATION_SE_MAX ((psa_key_location_t) 0x8000ff)
 
 #define PSA_KEY_PERSISTENCE_DEFAULT ((psa_key_persistence_t) 0x01)
 #define PSA_KEY_PERSISTENCE_READ_ONLY ((psa_key_persistence_t) 0xff)
