@@ -481,7 +481,13 @@
 #define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
 
 /* TODO: Adapt max key length to algorithm in use */
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
 #define PSA_MAX_KEY_LENGTH  (128)
+#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
+#define PSA_MAX_KEY_LENGTH  (192)
+#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
+#define PSA_MAX_KEY_LENGTH  (256)
+#endif
 
 /**
  * @brief The action was completed successfully.

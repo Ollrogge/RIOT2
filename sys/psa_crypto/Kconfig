@@ -8,6 +8,7 @@
 menuconfig MODULE_PSA_CRYPTO
     bool "PSA Crypto"
     depends on TEST_KCONFIG
+    select MODULE_RANDOM
 
 if MODULE_PSA_CRYPTO
 

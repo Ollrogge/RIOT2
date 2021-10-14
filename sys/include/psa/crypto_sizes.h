@@ -166,4 +166,8 @@
     (PSA_KEY_TYPE_IS_ECC(key_type) ? PSA_ECDSA_SIGNATURE_SIZE(key_bits) : \
      ((void)alg, 0))
 
+#define PSA_CONVERT_KEY_SIZE(key_type, key_bits) \
+    (PSA_KEY_TYPE_IS_UNSTRUCTURED(key_type) ? PSA_BITS_TO_BYTES(key_bits) : \
+    0)
+
 #endif /* PSA_CRYPTO_SIZES_H */

@@ -9,6 +9,7 @@ menuconfig CIPHER_AES_128_ECB
     bool "AES-128 ECB"
     select PSA_CIPHER_MODE_ECB
     select PSA_CIPHER_AES
+    select PSA_CIPHER_AES_KEY_SIZE_128
 
 if CIPHER_AES_128_ECB
 
@@ -36,6 +37,7 @@ menuconfig CIPHER_AES_128_CBC
     bool "AES-128 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
+    select PSA_CIPHER_AES_KEY_SIZE_128
 
 if CIPHER_AES_128_CBC
 
@@ -68,6 +70,7 @@ menuconfig CIPHER_AES_192_CBC
     bool "AES-192 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
+    select PSA_CIPHER_AES_KEY_SIZE_192
 
 if CIPHER_AES_192_CBC
 
@@ -89,6 +92,7 @@ menuconfig CIPHER_AES_256_CBC
     bool "AES-256 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
+    select PSA_CIPHER_AES_KEY_SIZE_256
 
 if CIPHER_AES_256_CBC
 
@@ -120,3 +124,18 @@ config PSA_CIPHER_AES
     bool
     help
         Indicates use of an AES Key
+
+config PSA_CIPHER_AES_KEY_SIZE_128
+    bool
+    help
+        Indicates that an 128 bit AES key is used
+
+config PSA_CIPHER_AES_KEY_SIZE_192
+    bool
+    help
+        Indicates that an 192 bit AES key is used
+
+config PSA_CIPHER_AES_KEY_SIZE_256
+    bool
+    help
+        Indicates that an 256 bit AES key is used

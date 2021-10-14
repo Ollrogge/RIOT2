@@ -25,6 +25,11 @@
 #include "include/psa_crypto_slot_management.h"
 #include "include/psa_crypto_driver_wrapper.h"
 
+#include "random.h"
+#ifdef MODULE_PERIPH_HWRNG
+#include "periph/hwrng.h"
+#endif
+
 #include "kernel_defines.h"
 
 static uint8_t lib_initialized = 0;
@@ -457,12 +462,9 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
                                     size_t iv_size,
                                     size_t * iv_length)
 {
-    *iv_length = 0;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
-    uint8_t CBC_IV[16] = {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-    };
+    *iv_length = 0;
 
     if (!operation->iv_required || operation->iv_set) {
         return PSA_ERROR_BAD_STATE;
@@ -472,13 +474,15 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
         psa_cipher_abort(operation);
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
-    /*  Currently just returns the CBC_IV array,
-        should call a random number generator */
-    memcpy(iv, CBC_IV, iv_size);
+
+    status = psa_generate_random(iv, iv_size);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
 
     *iv_length = operation->default_iv_length;
 
-    return PSA_SUCCESS;
+    return status;
 }
 
 psa_status_t psa_cipher_set_iv(psa_cipher_operation_t * operation,
@@ -908,6 +912,15 @@ psa_status_t psa_export_public_key(psa_key_id_t key,
     return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
+static psa_status_t psa_validate_key_type_and_size_for_key_generation(psa_key_type_t type, size_t bits)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+
+    if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
+        status =
+    }
+}
+
 psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
                               psa_key_id_t * key)
 {
@@ -926,6 +939,15 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
         return status;
+    }
+
+    if (PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime) == PSA_KEY_LOCATION_LOCAL_STORAGE) {
+        status = psa_validate_key_type_and_size_for_key_generation(attributes->type, attributes->bits);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
+
+        slot->key.bytes = PSA_CONVERT_KEY_SIZE(attributes->type, attributes->bits);
     }
 
     status = psa_driver_wrapper_generate_key(attributes, slot->key.data, slot->key.bytes, &slot->key.bytes);
@@ -947,9 +969,8 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
 psa_status_t psa_generate_random(uint8_t * output,
                                  size_t output_size)
 {
-    (void) output;
-    (void) output_size;
-    return PSA_ERROR_NOT_SUPPORTED;
+    random_bytes(output, output_size);
+    return PSA_SUCCESS;
 }
 
 psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes)

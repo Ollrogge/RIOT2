@@ -1,10 +1,8 @@
-#include "include/psa_builtin_key_management.h"
-#include "include/psa_crypto_slot_management.h"
 #include "psa/crypto.h"
 
 static int key_type_is_raw_bytes( psa_key_type_t type )
 {
-    return( PSA_KEY_TYPE_IS_UNSTRUCTURED( type ) );
+    return PSA_KEY_TYPE_IS_UNSTRUCTURED(type);
 }
 
 static psa_status_t psa_validate_unstructured_key_bit_size(psa_key_type_t type, size_t bits)
@@ -51,4 +49,25 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
         return PSA_SUCCESS;
     }
     return status;
+}
+
+psa_status_t psa_builtin_generate_key(const psa_key_attributes_t *attributes, uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_type_t type = attributes->type;
+
+    if (key_type_is_raw_bytes(type)) {
+        status = psa_generate_random(key_buffer, key_buffer_size);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
+        *key_buffer_length = key_buffer_size;
+    }
+    else {
+        (void) key_buffer;
+        (void) key_buffer_size;
+        (void) key_buffer_length;
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+    return PSA_SUCCESS;
 }

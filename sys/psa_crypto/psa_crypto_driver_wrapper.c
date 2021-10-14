@@ -168,6 +168,9 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
                                                 uint8_t *key_buffer, size_t key_buffer_size,
                                                 size_t *key_buffer_length)
 {
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime);
+
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
@@ -181,11 +184,17 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
     }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
-    (void) attributes;
-    (void) key_buffer;
-    (void) key_buffer_size;
-    (void) key_buffer_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    switch(location) {
+        case PSA_KEY_LOCATION_LOCAL_STORAGE:
+            status = psa_builtin_generate_key(attributes, key_buffer, key_buffer_size, key_buffer_length);
+            break;
+        default:
+            (void) key_buffer;
+            (void) key_buffer_size;
+            (void) key_buffer_length;
+            return PSA_ERROR_NOT_SUPPORTED;
+    }
+    return status;
 }
 
 psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
