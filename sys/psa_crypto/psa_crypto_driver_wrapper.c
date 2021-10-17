@@ -23,7 +23,6 @@
 #include "include/psa_hashes.h"
 #include "include/psa_ciphers.h"
 #include "include/psa_crypto_slot_management.h"
-#include "include/psa_builtin_key_management.h"
 #include "include/psa_crypto_se_management.h"
 #include "include/psa_crypto_se_driver.h"
 

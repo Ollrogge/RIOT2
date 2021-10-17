@@ -716,6 +716,31 @@ static psa_status_t psa_validate_key_policy(const psa_key_policy_t *policy)
     return( PSA_SUCCESS );
 }
 
+static psa_status_t psa_validate_unstructured_key_size(psa_key_type_t type, size_t bits)
+{
+    switch(type) {
+        case PSA_KEY_TYPE_AES:
+            if (bits != 128 && bits != 192 && bits != 256) {
+                return PSA_ERROR_INVALID_ARGUMENT;
+            }
+            break;
+        default:
+            (void) bits;
+            return PSA_ERROR_NOT_SUPPORTED;
+            break;
+    }
+    return PSA_SUCCESS;
+}
+
+static psa_status_t psa_validate_key_for_key_generation(psa_key_type_t type, size_t bits)
+{
+    if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
+        return psa_validate_unstructured_key_size(type, bits);
+    }
+    /* TODO: add validation for other key types */
+    return PSA_ERROR_NOT_SUPPORTED;
+}
+
 static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attributes, psa_se_drv_data_t **p_drv)
 {
     psa_status_t status = PSA_ERROR_INVALID_ARGUMENT;
@@ -747,7 +772,6 @@ static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attr
 
     status = psa_validate_key_policy(&attributes->policy);
     if (status != PSA_SUCCESS) {
-        printf("Line: %d, status: %ld\n", __LINE__, status);
         return status;
     }
 
@@ -806,16 +830,13 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
 static psa_status_t psa_finish_key_creation(psa_key_slot_t *slot, psa_se_drv_data_t *driver, psa_key_id_t *key)
 {
     psa_status_t status = PSA_SUCCESS;
-
+    *key = PSA_KEY_ID_NULL;
     /* TODO: Finish persistent key storage */
     /* TODO: Finish SE key storage with transaction */
 
     if (status == PSA_SUCCESS) {
         *key = slot->attr.id;
         status = psa_unlock_key_slot(slot);
-        if (status != PSA_SUCCESS) {
-            *key = 0;
-        }
     }
     else {
         (void) slot;
@@ -912,13 +933,25 @@ psa_status_t psa_export_public_key(psa_key_id_t key,
     return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
-static psa_status_t psa_validate_key_type_and_size_for_key_generation(psa_key_type_t type, size_t bits)
+psa_status_t psa_builtin_generate_key(const psa_key_attributes_t *attributes, uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_type_t type = attributes->type;
 
     if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
-        status =
+        status = psa_generate_random(key_buffer, key_buffer_size);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
+        *key_buffer_length = key_buffer_size;
     }
+    else {
+        (void) key_buffer;
+        (void) key_buffer_size;
+        (void) key_buffer_length;
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+    return PSA_SUCCESS;
 }
 
 psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
@@ -927,22 +960,17 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot = NULL;
     psa_se_drv_data_t *driver = NULL;
-    *key = 0;
-
-    if (psa_get_key_bits(attributes) == 0) {
-        return PSA_ERROR_INVALID_ARGUMENT;
-    }
+    *key = PSA_KEY_ID_NULL;
 
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_GENERATE, attributes, &slot, &driver);
-
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
         return status;
     }
 
     if (PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime) == PSA_KEY_LOCATION_LOCAL_STORAGE) {
-        status = psa_validate_key_type_and_size_for_key_generation(attributes->type, attributes->bits);
+        status = psa_validate_key_for_key_generation(attributes->type, attributes->bits);
         if (status != PSA_SUCCESS) {
             return status;
         }
@@ -1020,6 +1048,38 @@ psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
     return attributes->policy.usage;
 }
 
+psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
+                                    const uint8_t *data, size_t data_length,
+                                    uint8_t *key_buffer, size_t key_buffer_size,
+                                    size_t *key_buffer_length, size_t *bits)
+{
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_type_t type = attributes->type;
+
+    if (data_length == 0) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
+        *bits = PSA_BYTES_TO_BITS(data_length);
+
+        if (*bits > PSA_MAX_KEY_BITS) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+        status = psa_validate_unstructured_key_size(type, *bits);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
+
+        memcpy(key_buffer, data, data_length);
+        *key_buffer_length = data_length;
+        (void) key_buffer_size;
+
+        return PSA_SUCCESS;
+    }
+    return status;
+}
+
 psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
                             const uint8_t * data,
                             size_t data_length,
@@ -1029,7 +1089,7 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     psa_key_slot_t *slot = NULL;
     psa_se_drv_data_t *driver = NULL;
     size_t bits;
-    *key = 0;
+    *key = PSA_KEY_ID_NULL;;
 
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_IMPORT, attributes, &slot, &driver);

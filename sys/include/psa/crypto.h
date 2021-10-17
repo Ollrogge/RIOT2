@@ -913,8 +913,51 @@ psa_status_t psa_export_public_key(psa_key_id_t key,
                                    uint8_t * data,
                                    size_t data_size,
                                    size_t * data_length);
+
+psa_status_t psa_builtin_generate_key(const psa_key_attributes_t *attributes, uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length);
+
+/**
+ * @brief Generate a key or key pair.
+ *
+ * @param attributes        The attributes for the new key. This function uses the attributes as follows:
+ *                              - The key type is required. It cannot be an asymmetric public key.
+ *                              - The key size is required. It must be a valid size for the key type.
+ *                              - The key permitted-algorithm policy is required for keys that will be
+ *                                used for a cryptographic operation, see Permitted algorithms.
+ *                              - The key usage flags define what operations are permitted with the key,
+ *                                see Key usage flags.
+ *                              - The key lifetime and identifier are required for a persistent key.
+ *                          @note This is an input parameter: it is not updated with the final key attributes.
+ *                                The final attributes of the new key can be queried by calling
+ *                                psa_get_key_attributes() with the key’s identifier.
+ * @param key               On success, an identifier for the newly created key. PSA_KEY_ID_NULL on failure.
+ *
+ * @return PSA_SUCCESS                      Success. If the key is persistent, the key material and the key’s metadata
+ *                                          have been saved to persistent storage.
+ * @return PSA_ERROR_ALREADY_EXISTS         This is an attempt to create a persistent key, and there is already a
+ *                                          persistent key with the given identifier.
+ * @return PSA_ERROR_NOT_SUPPORTED          The key type or key size is not supported, either by the implementation in
+ *                                          general or in this particular persistent location.
+ * @return PSA_ERROR_INVALID_ARGUMENT       The key attributes, as a whole, are invalid.
+ * @return PSA_ERROR_INVALID_ARGUMENT       The key type is an asymmetric public key type.
+ * @return PSA_ERROR_INVALID_ARGUMENT       The key size is not a valid size for the key type.
+ * @return PSA_ERROR_INSUFFICIENT_MEMORY
+ * @return PSA_ERROR_INSUFFICIENT_ENTROPY
+ * @return PSA_ERROR_COMMUNICATION_FAILURE
+ * @return PSA_ERROR_HARDWARE_FAILURE
+ * @return PSA_ERROR_CORRUPTION_DETECTED
+ * @return PSA_ERROR_INSUFFICIENT_STORAGE
+ * @return PSA_ERROR_STORAGE_FAILURE
+ * @return PSA_ERROR_DATA_CORRUPT
+ * @return PSA_ERROR_DATA_INVALID
+ * @return PSA_ERROR_BAD_STATE              The library has not been previously initialized by
+ *                                          psa_crypto_init(). It is implementation-dependent
+ *                                          whether a failure to initialize results in this error
+ *                                          code.
+ */
 psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
                               psa_key_id_t * key);
+
 psa_status_t psa_generate_random(uint8_t * output,
                                  size_t output_size);
 psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes);
@@ -1238,6 +1281,11 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
 psa_status_t psa_hash_verify(psa_hash_operation_t * operation,
                              const uint8_t * hash,
                              size_t hash_length);
+
+psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
+                                    const uint8_t *data, size_t data_length,
+                                    uint8_t *key_buffer, size_t key_buffer_size,
+                                    size_t *key_buffer_length, size_t *bits);
 
 psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
                             const uint8_t * data,
