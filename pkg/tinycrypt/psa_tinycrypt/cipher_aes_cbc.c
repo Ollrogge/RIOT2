@@ -56,7 +56,7 @@ psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    ret = tc_aes128_set_encrypt_key(&operation.ctx.aes, key_buffer);
+    ret = tc_aes128_set_encrypt_key(&operation.ctx.aes_128, key_buffer);
     if (ret != TC_CRYPTO_SUCCESS) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -66,7 +66,7 @@ psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
         return status;
     }
 
-    ret = tc_cbc_mode_encrypt(output, output_size, input, input_length, output, &operation.ctx.aes);
+    ret = tc_cbc_mode_encrypt(output, output_size, input, input_length, output, &operation.ctx.aes_128);
     if (ret != TC_CRYPTO_SUCCESS) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }

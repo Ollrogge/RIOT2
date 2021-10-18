@@ -5,15 +5,15 @@
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
 
-psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
-                                        const uint8_t *key_buffer,
-                                        size_t key_buffer_size,
-                                        psa_algorithm_t alg,
-                                        const uint8_t * input,
-                                        size_t input_length,
-                                        uint8_t * output,
-                                        size_t output_size,
-                                        size_t * output_length)
+psa_status_t psa_cipher_cbc_aes_128_encrypt(const psa_key_attributes_t *attributes,
+                                            const uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            psa_algorithm_t alg,
+                                            const uint8_t * input,
+                                            size_t input_length,
+                                            uint8_t * output,
+                                            size_t output_size,
+                                            size_t * output_length)
 {
     (void) output_size;
     DEBUG("Periph AES Cipher");
@@ -28,7 +28,7 @@ psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
 
     uint8_t iv[operation.default_iv_length];
 
-    status = common_aes_setup((SaSiAesUserContext_t *) &operation.ctx.aes, SASI_AES_ENCRYPT, SASI_AES_MODE_CBC, SASI_AES_PADDING_NONE);
+    status = common_aes_setup((SaSiAesUserContext_t *) &operation.ctx.aes_128, SASI_AES_ENCRYPT, SASI_AES_MODE_CBC, SASI_AES_PADDING_NONE);
     if (status != PSA_SUCCESS) {
         return status;
     }
@@ -36,7 +36,7 @@ psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
     key.keySize = key_buffer_size;
     key.pKey = (uint8_t *) key_buffer;
 
-    ret = SaSi_AesSetKey((SaSiAesUserContext_t *) &operation.ctx.aes, SASI_AES_USER_KEY, &key, sizeof(key));
+    ret = SaSi_AesSetKey((SaSiAesUserContext_t *) &operation.ctx.aes_128, SASI_AES_USER_KEY, &key, sizeof(key));
     if (ret != SASI_OK) {
         return SaSi_to_psa_error(ret);
     }
@@ -48,12 +48,12 @@ psa_status_t psa_cipher_aes_cbc_encrypt(const psa_key_attributes_t *attributes,
 
     memcpy(output, iv, operation.default_iv_length);
 
-    ret = SaSi_AesSetIv((SaSiAesUserContext_t *) &operation.ctx.aes, iv);
+    ret = SaSi_AesSetIv((SaSiAesUserContext_t *) &operation.ctx.aes_128, iv);
     if (ret != SASI_OK) {
         return SaSi_to_psa_error(ret);
     }
 
-    status = common_aes_update((SaSiAesUserContext_t *) &operation.ctx.aes, input, input_length, output + operation.default_iv_length);
+    status = common_aes_update((SaSiAesUserContext_t *) &operation.ctx.aes_128, input, input_length, output + operation.default_iv_length);
     if (status != PSA_SUCCESS) {
         return status;
     }

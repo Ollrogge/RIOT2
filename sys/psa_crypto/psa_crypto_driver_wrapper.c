@@ -21,7 +21,7 @@
 #include "kernel_defines.h"
 #include "psa/crypto.h"
 #include "include/psa_hashes.h"
-#include "include/psa_ciphers.h"
+#include "include/psa_crypto_algorithm_dispatcher.h"
 #include "include/psa_crypto_slot_management.h"
 #include "include/psa_crypto_se_management.h"
 #include "include/psa_crypto_se_driver.h"
@@ -279,32 +279,6 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(psa_cipher_operation_t *ope
     (void) alg;
     return PSA_ERROR_NOT_SUPPORTED;
 }
-
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_MODE_CBC)
-static psa_status_t psa_cipher_cbc_encrypt( psa_key_slot_t *slot,
-                                            psa_algorithm_t alg,
-                                            const uint8_t * input,
-                                            size_t input_length,
-                                            uint8_t * output,
-                                            size_t output_size,
-                                            size_t * output_length)
-{
-    psa_key_attributes_t attributes = slot->attr;
-
-    switch(attributes.type) {
-        case PSA_KEY_TYPE_AES:
-            return psa_cipher_aes_cbc_encrypt(&attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
-        default:
-            (void) slot;
-            (void) input;
-            (void) input_length;
-            (void) output;
-            (void) output_size;
-            (void) output_length;
-            return PSA_ERROR_NOT_SUPPORTED;
-    }
-}
-#endif
 
 psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
                                             psa_algorithm_t alg,
