@@ -39,6 +39,9 @@ typedef union {
 #if IS_ACTIVE(CONFIG_HASHES_SHA256)
     psa_hashes_sha256_ctx_t sha256;
 #endif
+#if IS_ACTIVE(CONFIG_HASHES_SHA512)
+    psa_hashes_sha512_ctx_t sha512;
+#endif
 } psa_hash_context_t;
 
 typedef union {

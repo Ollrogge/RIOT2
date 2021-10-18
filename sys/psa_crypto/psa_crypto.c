@@ -561,9 +561,7 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
     if (hash_size < actual_hash_length) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
-
     psa_status_t status = psa_driver_wrapper_hash_finish(operation, hash, hash_size, hash_length);
-
     if (status == PSA_SUCCESS) {
         *hash_length = actual_hash_length;
     }
@@ -692,6 +690,7 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
 psa_status_t psa_copy_key_material_into_slot( psa_key_slot_t *slot, const uint8_t *data, size_t data_length)
 {
     if (data_length > PSA_MAX_KEY_LENGTH) {
+        printf("Data Length: %d\n", data_length);
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
@@ -737,6 +736,9 @@ static psa_status_t psa_validate_key_for_key_generation(psa_key_type_t type, siz
     if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
         return psa_validate_unstructured_key_size(type, bits);
     }
+    else if (PSA_KEY_TYPE_IS_PUBLIC_KEY(type)) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
     /* TODO: add validation for other key types */
     return PSA_ERROR_NOT_SUPPORTED;
 }
@@ -749,13 +751,11 @@ static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attr
 
     status = psa_validate_key_location(lifetime, p_drv);
     if (status != PSA_SUCCESS) {
-        printf("Line: %d, status: %ld\n", __LINE__, status);
         return status;
     }
 
     status = psa_validate_key_persistence(lifetime);
     if (status != PSA_SUCCESS) {
-        printf("Line: %d, status: %ld\n", __LINE__, status);
         return status;
     }
 
@@ -815,6 +815,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
         /* TODO: Start transaction for persistent key storage */
         status = psa_copy_key_material_into_slot(slot, (uint8_t*)(&slot_number), sizeof(slot_number));
         if (status != PSA_SUCCESS) {
+            printf("FILE: %s, LINE: %d, STATUS: %lx\n", __FILE__, __LINE__, status);
             return status;
         }
     }
@@ -961,6 +962,10 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
     psa_key_slot_t *slot = NULL;
     psa_se_drv_data_t *driver = NULL;
     *key = PSA_KEY_ID_NULL;
+
+    if (psa_get_key_bits(attributes) == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
 
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_GENERATE, attributes, &slot, &driver);

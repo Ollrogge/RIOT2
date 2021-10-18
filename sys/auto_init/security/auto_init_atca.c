@@ -21,7 +21,7 @@
 #include "atca_params.h"
 #include "kernel_defines.h"
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #include "debug.h"
 
 #if IS_ACTIVE(CONFIG_MODULE_PSA_CRYPTO)

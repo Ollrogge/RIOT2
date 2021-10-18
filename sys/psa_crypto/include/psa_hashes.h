@@ -78,4 +78,17 @@ psa_status_t psa_hashes_sha256_finish(psa_hashes_sha256_ctx_t * ctx,
                              size_t * hash_length);
 #endif /* CONFIG_HASHES_SHA256 */
 
+#if IS_ACTIVE(CONFIG_HASHES_SHA512)
+psa_status_t psa_hashes_sha512_setup(psa_hashes_sha512_ctx_t * ctx);
+
+psa_status_t psa_hashes_sha512_update(psa_hashes_sha512_ctx_t * ctx,
+                             const uint8_t * input,
+                             size_t input_length);
+
+psa_status_t psa_hashes_sha512_finish(psa_hashes_sha512_ctx_t * ctx,
+                             uint8_t * hash,
+                             size_t hash_size,
+                             size_t * hash_length);
+#endif /* CONFIG_HASHES_SHA512 */
+
 #endif /* PSA_HASHES_H */

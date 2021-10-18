@@ -7,6 +7,7 @@
 
 menuconfig CURVE_ECC_P256
     bool "NIST P256"
+    select PSA_CURVE_ECC_KEY_SIZE_256
 
 if CURVE_ECC_P256
 
@@ -22,3 +23,8 @@ config CRYPTOAUTHLIB_CURVE_ECC_P256
 endchoice
 
 endif # CURVE_ECC_P256
+
+config PSA_CURVE_ECC_KEY_SIZE_256
+    bool
+    help
+        Indicates that an 256 bit Elliptic Curve is used

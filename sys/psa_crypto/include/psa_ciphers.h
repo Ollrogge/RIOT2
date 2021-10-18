@@ -14,6 +14,16 @@ psa_status_t psa_cipher_cbc_aes_128_encrypt(const psa_key_attributes_t *attribut
                                             size_t output_size,
                                             size_t * output_length);
 
+psa_status_t psa_cipher_cbc_aes_128_decrypt(const psa_key_attributes_t *attributes,
+                                            const uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            psa_algorithm_t alg,
+                                            const uint8_t * input,
+                                            size_t input_length,
+                                            uint8_t * output,
+                                            size_t output_size,
+                                            size_t * output_length);
+
 psa_status_t psa_cipher_cbc_aes_192_encrypt(const psa_key_attributes_t *attributes,
                                             const uint8_t *key_buffer,
                                             size_t key_buffer_size,

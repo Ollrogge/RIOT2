@@ -23,7 +23,8 @@
 
 #include "crypto_types.h"
 
-/** Vendor-defined algorithm flag.
+/**
+ * @brief Vendor-defined algorithm flag.
  *
  * Algorithms defined by this standard will never have the #PSA_ALG_VENDOR_FLAG
  * bit set. Vendors who define additional algorithms must use an encoding with
@@ -79,13 +80,14 @@
 #define PSA_ALG_IS_ASYMMETRIC_ENCRYPTION(alg) /* specification-defined value */
 #define PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) /* specification-defined value */
 
-/** Whether the specified algorithm is a symmetric cipher algorithm.
+/**
+ * @brief Whether the specified algorithm is a symmetric cipher algorithm.
  *
- * \param alg An algorithm identifier (value of type #psa_algorithm_t).
+ * @param alg   An algorithm identifier (value of type #psa_algorithm_t).
  *
- * \return 1 if \p alg is a symmetric cipher algorithm, 0 otherwise.
- *         This macro may return either 0 or 1 if \p alg is not a supported
- *         algorithm identifier.
+ * @return      1 if alg is a symmetric cipher algorithm, 0 otherwise.
+ *              This macro may return either 0 or 1 if alg is not a supported
+ *              algorithm identifier.
  */
 #define PSA_ALG_IS_CIPHER(alg)                                          \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_CIPHER)
@@ -150,7 +152,8 @@
 
 #define PSA_ALG_ECDSA_BASE      ((psa_algorithm_t) 0x06000600)
 
-/** ECDSA signature with hashing.
+/**
+ * @brief ECDSA signature with hashing.
  *
  * This is the ECDSA signature scheme defined by ANSI X9.62,
  * with a random per-message secret number (*k*).
@@ -161,13 +164,13 @@
  * of the base point of the curve in octets. Each value is represented
  * in big-endian order (most significant octet first).
  *
- * \param hash_alg      A hash algorithm (\c PSA_ALG_XXX value such that
- *                      #PSA_ALG_IS_HASH(\p hash_alg) is true).
+ * @param hash_alg      A hash algorithm (PSA_ALG_XXX value such that
+ *                      #PSA_ALG_IS_HASH(hash_alg) is true).
  *                      This includes #PSA_ALG_ANY_HASH
  *                      when specifying the algorithm in a usage policy.
  *
- * \return              The corresponding ECDSA signature algorithm.
- * \return              Unspecified if \p hash_alg is not a supported
+ * @return              The corresponding ECDSA signature algorithm.
+ * @return              Unspecified if hash_alg is not a supported
  *                      hash algorithm.
  */
 #define PSA_ALG_ECDSA(hash_alg)                                 \
@@ -206,21 +209,21 @@
 
 /** The block size of a block cipher.
  *
- * \param type  A cipher key type (value of type #psa_key_type_t).
+ * @param type  A cipher key type (value of type #psa_key_type_t).
  *
- * \return      The block size for a block cipher, or 1 for a stream cipher.
- *              The return value is undefined if \p type is not a supported
+ * @return      The block size for a block cipher, or 1 for a stream cipher.
+ *              The return value is undefined if type is not a supported
  *              cipher key type.
  *
- * \note It is possible to build stream cipher algorithms on top of a block
+ * @note It is possible to build stream cipher algorithms on top of a block
  *       cipher, for example CTR mode (#PSA_ALG_CTR).
  *       This macro only takes the key type into account, so it cannot be
  *       used to determine the size of the data that #psa_cipher_update()
  *       might buffer for future processing in general.
  *
- * \note This macro returns a compile-time constant if its argument is one.
+ * @note This macro returns a compile-time constant if its argument is one.
  *
- * \warning This macro may evaluate its argument multiple times.
+ * @warning This macro may evaluate its argument multiple times.
  */
 #define PSA_BLOCK_CIPHER_BLOCK_LENGTH(type)                                     \
     (((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_SYMMETRIC ? \
@@ -240,7 +243,8 @@
 #define PSA_CIPHER_FINISH_OUTPUT_SIZE(key_type, alg) \
 /* implementation-defined value */
 
-/** The default IV size for a cipher algorithm, in bytes.
+/**
+ * @brief The default IV size for a cipher algorithm, in bytes.
  *
  * The IV that is generated as part of a call to #psa_cipher_encrypt() is always
  * the default IV length for the algorithm.
@@ -251,13 +255,13 @@
  *
  * See also #PSA_CIPHER_IV_MAX_SIZE.
  *
- * \warning This macro may evaluate its arguments multiple times or
+ * @warning This macro may evaluate its arguments multiple times or
  *          zero times, so you should not pass arguments that contain
  *          side effects.
  *
- * \param key_type  A symmetric key type that is compatible with algorithm \p alg.
+ * @param key_type  A symmetric key type that is compatible with algorithm alg.
  *
- * \param alg       A cipher algorithm (\c PSA_ALG_XXX value such that #PSA_ALG_IS_CIPHER(\p alg) is true).
+ * @param alg       A cipher algorithm (PSA_ALG_XXX value such that #PSA_ALG_IS_CIPHER(alg) is true).
  *
  * \return The default IV size for the specified key type and algorithm.
  *         If the algorithm does not use an IV, return 0.
@@ -265,8 +269,8 @@
  *         or the parameters are incompatible, return 0.
  */
 #define PSA_CIPHER_IV_LENGTH(key_type, alg) \
-    (PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) > 1 && \
-        ((alg) == PSA_ALG_CBC_NO_PADDING) ? 16 : 0)
+        (PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) > 1 && \
+            ((alg) == PSA_ALG_CBC_NO_PADDING) ? 16 : 0)
 
 #define PSA_CIPHER_IV_MAX_SIZE /* implementation-defined value */
 #define PSA_CIPHER_UPDATE_OUTPUT_MAX_SIZE(input_length) \
@@ -295,7 +299,6 @@
 #define PSA_HASH_SUSPEND_OUTPUT_MAX_SIZE /* implementation-defined value */
 #define PSA_HASH_SUSPEND_OUTPUT_SIZE(alg) /* specification-defined value */
 
-//#define PSA_KEY_ATTRIBUTES_INIT /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_CONTEXT /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_INFO /* implementation-defined value */
 #define PSA_KEY_DERIVATION_INPUT_LABEL /* implementation-defined value */
@@ -338,7 +341,8 @@
 #define PSA_KEY_PERSISTENCE_READ_ONLY ((psa_key_persistence_t) 0xff)
 #define PSA_KEY_PERSISTENCE_VOLATILE ((psa_key_persistence_t) 0x00)
 
-/** Vendor-defined key type flag.
+/**
+ * @brief Vendor-defined key type flag.
  *
  * Key types defined by this standard will never have the
  * #PSA_KEY_TYPE_VENDOR_FLAG bit set. Vendors who define additional key types
@@ -369,32 +373,33 @@
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE            ((psa_key_type_t)0x4100)
 #define PSA_KEY_TYPE_ECC_KEY_PAIR_BASE              ((psa_key_type_t)0x7100)
 #define PSA_KEY_TYPE_ECC_CURVE_MASK                 ((psa_key_type_t)0x00ff)
-/** Elliptic curve key pair.
+
+/**
+ * @brief Elliptic curve key pair.
  *
  * The size of an elliptic curve key is the bit size associated with the curve,
  * i.e. the bit size of *q* for a curve over a field *F<sub>q</sub>*.
  * See the documentation of `PSA_ECC_FAMILY_xxx` curve families for details.
  *
- * \param curve     A value of type ::psa_ecc_family_t that
+ * @param curve     A value of type ::psa_ecc_family_t that
  *                  identifies the ECC curve to be used.
  */
 #define PSA_KEY_TYPE_ECC_KEY_PAIR(curve)         \
     (PSA_KEY_TYPE_ECC_KEY_PAIR_BASE | (curve))
-/** Elliptic curve public key.
+
+#define PSA_KEY_TYPE_ECC_GET_CURVE(type) \
+        (type & ~PSA_KEY_TYPE_ECC_KEY_PAIR_BASE)
+/**
+ * @brief Elliptic curve public key.
  *
  * The size of an elliptic curve public key is the same as the corresponding
- * private key (see #PSA_KEY_TYPE_ECC_KEY_PAIR and the documentation of
- * `PSA_ECC_FAMILY_xxx` curve families).
+ * private key.
  *
- * \param curve     A value of type ::psa_ecc_family_t that
+ * @param curve     A value of type psa_ecc_family_t that
  *                  identifies the ECC curve to be used.
  */
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve)              \
     (PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE | (curve))
-
-/** Elliptic curve key pair. */
-#define PSA_KEY_TYPE_ECC_KEY_PAIR(curve)         \
-    (PSA_KEY_TYPE_ECC_KEY_PAIR_BASE | (curve))
 
 /** Elliptic curve public key. */
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve)              \
@@ -415,35 +420,67 @@
     (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
      PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
 
-/** The public key type corresponding to a key pair type.
+/**
+ * @brief   The public key type corresponding to a key pair type.
+ *          You may also pass a key pair type as type, it will be left unchanged.
  *
- * You may also pass a key pair type as \p type, it will be left unchanged.
+ * @param type      A public key type or key pair type.
  *
- * \param type      A public key type or key pair type.
- *
- * \return          The corresponding public key type.
- *                  If \p type is not a public key or a key pair,
+ * @return          The corresponding public key type.
+ *                  If type is not a public key or a key pair,
  *                  the return value is undefined.
  */
 #define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type)        \
     ((type) & ~PSA_KEY_TYPE_CATEGORY_FLAG_PAIR)
 
 #define PSA_KEY_TYPE_HMAC ((psa_key_type_t)0x1100)
-#define PSA_KEY_TYPE_IS_ASYMMETRIC(type) /* specification-defined value */
+
+/**
+ * @brief Whether a key type is asymmetric: either a key pair or a public key.
+ *
+ * @param type  A key type (value of type psa_key_type_t).
+ */
+#define PSA_KEY_TYPE_IS_ASYMMETRIC(type) \
+            (PSA_KEY_TYPE_IS_RSA(type) ? 1 : \
+             PSA_KEY_TYPE_IS_ECC(type) ? 1 : \
+            0)
+
 #define PSA_KEY_TYPE_IS_DH(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_KEY_PAIR(type) /* specification-defined value */
 #define PSA_KEY_TYPE_IS_DH_PUBLIC_KEY(type) /* specification-defined value */
 
+/**
+ * @brief Whether a key type is a key pair containing a private part and a public part.
+ *
+ * @param type  A key type (value of type psa_key_type_t).
+ */
 #define PSA_KEY_TYPE_IS_KEY_PAIR(type) \
     (   (type == PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1)) || \
         (type == PSA_KEY_TYPE_RSA_KEY_PAIR))
 
-#define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_RSA(type) /* specification-defined value */
-
-/** Whether a key type is an unstructured array of bytes.
+/**
+ * @brief Whether a key type is the public part of a key pair.
  *
- * This encompasses both symmetric keys and non-key data.
+ * @param type  A key type (value of type psa_key_type_t).
+ */
+#define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) \
+        ((type == PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)) || \
+         (type == PSA_KEY_TYPE_RSA_PUBLIC_KEY))
+
+/**
+ * @brief Whether a key type is an RSA key. This includes both key pairs and public keys.
+ *
+ * @param type  A key type (value of type psa_key_type_t).
+ */
+#define PSA_KEY_TYPE_IS_RSA(type) \
+        ((type == PSA_KEY_TYPE_RSA_KEY_PAIR) || \
+         (type == PSA_KEY_TYPE_RSA_PUBLIC_KEY) )
+
+/**
+ * @brief   Whether a key type is an unstructured array of bytes.
+ *          This encompasses both symmetric keys and non-key data.
+ *
+ * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_UNSTRUCTURED(type) \
     (((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_RAW || \
@@ -481,13 +518,20 @@
 #define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
 
 /* TODO: Adapt max key length to algorithm in use */
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
-#define PSA_MAX_KEY_LENGTH  (128)
-#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
-#define PSA_MAX_KEY_LENGTH  (192)
-#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
+
+// #define PSA_MAX_KEY_LENGTH  (0)
+// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
+// #define PSA_MAX_KEY_LENGTH  (128)
+// #endif
+// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
+// #define PSA_MAX_KEY_LENGTH  (192)
+// #endif
+// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
+// #define PSA_MAX_KEY_LENGTH  (256)
+// #endif
+// #if IS_ACTIVE(CONFIG_PSA_CURVE_ECC_KEY_SIZE_256)
 #define PSA_MAX_KEY_LENGTH  (256)
-#endif
+// #endif
 
 /**
  * @brief The action was completed successfully.

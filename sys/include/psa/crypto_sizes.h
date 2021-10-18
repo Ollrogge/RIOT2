@@ -84,12 +84,12 @@
  * size_t buffer_length;
  * status = psa_export_public_key(key, buffer, buffer_size, &buffer_length);
  * if (status != PSA_SUCCESS) handle_error(...);
- * \endcode
+ * @endcode
  *
- * \param key_type      A public key or key pair key type.
- * \param key_bits      The size of the key in bits.
+ * @param key_type      A public key or key pair key type.
+ * @param key_bits      The size of the key in bits.
  *
- * \return              If the parameters are valid and supported, return
+ * @return              If the parameters are valid and supported, return
  *                      a buffer size in bytes that guarantees that
  *                      psa_export_public_key() will not fail with
  *                      #PSA_ERROR_BUFFER_TOO_SMALL.

@@ -64,6 +64,14 @@ psa_status_t psa_driver_wrapper_hash_setup(psa_hash_operation_t * operation,
             }
             break;
     #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA512)
+        case PSA_ALG_SHA_512:
+            status = psa_hashes_sha512_setup(&operation->ctx.sha512);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
+    #endif
         default:
             (void) status;
             (void) operation;
@@ -95,6 +103,10 @@ psa_status_t psa_driver_wrapper_hash_update(psa_hash_operation_t * operation,
         case PSA_ALG_SHA_256:
             return psa_hashes_sha256_update(&operation->ctx.sha256, input, input_length);
     #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA512)
+        case PSA_ALG_SHA_512:
+            return psa_hashes_sha512_update(&operation->ctx.sha512, input, input_length);
+    #endif
         default:
             (void) operation;
             (void) input;
@@ -124,6 +136,10 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
     #if IS_ACTIVE(CONFIG_HASHES_SHA256)
         case PSA_ALG_SHA_256:
             return psa_hashes_sha256_finish(&operation->ctx.sha256, hash, hash_size, hash_length);
+    #endif
+    #if IS_ACTIVE(CONFIG_HASHES_SHA512)
+        case PSA_ALG_SHA_512:
+            return psa_hashes_sha512_finish(&operation->ctx.sha512, hash, hash_size, hash_length);
     #endif
         default:
             (void) operation;
@@ -185,7 +201,12 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 
     switch(location) {
         case PSA_KEY_LOCATION_LOCAL_STORAGE:
-            status = psa_builtin_generate_key(attributes, key_buffer, key_buffer_size, key_buffer_length);
+            if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
+                status = psa_generate_asymmetric_key_pair(attributes, key_buffer, key_buffer_size, key_buffer_length);
+            }
+            else {
+                status = psa_builtin_generate_key(attributes, key_buffer, key_buffer_size, key_buffer_length);
+            }
             break;
         default:
             (void) key_buffer;
@@ -309,21 +330,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
         }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
-    switch(alg) {
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_MODE_CBC)
-        case PSA_ALG_CBC_NO_PADDING:
-            return psa_cipher_cbc_encrypt(slot, alg, input, input_length, output, output_size, output_length);
-#endif
-        default:
-        (void) slot;
-        (void) alg;
-        (void) input;
-        (void) input_length;
-        (void) output;
-        (void) output_size;
-        (void) output_length;
-        return PSA_ERROR_INVALID_ARGUMENT;
-    }
+        return psa_cipher_dispatch_encrypt(slot, alg, input, input_length, output, output_size, output_length);
 }
 
 psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attributes,

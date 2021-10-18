@@ -94,6 +94,11 @@ config HAS_PERIPH_HASH_SHA256
     help
         Indicates that there is SHA-256 hardware acceleration present.
 
+config HAS_PERIPH_HASH_SHA512
+    bool
+    help
+        Indicates that there is SHA-512 hardware acceleration present.
+
 # Cipher AES
 config HAS_PERIPH_CIPHER_AES_128_CBC
     bool

@@ -30,7 +30,8 @@ if HASHES_SHA1
 
 choice HASHES_SHA1_IMPLEMENTATION
     bool "SHA-1 implementation"
-    default PERIPH_HASHES_SHA1
+    default PERIPH_HASHES_SHA1 if HAS_PERIPH_HASH_SHA1
+    default RIOT_HASHES_SHA1
 
 config PERIPH_HASHES_SHA1
     bool "Hardware accelerated"
@@ -54,7 +55,8 @@ if HASHES_SHA224
 
 choice HASHES_224_IMPLEMENTATION
     bool "SHA-224 implementation"
-    default PERIPH_HASHES_SHA224
+    default PERIPH_HASHES_SHA224 if HAS_PERIPH_HASH_SHA224
+    default RIOT_HASHES_SHA224
 
 config PERIPH_HASHES_SHA224
     bool "Hardware accelerated"
@@ -78,7 +80,8 @@ if HASHES_SHA256
 
 choice HASHES_256_IMPLEMENTATION
     bool "SHA-256 implementation"
-    default PERIPH_HASHES_SHA256
+    default PERIPH_HASHES_SHA256 if HAS_PERIPH_HASH_SHA256
+    default RIOT_HASHES_SHA256
 
 config PERIPH_HASHES_SHA256
     bool "Hardware accelerated"
@@ -98,3 +101,21 @@ config TINYCRYPT_HASHES_SHA256
 
 endchoice
 endif # HASHES_SHA256
+
+menuconfig HASHES_SHA512
+    bool "SHA-512"
+
+if HASHES_SHA512
+
+choice HASHES_512_IMPLEMENTATION
+    bool "SHA-512 implementation"
+    default PERIPH_HASHES_SHA512 if HAS_PERIPH_HASH_SHA512
+
+config PERIPH_HASHES_SHA512
+    bool "Hardware accelerated"
+    depends on HAS_PERIPH_HASH_SHA512
+    select PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_SHA512
+
+endchoice
+endif # HASHES_SHA512
