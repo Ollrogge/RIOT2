@@ -7,9 +7,28 @@
 
 #define CC310_MAX_AES_INPUT_BLOCK       (0xFFF0)
 
-psa_status_t common_aes_setup(SaSiAesUserContext_t *ctx, SaSiAesEncryptMode_t direction, SaSiAesOperationMode_t mode, SaSiAesPaddingType_t padding)
+psa_status_t common_aes_setup(  SaSiAesUserContext_t *ctx,
+                                SaSiAesEncryptMode_t direction,
+                                SaSiAesOperationMode_t mode,
+                                SaSiAesPaddingType_t padding,
+                                uint8_t * iv, const uint8_t *key_buffer,
+                                size_t key_buffer_size)
 {
+    SaSiAesUserKeyData_t key;
+
     int ret = SaSi_AesInit(ctx, direction, mode, padding);
+    if (ret != SASI_OK) {
+        return SaSi_to_psa_error(ret);
+    }
+    key.keySize = key_buffer_size;
+    key.pKey = (uint8_t *) key_buffer;
+
+    ret = SaSi_AesSetKey(ctx, SASI_AES_USER_KEY, &key, sizeof(key));
+    if (ret != SASI_OK) {
+        return SaSi_to_psa_error(ret);
+    }
+
+    ret = SaSi_AesSetIv(ctx, iv);
     if (ret != SASI_OK) {
         return SaSi_to_psa_error(ret);
     }

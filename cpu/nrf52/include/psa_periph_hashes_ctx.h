@@ -38,4 +38,8 @@ typedef CRYS_HASHUserContext_t psa_hashes_sha224_ctx_t;
 typedef CRYS_HASHUserContext_t psa_hashes_sha256_ctx_t;
 #endif
 
+#if IS_ACTIVE(CONFIG_PERIPH_HASHES_SHA512)
+typedef CRYS_HASHUserContext_t psa_hashes_sha512_ctx_t;
+#endif
+
 #endif /* PERIPH_HASHES_H */

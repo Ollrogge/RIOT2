@@ -3,6 +3,9 @@
 #include "cryptocell_util.h"
 #include "cryptocell_incl/crys_hash.h"
 
+#define ENABLE_DEBUG    (0)
+#include "debug.h"
+
 #define CC310_MAX_HASH_INPUT_BLOCK       (0xFFF0)
 
 psa_status_t common_hash_setup(CRYS_HASHUserContext_t * ctx, CRYS_HASH_OperationMode_t mode)
@@ -11,7 +14,6 @@ psa_status_t common_hash_setup(CRYS_HASHUserContext_t * ctx, CRYS_HASH_Operation
     if (ret != CRYS_OK) {
         return CRYS_to_psa_error(ret);
     }
-
     return PSA_SUCCESS;
 }
 
@@ -48,12 +50,10 @@ psa_status_t common_hash_update(CRYS_HASHUserContext_t * ctx,
 psa_status_t common_hash_finish(CRYS_HASHUserContext_t * ctx, uint8_t * hash)
 {
     cryptocell_enable();
-    int ret = CRYS_HASH_Finish(ctx, (uint32_t*)hash);
+    int ret = CRYS_HASH_Finish(ctx, (uint32_t *) hash);
     cryptocell_disable();
-
     if (ret != CRYS_OK) {
         return CRYS_to_psa_error(ret);
     }
-
     return PSA_SUCCESS;
 }
