@@ -530,7 +530,7 @@
 // #define PSA_MAX_KEY_LENGTH  (256)
 // #endif
 // #if IS_ACTIVE(CONFIG_PSA_CURVE_ECC_KEY_SIZE_256)
-#define PSA_MAX_KEY_LENGTH  (256)
+#define PSA_MAX_KEY_LENGTH  (128)
 // #endif
 
 /**

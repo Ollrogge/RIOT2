@@ -183,9 +183,6 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
                                                 uint8_t *key_buffer, size_t key_buffer_size,
                                                 size_t *key_buffer_length)
 {
-    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime);
-
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
@@ -199,22 +196,11 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
     }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
-    switch(location) {
-        case PSA_KEY_LOCATION_LOCAL_STORAGE:
-            if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
-                status = psa_generate_asymmetric_key_pair(attributes, key_buffer, key_buffer_size, key_buffer_length);
-            }
-            else {
-                status = psa_builtin_generate_key(attributes, key_buffer, key_buffer_size, key_buffer_length);
-            }
-            break;
-        default:
-            (void) key_buffer;
-            (void) key_buffer_size;
-            (void) key_buffer_length;
-            return PSA_ERROR_NOT_SUPPORTED;
+    if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
+        return psa_generate_asymmetric_key_pair_dispatch(attributes, key_buffer, key_buffer_size, key_buffer_length);
     }
-    return status;
+
+    return psa_builtin_generate_key(attributes, key_buffer, key_buffer_size, key_buffer_length);
 }
 
 psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attributes,
@@ -302,35 +288,35 @@ psa_status_t psa_driver_wrapper_cipher_decrypt_setup(psa_cipher_operation_t *ope
 }
 
 psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
-                                            psa_algorithm_t alg,
-                                            const uint8_t * input,
-                                            size_t input_length,
-                                            uint8_t * output,
-                                            size_t output_size,
-                                            size_t * output_length)
+                                                psa_algorithm_t alg,
+                                                const uint8_t * input,
+                                                size_t input_length,
+                                                uint8_t * output,
+                                                size_t output_size,
+                                                size_t * output_length)
 {
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
-        psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-        const psa_drv_se_t *drv;
-        psa_drv_se_context_t *drv_context;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
 
-        if (alg != PSA_ALG_ECB_NO_PADDING) {
+    if (alg != PSA_ALG_ECB_NO_PADDING) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (psa_get_se_driver(slot->attr.lifetime, &drv, &drv_context)) {
+        if (drv->cipher == NULL || drv->cipher->p_ecb == NULL) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-
-        if (psa_get_se_driver(slot->attr.lifetime, &drv, &drv_context)) {
-            if (drv->cipher == NULL || drv->cipher->p_ecb == NULL) {
-                return PSA_ERROR_NOT_SUPPORTED;
-            }
-            status = drv->cipher->p_ecb(drv_context, *((psa_key_slot_number_t *) slot->key.data), alg, PSA_CRYPTO_DRIVER_ENCRYPT, input, input_length, output, output_size);
-            if (status != PSA_SUCCESS) {
-                return status;
-            }
-            return PSA_SUCCESS;
+        status = drv->cipher->p_ecb(drv_context, *((psa_key_slot_number_t *) slot->key.data), alg, PSA_CRYPTO_DRIVER_ENCRYPT, input, input_length, output, output_size);
+        if (status != PSA_SUCCESS) {
+            return status;
         }
+        return PSA_SUCCESS;
+    }
 #endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
 
-        return psa_cipher_dispatch_encrypt(slot, alg, input, input_length, output, output_size, output_length);
+    return psa_cipher_encrypt_dispatch(slot, alg, input, input_length, output, output_size, output_length);
 }
 
 psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attributes,
