@@ -36,7 +36,7 @@ psa_status_t common_aes_setup(  SaSiAesUserContext_t *ctx,
     return PSA_SUCCESS;
 }
 
-psa_status_t common_aes_update(SaSiAesUserContext_t *ctx, const uint8_t *input, size_t input_length, uint8_t *output)
+psa_status_t common_aes_encrypt(SaSiAesUserContext_t *ctx, const uint8_t *input, size_t input_length, uint8_t *output, size_t output_size, size_t * output_length)
 {
     int ret = 0;
     size_t offset = 0;
@@ -62,5 +62,13 @@ psa_status_t common_aes_update(SaSiAesUserContext_t *ctx, const uint8_t *input, 
         offset += size;
     } while ((input_length > 0) && (ret == SASI_OK));
 
+    cryptocell_enable();
+    ret = SaSi_AesFinish(ctx, input_length, (uint8_t*)(input + offset), output_size, output, output_length);
+    cryptocell_disable();
+    if (ret != SASI_OK) {
+        return SaSi_to_psa_error(ret);
+    }
+
     return PSA_SUCCESS;
 }
+
