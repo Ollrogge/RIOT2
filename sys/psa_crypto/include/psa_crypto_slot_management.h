@@ -4,7 +4,7 @@
 #include "psa/crypto.h"
 #include "psa_crypto_se_management.h"
 
-#define PSA_KEY_SLOT_COUNT       (32)
+#define PSA_KEY_SLOT_COUNT       (16)
 
 #define PSA_KEY_ID_VOLATILE_MIN (PSA_KEY_ID_VENDOR_MIN)
 #define PSA_KEY_ID_VOLATILE_MAX (PSA_KEY_ID_VENDOR_MIN + PSA_KEY_SLOT_COUNT)
