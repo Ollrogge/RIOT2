@@ -32,11 +32,14 @@ extern psa_drv_se_t atca_methods;
 
 #define ATCA_NUMOF (ARRAY_SIZE(atca_params))
 
+static ATCADevice atca_devs[ATCA_NUMOF];
+
 void auto_init_atca(void)
 {
     DEBUG("Auto Init ATCA");
     for (unsigned i = 0; i < ATCA_NUMOF; i++) {
-        if (atcab_init((ATCAIfaceCfg *)&atca_params[i].cfg) != ATCA_SUCCESS) {
+        atca_devs[i] = NULL;
+        if (atcab_init_ext(&atca_devs[i], (ATCAIfaceCfg *)&atca_params[i].cfg) != ATCA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error initializing cryptoauth device #%u\n", i);
             continue;
         }
@@ -48,7 +51,7 @@ void auto_init_atca(void)
             continue;
         }
 
-        if (psa_register_secure_element(atca_params[i].atca_loc, &atca_methods, (ATCAIfaceCfg *) &atca_params[i].cfg) != PSA_SUCCESS) {
+        if (psa_register_secure_element(atca_params[i].atca_loc, &atca_methods, atca_devs[i]) != PSA_SUCCESS) {
             LOG_ERROR("[auto_init_atca] error registering cryptoauth PSA driver for device #%u\n", i);
             continue;
         }

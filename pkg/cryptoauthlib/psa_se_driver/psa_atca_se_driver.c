@@ -2,6 +2,9 @@
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"
 
+#include "periph/gpio.h"
+// extern gpio_t internal_gpio;
+
 #define AES_ECB_128_BLOCK_SIZE  (16)
 #define AES_128_KEY_SIZE        (16)
 #define ECC_P256_PUB_KEY_SIZE   (64)
@@ -56,10 +59,10 @@ psa_status_t atca_cipher_setup( psa_drv_se_context_t *drv_context,
                                 psa_algorithm_t algorithm,
                                 psa_encrypt_or_decrypt_t direction)
 {
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
     /* Only device type ATECC608 supports AES operations */
-    if (cfg->devtype != ATECC608) {
+    if (dev->mIface.mIfaceCFG->devtype != ATECC608) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
@@ -84,11 +87,10 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
                                 size_t output_size)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
     size_t offset;
 
-    if (cfg->devtype != ATECC608) {
+    if (dev->mIface.mIfaceCFG->devtype != ATECC608) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
@@ -98,12 +100,6 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
 
     if (input_size % AES_ECB_128_BLOCK_SIZE != 0) {
         return PSA_ERROR_INVALID_ARGUMENT;
-    }
-
-    /* Initialize device to pass to CryptoAuth library functions */
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
     }
 
     offset = 0;
@@ -163,8 +159,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
                             size_t *bits)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
     uint8_t buf_in[32] = {0};
 
@@ -174,11 +169,6 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
 
     if (!KEY_SIZE_IS_SUPPORTED(data_length)) {
         return PSA_ERROR_NOT_SUPPORTED;
-    }
-
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
     }
 
     if (key_slot == ATCA_TEMPKEY_KEYID) {
@@ -194,8 +184,9 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
         return PSA_SUCCESS;
     }
     else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(attributes->type)) {
+        // gpio_set(internal_gpio);
         status = calib_write_pubkey(dev, key_slot, data);
-
+        // gpio_clear(internal_gpio);
         if (status != ATCA_SUCCESS) {
             return atca_to_psa_error(status);
         }
@@ -213,8 +204,7 @@ psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
                                 uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
     if (!PSA_KEY_TYPE_IS_ECC(attributes->type)) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -225,13 +215,11 @@ psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
-    }
-
+    // gpio_set(internal_gpio);
     status = calib_genkey(dev, key_slot, NULL);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
+        printf("ATCA Error: %x\n", status);
         return atca_to_psa_error(status);
     }
 
@@ -247,20 +235,15 @@ psa_status_t atca_export_public_key(psa_drv_se_context_t *drv_context,
                                     size_t *p_data_length)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
     if (data_size < ECC_P256_PUB_KEY_SIZE) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
-    }
-
+    // gpio_set(internal_gpio);
     status = calib_get_pubkey(dev, key_slot, p_data);
-
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
     }
@@ -280,8 +263,7 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
                         size_t *p_signature_length)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
     if (alg != PSA_ALG_ECDSA(PSA_ALG_SHA_256)) {
         return PSA_ERROR_NOT_SUPPORTED;
@@ -291,12 +273,9 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
-    }
-
+    // gpio_set(internal_gpio);
     status = calib_sign(dev, key_slot, p_hash, p_signature);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
     }
@@ -314,8 +293,7 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
                             size_t signature_length)
 {
     ATCA_STATUS status;
-    ATCADevice dev = NULL;
-    ATCAIfaceCfg *cfg = (ATCAIfaceCfg *) drv_context->drv_data;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
     bool is_verified;
 
     if (alg != PSA_ALG_ECDSA(PSA_ALG_SHA_256)) {
@@ -326,12 +304,9 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    status = atcab_init_ext(&dev, cfg);
-    if (status != ATCA_SUCCESS) {
-        return atca_to_psa_error(status);
-    }
-
+    // gpio_set(internal_gpio);
     status = calib_verify_stored(dev, p_hash, p_signature, key_slot, &is_verified);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         return atca_to_psa_error(status);
     }

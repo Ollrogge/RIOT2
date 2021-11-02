@@ -54,7 +54,7 @@ extern "C" {
 #define ATCA_PARAM_I2C_DEV0      I2C_DEV(0)
 #endif
 
-#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS) || defined(SE_ECDSA)
 #ifndef ATCA_PARAM_I2C_DEV1
 #define ATCA_PARAM_I2C_DEV1      I2C_DEV(1)
 #endif
@@ -85,7 +85,7 @@ extern "C" {
                                             .rx_retries = ATCA_RX_RETRIES }
 #endif
 
-#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS) || defined(SE_ECDSA)
 #ifndef ATCA_PARAMS_DEV1
 #define ATCA_PARAMS_DEV1                {   .iface_type = ATCA_I2C_IFACE, \
                                             .devtype = ATCA_DEVTYPE, \
@@ -114,6 +114,11 @@ static const atca_params_t atca_params[] =
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     {
         .atca_loc = PSA_ATCA_LOCATION_DEV1,
+        .cfg = ATCA_PARAMS_DEV1
+    },
+#endif
+#if defined(SE_ECDSA)
+    {
         .cfg = ATCA_PARAMS_DEV1
     },
 #endif

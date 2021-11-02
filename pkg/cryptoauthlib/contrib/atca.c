@@ -50,7 +50,6 @@ ATCA_STATUS hal_i2c_init(ATCAIface iface, ATCAIfaceCfg *cfg)
     if (cfg->iface_type != ATCA_I2C_IFACE) {
         return ATCA_BAD_PARAM;
     }
-
     atcab_wakeup();
 
     return ATCA_SUCCESS;

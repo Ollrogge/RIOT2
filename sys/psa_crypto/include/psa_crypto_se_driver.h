@@ -7,7 +7,7 @@
 #include "psa/crypto_values.h"
 #include "psa/crypto_types.h"
 
-#define PSA_MAX_PERSISTENT_DATA_SIZE    (255)
+#define PSA_MAX_PERSISTENT_DATA_SIZE    (16)
 
 /** For encrypt-decrypt functions, whether the operation is an encryption
  * or a decryption. */
