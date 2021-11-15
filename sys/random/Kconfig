@@ -56,7 +56,7 @@ config MODULE_PRNG_SHA1PRNG
 config MODULE_PRNG_SHA256PRNG
     bool "SHA-256"
     select MODULE_PRNG_SHAXPRNG
-    select MODULE_HASHES
+    select MODULE_HASHES_SHA256
 
 config MODULE_PRNG_TINYMT32
     bool "Tiny-MT 32"

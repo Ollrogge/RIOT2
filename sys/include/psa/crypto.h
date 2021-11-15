@@ -872,6 +872,61 @@ psa_status_t psa_cipher_decrypt(psa_key_id_t key,
 psa_status_t psa_cipher_decrypt_setup(psa_cipher_operation_t * operation,
                                       psa_key_id_t key,
                                       psa_algorithm_t alg);
+
+/**
+ * @brief Encrypt a message using a symmetric cipher.
+ *
+ * This function encrypts a message with a random initialization vector (IV). The length of the IV
+ * is PSA_CIPHER_IV_LENGTH(key_type, alg) where key_type is the type of key. The output of
+ * psa_cipher_encrypt() is the IV followed by the ciphertext.
+ *
+ * Use the multi-part operation interface with a psa_cipher_operation_t object to provide other
+ * forms of IV or to manage the IV and ciphertext independently.
+ *
+ * @param key           Identifier of the key to use for the operation. It must allow the usage
+ *                      PSA_KEY_USAGE_ENCRYPT.
+ * @param alg           The cipher algorithm to compute (PSA_ALG_XXX value such that
+ *                      PSA_ALG_IS_CIPHER(alg) is true).
+ * @param input         Buffer containing the message to encrypt.
+ * @param input_length  Size of the input buffer in bytes.
+ * @param output        Buffer where the output is to be written. The output contains the IV
+ *                      followed by the ciphertext proper.
+ * @param output_size   Size of the output buffer in bytes. This must be appropriate for the
+ *                      selected algorithm and key:
+ *                          - A sufficient output size is PSA_CIPHER_ENCRYPT_OUTPUT_SIZE(key_type,
+ *                            alg, input_length) where key_type is the type of key
+ *                          - PSA_CIPHER_ENCRYPT_OUTPUT_MAX_SIZE(input_length) evaluates to the
+ *                            maximum output size of any supported cipher encryption.
+ * @param output_length On success, the number of bytes that make up the output.
+ *
+ * @return  PSA_SUCCESS
+ *          Success.
+ * @return  PSA_ERROR_INVALID_HANDLE
+ * @return  PSA_ERROR_NOT_PERMITTED
+ *          The key does not have the PSA_KEY_USAGE_ENCRYPT flag, or it does not permit the
+ *          requested algorithm.
+ * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          key is not compatible with alg.
+ * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          The input_length is not valid for the algorithm and key type. For example, the
+ *          algorithm is a based on block cipher and requires a whole number of blocks, but the
+ *          total input size is not a multiple of the block size.
+ * @return  PSA_ERROR_NOT_SUPPORTED
+ *          alg is not supported or is not a cipher algorithm.
+ * @return  PSA_ERROR_BUFFER_TOO_SMALL
+ *          output_size is too small. PSA_CIPHER_ENCRYPT_OUTPUT_SIZE() or
+ *          PSA_CIPHER_ENCRYPT_OUTPUT_MAX_SIZE() can be used to determine the required buffer size.
+ * @return  PSA_ERROR_INSUFFICIENT_MEMORY
+ * @return  PSA_ERROR_COMMUNICATION_FAILURE
+ * @return  PSA_ERROR_HARDWARE_FAILURE
+ * @return  PSA_ERROR_CORRUPTION_DETECTED
+ * @return  PSA_ERROR_STORAGE_FAILURE
+ * @return  PSA_ERROR_DATA_CORRUPT
+ * @return  PSA_ERROR_DATA_INVALID
+ * @return  PSA_ERROR_BAD_STATE
+ *          The library has not been previously initialized by psa_crypto_init(). It is
+ *          implementation-dependent whether a failure to initialize results in this error code.
+ */
 psa_status_t psa_cipher_encrypt(psa_key_id_t key,
                                 psa_algorithm_t alg,
                                 const uint8_t * input,
@@ -886,11 +941,57 @@ psa_status_t psa_cipher_finish(psa_cipher_operation_t * operation,
                                uint8_t * output,
                                size_t output_size,
                                size_t * output_length);
+
+/**
+ * @brief Generate an initialization vector (IV) for a symmetric encryption operation.
+ *
+ * This function generates a random IV, nonce or initial counter value for the encryption
+ * operation as appropriate for the chosen algorithm, key type and key size.
+ *
+ * The generated IV is always the default length for the key and algorithm: PSA_CIPHER_IV_LENGTH
+ * (key_type, alg), where key_type is the type of key and alg is the algorithm that were used to
+ * set up the operation. To generate different lengths of IV, use psa_generate_random() and
+ * psa_cipher_set_iv().
+ *
+ * If the cipher algorithm does not use an IV, calling this function returns a PSA_ERROR_BAD_STATE  * error. For these algorithms, PSA_CIPHER_IV_LENGTH(key_type, alg) will be zero.
+ *
+ * The application must call psa_cipher_encrypt_setup() before calling this function.
+ *
+ * If this function returns an error status, the operation enters an error state and must be
+ * aborted by calling psa_cipher_abort().
+ *
+ * @param operation Active cipher operation.
+ * @param iv        Buffer where the generated IV is to be written.
+ * @param iv_size   Size of the iv buffer in bytes. This must be at least
+ *                  PSA_CIPHER_IV_LENGTH(key_type, alg) where key_type and
+ *                  alg are type of key and the algorithm respectively that
+ *                  were used to set up the cipher operation.
+ * @param iv_length On success, the number of bytes of the generated IV.
+ *
+ * @return  PSA_SUCCESS
+ *          Success.
+ * @return  PSA_ERROR_BAD_STATE
+ *          Either:
+ *          - The cipher algorithm does not use an IV.
+ *          - The operation state is not valid: it must be active, with no IV set.
+ * @return  PSA_ERROR_BUFFER_TOO_SMALL
+ *          The size of the iv buffer is too small. PSA_CIPHER_IV_LENGTH() or
+ *          PSA_CIPHER_IV_MAX_SIZE can be used to determine the required buffer size.
+ * @return  PSA_ERROR_INSUFFICIENT_MEMORY
+ * @return  PSA_ERROR_COMMUNICATION_FAILURE
+ * @return  PSA_ERROR_HARDWARE_FAILURE
+ * @return  PSA_ERROR_CORRUPTION_DETECTED
+ * @return  PSA_ERROR_STORAGE_FAILURE
+ * @return  PSA_ERROR_DATA_CORRUPT
+ * @return  PSA_ERROR_DATA_INVALID
+ * @return  PSA_ERROR_BAD_STATE
+ *          The library has not been previously initialized by psa_crypto_init(). It is
+ *          implementation-dependent whether a failure to initialize results in this error code.
+ */
 psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
                                     uint8_t * iv,
                                     size_t iv_size,
                                     size_t * iv_length);
-psa_cipher_operation_t psa_cipher_operation_init(void);
 psa_status_t psa_cipher_set_iv(psa_cipher_operation_t * operation,
                                const uint8_t * iv,
                                size_t iv_length);
@@ -958,16 +1059,243 @@ psa_status_t psa_builtin_generate_key(const psa_key_attributes_t *attributes, ui
 psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
                               psa_key_id_t * key);
 
+psa_status_t psa_builtin_generate_random(   uint8_t * output,
+                                            size_t output_size);
 psa_status_t psa_generate_random(uint8_t * output,
                                  size_t output_size);
-psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes);
+
+/**
+ * @brief Declare the permitted algorithm policy for a key.
+ *
+ * The permitted algorithm policy of a key encodes which algorithm or algorithms are permitted to
+ * be used with this key.
+ * This function overwrites any permitted algorithm policy previously set in attributes.
+ *
+ * @param attributes    The attribute object to write to.
+ * @param alg           The permitted algorithm to write.
+ */
+static inline void psa_set_key_algorithm(psa_key_attributes_t * attributes,
+                           psa_algorithm_t alg)
+{
+    attributes->policy.alg = alg;
+}
+
+/**
+ * @brief Retrieve the permitted algorithm policy from key attributes.
+ *
+ * @param attributes    The key attribute object to query.
+ *
+ * @return psa_status_t The algorithm stored in the attribute object.
+ */
+static inline psa_algorithm_t psa_get_key_algorithm(const psa_key_attributes_t * attributes)
+{
+    return attributes->policy.alg;
+}
+
+/**
+ * @brief Declare the size of a key.
+ *
+ * This function overwrites any key size previously set in attributes.
+ *
+ * @param attributes    The attribute object to write to.
+ * @param bits          The key size in bits. If this is 0,
+ *                      the key size in attributes becomes
+ *                      unspecified. Keys of size 0 are not supported.
+ */
+static inline void psa_set_key_bits(psa_key_attributes_t * attributes,
+                      size_t bits)
+{
+    attributes->bits = bits;
+}
+
+/**
+ * @brief Retrieve the key size from key attributes.
+ *
+ * @param attributes    The key attribute object to query.
+ *
+ * @return size_t       The key size stored in the attribute object, in bits.
+ */
+static inline size_t psa_get_key_bits(const psa_key_attributes_t * attributes)
+{
+    return attributes->bits;
+}
+
+/**
+ * @brief Declare a key as persistent and set its key identifier.
+ *
+ * The application must choose a value for id between PSA_KEY_ID_USER_MIN and PSA_KEY_ID_USER_MAX.
+ * If the attribute object currently declares the key as volatile, which is the default lifetime of
+ * an attribute object, this function sets the lifetime attribute to PSA_KEY_LIFETIME_PERSISTENT.
+ *
+ * This function does not access storage, it merely stores the given value in the attribute object.
+ * The persistent key will be written to storage when the attribute object is passed to a key
+ * creation function such as psa_import_key(), psa_generate_key(), psa_key_derivation_output_key()
+ * or psa_copy_key().
+ *
+ * @param attributes    The attribute object to write to.
+ * @param id            The persistent identifier for the key.
+ */
+static inline void psa_set_key_id(psa_key_attributes_t * attributes, psa_key_id_t id)
+{
+    attributes->id = id;
+}
+
+/**
+ * @brief Retrieve the key identifier from key attributes.
+ *
+ * @param attributes    The key attribute object to query.
+ *
+ * @return psa_key_id_t The persistent identifier stored in the attribute object.
+ *                      This value is unspecified if the attribute object declares
+ *                      the key as volatile.
+ */
+static inline psa_key_id_t psa_get_key_id(const psa_key_attributes_t * attributes)
+{
+    return attributes->id;
+}
+
+/**
+ * @brief Set the location of a persistent key.
+ *
+ * To make a key persistent, give it a persistent key identifier by using psa_set_key_id().
+ * By default, a key that has a persistent identifier is stored in the default storage area
+ * identifier by PSA_KEY_LIFETIME_PERSISTENT. Call this function to choose a storage area,
+ * or to explicitly declare the key as volatile.
+ *
+ * This function does not access storage, it merely stores the given value in the attribute object.
+ * The persistent key will be written to storage when the attribute object is passed to a key
+ * creation function such as psa_import_key(), psa_generate_key(), psa_key_derivation_output_key()
+ * or psa_copy_key().
+ *
+ * @param attributes    The attribute object to write to.
+ * @param lifetime      The lifetime for the key. If this is PSA_KEY_LIFETIME_VOLATILE,
+ *                      the key will be volatile, and the key identifier attribute is reset
+ *                      to PSA_KEY_ID_NULL.
+ */
+static inline void psa_set_key_lifetime(psa_key_attributes_t * attributes,
+                          psa_key_lifetime_t lifetime)
+{
+    attributes->lifetime = lifetime;
+}
+
+/**
+ * @brief Retrieve the lifetime from key attributes.
+ *
+ * @param attributes            The key attribute object to query.
+ *
+ * @return psa_key_lifetime_t   The lifetime value stored in the attribute object.
+ */
+static inline psa_key_lifetime_t psa_get_key_lifetime(const psa_key_attributes_t * attributes)
+{
+    return attributes->lifetime;
+}
+
+/**
+ * @brief Declare the type of a key.
+ *
+ * This function overwrites any key type previously set in attributes.
+ *
+ * @param attributes    The attribute object to write to.
+ * @param type          The key type to write. If this is PSA_KEY_TYPE_NONE,
+ *                      the key type in attributes becomes unspecified.
+ */
+static inline void psa_set_key_type(psa_key_attributes_t * attributes,
+                      psa_key_type_t type)
+{
+    attributes->type = type;
+}
+
+/**
+ * @brief Retrieve the key type from key attributes.
+ *
+ * @param attributes        The key attribute object to query.
+ *
+ * @return psa_key_type_t   The key type stored in the attribute object.
+ */
+static inline psa_key_type_t psa_get_key_type(const psa_key_attributes_t * attributes)
+{
+    return attributes->type;
+}
+
+/**
+ * @brief Declare usage flags for a key.
+ *
+ * Usage flags are part of a key’s policy. They encode what kind of operations are
+ * permitted on the key. For more details, see Key policies.
+ *
+ * This function overwrites any usage flags previously set in attributes.
+ *
+ * @param attributes    The attribute object to write to.
+ * @param usage_flags   The usage flags to write.
+ */
+static inline void psa_set_key_usage_flags(psa_key_attributes_t * attributes,
+                             psa_key_usage_t usage_flags)
+{
+    attributes->policy.usage = usage_flags;
+}
+
+/**
+ * @brief Retrieve the usage flags from key attributes.
+ *
+ * @param attributes        The key attribute object to query.
+ *
+ * @return psa_key_usage_t  The usage flags stored in the attribute object.
+ */
+static inline psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes)
+{
+    return attributes->policy.usage;
+}
+
+/**
+ * @brief Reset a key attribute object to a freshly initialized state.
+ *
+ * The attribute object must be initialized as described in the documentation of the type
+ * psa_key_attributes_t before calling this function. Once the object has been initialized, this
+ * function can be called at any time.
+ *
+ * This function frees any auxiliary resources that the object might contain.
+ *
+ * @param attributes    The attribute object to reset.
+ */
+static inline void psa_reset_key_attributes(psa_key_attributes_t * attributes)
+{
+    *attributes = psa_key_attributes_init();
+}
+
+/**
+ * @brief Retrieve the attributes of a key.
+ *
+ * This function first resets the attribute object as with psa_reset_key_attributes().
+ * It then copies the attributes of the given key into the given attribute object.
+ *
+ * @note    This function clears any previous content from the attribute object and therefore
+ *          expects it to be in a valid state. In particular, if this function is called on a newly
+ *          allocated attribute object, the attribute object must be initialized before calling
+ *          this function.
+ *
+ * @note    This function might allocate memory or other resources. Once this function has been
+ *          called on an attribute object, psa_reset_key_attributes() must be called to free these
+ *          resources.
+ *
+ * @param key           Identifier of the key to query.
+ * @param attributes    On entry, *attributes must be in a valid state. On successful return,
+ *                      it contains the attributes of the key. On failure, it is equivalent
+ *                      to a freshly-initialized attribute object.
+ *
+ * @return  PSA_SUCCESS
+ * @return  PSA_ERROR_INVALID_HANDLE
+ * @return  PSA_ERROR_INSUFFICIENT_MEMORY
+ * @return  PSA_ERROR_COMMUNICATION_FAILURE
+ * @return  PSA_ERROR_CORRUPTION_DETECTED
+ * @return  PSA_ERROR_STORAGE_FAILURE
+ * @return  PSA_ERROR_DATA_CORRUPT
+ * @return  PSA_ERROR_DATA_INVALID
+ * @return  PSA_ERROR_BAD_STATE
+ *          The library has not been previously initialized by psa_crypto_init(). It is
+ *          implementation-dependent whether a failure to initialize results in this error code.
+ */
 psa_status_t psa_get_key_attributes(psa_key_id_t key,
                                     psa_key_attributes_t * attributes);
-size_t psa_get_key_bits(const psa_key_attributes_t * attributes);
-psa_key_id_t psa_get_key_id(const psa_key_attributes_t * attributes);
-psa_key_lifetime_t psa_get_key_lifetime(const psa_key_attributes_t * attributes);
-psa_key_type_t psa_get_key_type(const psa_key_attributes_t * attributes);
-psa_key_usage_t psa_get_key_usage_flags(const psa_key_attributes_t * attributes);
 
 /** @brief Abort a hash operation.
  *
@@ -1150,7 +1478,8 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
                              size_t hash_size,
                              size_t * hash_length);
 
-/** Return an initial value for a hash operation object.
+/**
+ * Return an initial value for a hash operation object.
  */
 psa_hash_operation_t psa_hash_operation_init(void);
 psa_status_t psa_hash_resume(psa_hash_operation_t * operation,
@@ -1241,7 +1570,8 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length);
 
-/** @brief Finish the calculation of the hash of a message and compare it with
+/**
+ * @brief Finish the calculation of the hash of a message and compare it with
  * an expected value.
  *
  * The application must call psa_hash_setup() before calling this function.
@@ -1287,12 +1617,93 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
                                     uint8_t *key_buffer, size_t key_buffer_size,
                                     size_t *key_buffer_length, size_t *bits);
 
+/**
+ * @brief Import a key in binary format.
+ *
+ * This function supports any output from psa_export_key(). Refer to the documentation of
+ * psa_export_public_key() for the format of public keys and to the documentation of
+ * psa_export_key() for the format for other key types.
+ *
+ * The key data determines the key size. The attributes can optionally specify a key size;
+ * in this case it must match the size determined from the key data. A key size of 0 in
+ * attributes indicates that the key size is solely determined by the key data.
+ *
+ * Implementations must reject an attempt to import a key of size 0.
+ *
+ * This specification defines a single format for each key type. Implementations can optionally
+ * support other formats in addition to the standard format. It is recommended that implementations
+ * that support other formats ensure that the formats are clearly unambiguous, to minimize the risk
+ * that an invalid input is accidentally interpreted according to a different format.
+ *
+ * @note The PSA Crypto API does not support asymmetric private key objects outside of a key pair.
+ * To import a private key, the attributes must specify the corresponding key pair type. Depending
+ * on the key type, either the import format contains the public key data or the implementation
+ * will reconstruct the public key from the private key as needed.
+ *
+ * @param attributes            The attributes for the new key.
+ *                              This function uses the attributes as follows:
+ *                                  - The key type is required, and determines
+ *                                    how the data buffer is interpreted.
+ *                                  - The key size is always determined from the
+ *                                    data buffer. If the key size in attributes
+ *                                    is nonzero, it must be equal to the size
+ *                                    determined from data.
+ *                                  - The key permitted-algorithm policy is required
+ *                                    for keys that will be used for a cryptographic
+ *                                    operation, see Permitted algorithms.
+ *                                  - The key usage flags define what operations are
+ *                                    permitted with the key, see Key usage flags.
+ *                                  - The key lifetime and identifier are required
+ *                                    for a persistent key.
+ *                              @note This is an input parameter: it is not updated with the final
+ *                              key attributes. The final attributes of the new key can be queried
+ *                              by calling psa_get_key_attributes() with the key’s identifier.
+ *
+ * @param data                  Buffer containing the key data. The content of this buffer is
+ *                              interpreted according to the type declared in attributes. All
+ *                              implementations must support at least the format described in the
+ *                              documentation of psa_export_key() or psa_export_public_key() for
+ *                              the chosen type. Implementations can support other formats, but be
+ *                              conservative in interpreting the key data: it is recommended that
+ *                              implementations reject content if it might be erroneous, for
+ *                              example, if it is the wrong type or is truncated.
+ * @param data_length           Size of the data buffer in bytes.
+ * @param key                   On success, an identifier for the newly created key.
+ *                              PSA_KEY_ID_NULL on failure.
+ *
+ * @return  PSA_SUCCESS
+ *          Success. If the key is persistent, the key material and the key’s metadata have been
+ *          saved to persistent storage.
+ * @return  PSA_ERROR_ALREADY_EXISTS
+ *          This is an attempt to create a persistent key, and there is already a persistent key
+ *          with the given identifier.
+ * @return  PSA_ERROR_NOT_SUPPORTED
+ *          The key type or key size is not supported, either by the implementation in general or
+ *          in this particular persistent location.
+ * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          The key attributes, as a whole, are invalid.
+ * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          The key data is not correctly formatted.
+ * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          The size in attributes is nonzero and does not match the size of the key data.
+ * @return  PSA_ERROR_INSUFFICIENT_MEMORY
+ * @return  PSA_ERROR_INSUFFICIENT_STORAGE
+ * @return  PSA_ERROR_COMMUNICATION_FAILURE
+ * @return  PSA_ERROR_STORAGE_FAILURE
+ * @return  PSA_ERROR_DATA_CORRUPT
+ * @return  PSA_ERROR_DATA_INVALID
+ * @return  PSA_ERROR_HARDWARE_FAILURE
+ * @return  PSA_ERROR_CORRUPTION_DETECTED
+ * @return  PSA_ERROR_BAD_STATE
+ *          The library has not been previously initialized by psa_crypto_init(). It is
+ *          implementation-dependent whether a failure to initialize results in this error code.
+ *
+ */
 psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
                             const uint8_t * data,
                             size_t data_length,
                             psa_key_id_t * key);
 
-psa_key_attributes_t psa_key_attributes_init(void);
 psa_status_t psa_key_derivation_abort(psa_key_derivation_operation_t * operation);
 psa_status_t psa_key_derivation_get_capacity(const psa_key_derivation_operation_t * operation,
                                              size_t * capacity);
@@ -1358,19 +1769,6 @@ psa_status_t psa_raw_key_agreement(psa_algorithm_t alg,
                                    uint8_t * output,
                                    size_t output_size,
                                    size_t * output_length);
-void psa_reset_key_attributes(psa_key_attributes_t * attributes);
-void psa_set_key_algorithm(psa_key_attributes_t * attributes,
-                           psa_algorithm_t alg);
-void psa_set_key_bits(psa_key_attributes_t * attributes,
-                      size_t bits);
-void psa_set_key_id(psa_key_attributes_t * attributes,
-                    psa_key_id_t id);
-void psa_set_key_lifetime(psa_key_attributes_t * attributes,
-                          psa_key_lifetime_t lifetime);
-void psa_set_key_type(psa_key_attributes_t * attributes,
-                      psa_key_type_t type);
-void psa_set_key_usage_flags(psa_key_attributes_t * attributes,
-                             psa_key_usage_t usage_flags);
 psa_status_t psa_sign_hash(psa_key_id_t key,
                            psa_algorithm_t alg,
                            const uint8_t * hash,

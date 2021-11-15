@@ -28,36 +28,19 @@ typedef uint64_t psa_key_slot_number_t;
 
 /**@}*/
 
-/** \defgroup se_mac Secure Element Message Authentication Codes
- * Generation and authentication of Message Authentication Codes (MACs) using
- * a secure element can be done either as a single function call (via the
- * `psa_drv_se_mac_generate_t` or `psa_drv_se_mac_verify_t` functions), or in
- * parts using the following sequence:
- * - `psa_drv_se_mac_setup_t`
- * - `psa_drv_se_mac_update_t`
- * - `psa_drv_se_mac_update_t`
- * - ...
- * - `psa_drv_se_mac_finish_t` or `psa_drv_se_mac_finish_verify_t`
- *
- * If a previously started secure element MAC operation needs to be terminated,
- * it should be done so by the `psa_drv_se_mac_abort_t`. Failure to do so may
- * result in allocated resources not being freed or in other undefined
- * behavior.
- */
-/**@{*/
-/** \brief A function that starts a secure element  MAC operation for a PSA
+/** @brief A function that starts a secure element  MAC operation for a PSA
  * Crypto Driver implementation
  *
- * \param[in,out] drv_context   The driver context structure.
- * \param[in,out] op_context    A structure that will contain the
- *                              hardware-specific MAC context
- * \param[in] key_slot          The slot of the key to be used for the
- *                              operation
- * \param[in] algorithm         The algorithm to be used to underly the MAC
- *                              operation
+ * @param    drv_context    The driver context structure.
+ * @param    op_context     A structure that will contain the
+ *                          hardware-specific MAC context
+ * @param    key_slot       The slot of the key to be used for the
+ *                          operation
+ * @param    algorithm      The algorithm to be used to underly the MAC
+ *                          operation
  *
- * \retval  #PSA_SUCCESS
- *          Success.
+ * @return  PSA_SUCCESS     Success.
+ *
  */
 typedef psa_status_t (*psa_drv_se_mac_setup_t)(psa_drv_se_context_t *drv_context,
                                                void *op_context,
@@ -460,7 +443,7 @@ typedef psa_status_t (*psa_drv_se_asymmetric_sign_t)(psa_drv_se_context_t *drv_c
  *         The signature is valid.
  */
 typedef psa_status_t (*psa_drv_se_asymmetric_verify_t)(psa_drv_se_context_t *drv_context,
-                                                       psa_key_slot_number_t key_slot,
+                                                       const uint8_t * key_data,
                                                        psa_algorithm_t alg,
                                                        const uint8_t *p_hash,
                                                        size_t hash_length,

@@ -72,7 +72,9 @@
 #define PSA_ALG_AEAD_WITH_SHORTENED_TAG(aead_alg, tag_length) \
 /* specification-defined value */
 
-#define PSA_ALG_GET_HASH(alg) /* specification-defined value */
+#define PSA_ALG_GET_HASH(alg) \
+        (((alg) & PSA_ALG_HASH_MASK) == 0 ? ((psa_algorithm_t)0) : PSA_ALG_CATEGORY_HASH | ((alg) & PSA_ALG_HASH_MASK))
+
 #define PSA_ALG_HKDF(hash_alg) /* specification-defined value */
 #define PSA_ALG_HMAC(hash_alg) /* specification-defined value */
 #define PSA_ALG_IS_AEAD(alg) /* specification-defined value */
@@ -263,7 +265,7 @@
  *
  * @param alg       A cipher algorithm (PSA_ALG_XXX value such that #PSA_ALG_IS_CIPHER(alg) is true).
  *
- * \return The default IV size for the specified key type and algorithm.
+ * @return The default IV size for the specified key type and algorithm.
  *         If the algorithm does not use an IV, return 0.
  *         If the key type or cipher algorithm is not recognized,
  *         or the parameters are incompatible, return 0.
@@ -290,7 +292,7 @@
 #define PSA_ECC_FAMILY_SECT_R2 ((psa_ecc_family_t) 0x2b)
 
 #define PSA_HASH_BLOCK_LENGTH(alg) /* implementation-defined value */
-#define PSA_HASH_MAX_SIZE (64) /* implementation-defined value */
+#define PSA_HASH_MAX_SIZE   (64)
 #define PSA_HASH_SUSPEND_ALGORITHM_FIELD_LENGTH ((size_t)4)
 #define PSA_HASH_SUSPEND_HASH_STATE_FIELD_LENGTH(alg) \
 /* specification-defined value */
@@ -516,22 +518,6 @@
 /* implementation-defined value */
 #define PSA_SIGNATURE_MAX_SIZE /* implementation-defined value */
 #define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
-
-/* TODO: Adapt max key length to algorithm in use */
-
-// #define PSA_MAX_KEY_LENGTH  (0)
-// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
-// #define PSA_MAX_KEY_LENGTH  (128)
-// #endif
-// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
-// #define PSA_MAX_KEY_LENGTH  (192)
-// #endif
-// #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
-// #define PSA_MAX_KEY_LENGTH  (256)
-// #endif
-// #if IS_ACTIVE(CONFIG_PSA_CURVE_ECC_KEY_SIZE_256)
-#define PSA_MAX_KEY_LENGTH  (16)
-// #endif
 
 /**
  * @brief The action was completed successfully.

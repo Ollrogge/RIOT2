@@ -99,12 +99,12 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 
     for (size_t i = 0; i < PSA_KEY_SLOT_COUNT; i++) {
         psa_key_slot_t *slot = &global_data.key_slots[i];
-        if (!psa_is_key_slot_occupied(slot)) {
+        if (!psa_key_slot_occupied(slot)) {
             selected_slot = slot;
             break;
         }
         if ((!PSA_KEY_LIFETIME_IS_VOLATILE(slot->attr.lifetime) &&
-            (psa_is_key_slot_occupied(slot)))) {
+            (psa_key_slot_occupied(slot)))) {
             unlocked_persistent_slot = slot;
         }
     }

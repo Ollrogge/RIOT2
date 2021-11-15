@@ -96,4 +96,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
                                             size_t output_size,
                                             size_t * output_length);
 
+psa_status_t psa_driver_wrapper_generate_random(uint8_t * output,
+                                                size_t output_size);
+
 #endif /* PSA_CRYPTO_DISPATCHER_H */

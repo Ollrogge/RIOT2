@@ -64,13 +64,13 @@
  * This macro returns a compile-time constant if its arguments are
  * compile-time constants.
  *
- * \warning This macro may evaluate its arguments multiple times or
+ * @warning This macro may evaluate its arguments multiple times or
  *          zero times, so you should not pass arguments that contain
  *          side effects.
  *
  * The following code illustrates how to allocate enough memory to export
  * a public key by querying the key type and size at runtime.
- * \code{c}
+ * @code{c}
  * psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
  * psa_status_t status;
  * status = psa_get_key_attributes(key, &attributes);
@@ -108,7 +108,8 @@
     (PSA_KEY_TYPE_IS_ECC(key_type) ? PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(key_bits) : \
      0)
 
-/** Sufficient buffer size for exporting any asymmetric public key.
+/**
+ * Sufficient buffer size for exporting any asymmetric public key.
  *
  * This macro expands to a compile-time constant integer. This value is
  * a sufficient buffer size when calling psa_export_key() or
@@ -120,40 +121,73 @@
 #define PSA_EXPORT_PUBLIC_KEY_MAX_SIZE \
         (PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_ECC_MAX_CURVE_BITS))
 
-#if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
+
+
+#if IS_ACTIVE(CONFIG_PSA_ECC_P256)
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 256
+#elif IS_ACTIVE(CONFIG_PSA_ECC_P192)
+#define PSA_VENDOR_ECC_MAX_CURVE_BITS 192
 #else
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 0
 #endif
 
+/* Implementations that have its own generic ECC key type define these sizes themselves. For other implementations the private key is the size of the curve in bytes and the public key type is the */
+#if !IS_ACTIVE(CONFIG_PSA_HAS_OWN_ECC_KEY_TYPE)
+#define PSA_MAX_ECC_PRIV_KEY_SIZE   (PSA_BITS_TO_BYTES(PSA_VENDOR_ECC_MAX_CURVE_BITS))
+#define PSA_MAX_ECC_PUB_KEY_SIZE    (PSA_MAX_ECC_PRIV_KEY_SIZE * 2)
+#endif
+
 /**
- * \brief ECDSA signature size for a given curve bit size
+ * Define maximum key data sizes for initial key buffer declarations.
  *
- * \param curve_bits    Curve size in bits.
- * \return              Signature size in bytes.
+ * When no key based algorithms are used, PSA_MAX_KEY_DATA_SIZE is 0.
+ * When using symmetric ciphers, PSA_MAX_KEY_DATA_SIZE is the size
+ * of the largest cipher key used.
  *
- * \note This macro returns a compile-time constant if its argument is one.
+ * When using asymmetric ciphers, PSA_MAX_KEY_DATA_SIZE is the size
+ * of the largest asymmetric key pair combination used.
+ */
+#if IS_ACTIVE(CONFIG_PSA_ECC)
+#define PSA_MAX_KEY_DATA_SIZE  ((PSA_MAX_ECC_PRIV_KEY_SIZE + PSA_MAX_ECC_PUB_KEY_SIZE + sizeof(size_t)))
+#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
+#define PSA_MAX_KEY_DATA_SIZE  (32)
+#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
+#define PSA_MAX_KEY_DATA_SIZE  (24)
+#elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
+#define PSA_MAX_KEY_DATA_SIZE  (16)
+#else
+#define PSA_MAX_KEY_DATA_SIZE  (0)
+#endif
+
+/**
+ * @brief ECDSA signature size for a given curve bit size
+ *
+ * @param curve_bits    Curve size in bits.
+ * @return              Signature size in bytes.
+ *
+ * @note This macro returns a compile-time constant if its argument is one.
  */
 #define PSA_ECDSA_SIGNATURE_SIZE(curve_bits)    \
     (PSA_BITS_TO_BYTES(curve_bits) * 2)
 
-/** Sufficient signature buffer size for psa_sign_hash().
+/**
+ * Sufficient signature buffer size for psa_sign_hash().
  *
  * This macro returns a sufficient buffer size for a signature using a key
  * of the specified type and size, with the specified algorithm.
  * Note that the actual size of the signature may be smaller
  * (some algorithms produce a variable-size signature).
  *
- * \warning This function may call its arguments multiple times or
+ * @warning This function may call its arguments multiple times or
  *          zero times, so you should not pass arguments that contain
  *          side effects.
  *
- * \param key_type  An asymmetric key type (this may indifferently be a
+ * @param key_type  An asymmetric key type (this may indifferently be a
  *                  key pair type or a public key type).
- * \param key_bits  The size of the key in bits.
- * \param alg       The signature algorithm.
+ * @param key_bits  The size of the key in bits.
+ * @param alg       The signature algorithm.
  *
- * \return If the parameters are valid and supported, return
+ * @return If the parameters are valid and supported, return
  *         a buffer size in bytes that guarantees that
  *         psa_sign_hash() will not fail with
  *         #PSA_ERROR_BUFFER_TOO_SMALL.

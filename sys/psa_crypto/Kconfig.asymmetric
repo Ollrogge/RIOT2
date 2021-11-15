@@ -5,26 +5,78 @@
 # directory for more details.
 #
 
-menuconfig CURVE_ECC_P256
+menuconfig PSA_ECC_P192
+    bool "NIST P192"
+    select PSA_ECC_KEY_SIZE_192
+    select PSA_ECC
+
+if PSA_ECC_P192
+
+choice PSA_ECC_P192_IMPLEMENTATION
+    bool "NIST P192 Implementation"
+    default PERIPH_ECC_CURVE_P192 if HAS_PERIPH_ECC_P192
+    default MICRO_ECC_CURVE_P192
+
+config PERIPH_ECC_CURVE_P192
+    bool "Hardware Accelerated"
+    depends on HAS_PERIPH_ECC_P192
+    select PSA_ECC_P192_DRIVER
+    select PERIPH_ECC_P192
+    select PERIPH_ECC
+
+config MICRO_ECC_CURVE_P192
+    bool "Micro-ECC Library"
+    select PACKAGE_MICRO-ECC
+    select PSA_ECC_P192_DRIVER
+    select MODULE_PSA_UECC_P192
+
+endchoice
+
+endif # PSA_ECC_P192
+
+menuconfig PSA_ECC_P256
     bool "NIST P256"
-    select PSA_CURVE_ECC_KEY_SIZE_256
+    select PSA_ECC_KEY_SIZE_256
+    select PSA_ECC
 
-if CURVE_ECC_P256
+if PSA_ECC_P256
 
-choice CURVE_ECC_P256_IMPLEMENTATION
-    bool "NISST P256 Implementation"
+choice PSA_ECC_P256_IMPLEMENTATION
+    bool "NIST P256 Implementation"
+    default MICRO_ECC_CURVE_P256
 
-config CRYPTOAUTHLIB_CURVE_ECC_P256
+config CRYPTOAUTHLIB_PSA_ECC_P256
     bool "Microchip Cryptoauthlib"
     select PACKAGE_CRYPTOAUTHLIB
     select MODULE_PSA_SE_DRIVER
     select PSA_CRYPTO_SECURE_ELEMENT
 
+config MICRO_ECC_CURVE_P256
+    bool "Micro-ECC Library"
+    select PACKAGE_MICRO-ECC
+    select PSA_ECC_P256_DRIVER
+    select MODULE_PSA_UECC_P256
+
 endchoice
 
-endif # CURVE_ECC_P256
+endif # PSA_ECC_P256
 
-config PSA_CURVE_ECC_KEY_SIZE_256
+config PSA_ECC_KEY_SIZE_256
     bool
     help
         Indicates that an 256 bit Elliptic Curve is used
+
+config PSA_ECC_P256_DRIVER
+    bool
+    help
+        Indicates that an ECC Curve implementation other than a secure element is present
+
+config PSA_ECC_P192_DRIVER
+    bool
+    help
+        Indicates that an ECC Curve implementation other than a secure element is present
+
+config PSA_ECC
+    bool
+    help
+        Indicates that an elliptic curve operation is being used
