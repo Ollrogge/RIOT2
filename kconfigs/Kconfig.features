@@ -99,11 +99,22 @@ config HAS_PERIPH_HASH_SHA512
     help
         Indicates that there is SHA-512 hardware acceleration present.
 
-# Cipher AES
+# Cipher AES related features
 config HAS_PERIPH_CIPHER_AES_128_CBC
     bool
     help
         Indicates that there is AES 128 CBC hardware acceleration present
+
+# Elliptic Curve related features
+config HAS_PERIPH_ECC_P192
+    bool
+    help
+        Indicates that there is ECC P192 hardware acceleration present
+
+config PSA_HAS_OWN_ECC_KEY_TYPE
+    bool
+    help
+        Indicates that implementation has own ECC key type with specific size
 
 config HAS_HIGHLEVEL_STDIO
     bool

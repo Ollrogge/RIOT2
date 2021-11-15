@@ -134,6 +134,7 @@ PSEUDOMODULES += prng_%
 PSEUDOMODULES += fortuna_reseed
 PSEUDOMODULES += random_cmd
 PSEUDOMODULES += psa_arch_tests
+PSEUDOMODULES += psa_uecc_%
 PSEUDOMODULES += psa_riot_cipher_%
 PSEUDOMODULES += psa_riot_hashes_%
 PSEUDOMODULES += psa_tinycrypt_%
