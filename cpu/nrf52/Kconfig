@@ -22,6 +22,7 @@ config CPU_FAM_NRF52
     select HAS_PERIPH_HASH_SHA256
     select HAS_PERIPH_HASH_SHA512
     select HAS_PERIPH_CIPHER_AES_128_CBC
+    select HAS_PERIPH_ECC_P192
 
 ## CPU Models
 config CPU_MODEL_NRF52805XXAA
@@ -114,6 +115,14 @@ config PERIPH_CIPHER_MODE_CBC
     select MODULE_PERIPH_AES_COMMON
     select MODULE_PERIPH_PSA_ERROR
 
+config PERIPH_ECC
+    bool
+    select PSA_HAS_OWN_ECC_KEY_TYPE
+    select MODULE_PERIPH_ECC
+    select MODULE_PERIPH_PSA_ERROR
+
+config PERIPH_ECC_P192
+    bool
 
 ## Definition of specific features
 config HAS_CPU_NRF52
@@ -177,8 +186,13 @@ config MODULE_PERIPH_AES_COMMON
     help
         Build common AES functions
 
+config MODULE_PERIPH_ECC
+    bool
+    help
+        Build Elliptic Curve functions
+
 rsource "periph/Kconfig"
-rsource "vectors/Kconfig"
 rsource "cryptocell_lib/Kconfig"
+rsource "vectors/Kconfig"
 
 source "$(RIOTCPU)/nrf5x_common/Kconfig"

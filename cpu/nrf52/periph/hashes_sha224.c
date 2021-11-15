@@ -44,7 +44,5 @@ psa_status_t psa_hashes_sha224_finish(psa_hashes_sha224_ctx_t * ctx,
                              size_t hash_size,
                              size_t * hash_length)
 {
-    (void) hash_size;
-    (void) hash_length;
-    return common_hash_finish((CRYS_HASHUserContext_t *) ctx, hash);
+    return common_hash_finish((CRYS_HASHUserContext_t *) ctx, hash, hash_size, hash_length);
 }

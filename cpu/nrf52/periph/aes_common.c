@@ -41,15 +41,16 @@ psa_status_t common_aes_encrypt(SaSiAesUserContext_t *ctx, const uint8_t *input,
     int ret = 0;
     size_t offset = 0;
     size_t size;
+    size_t length = input_length;
 
     do {
-        if (input_length > CC310_MAX_AES_INPUT_BLOCK) {
+        if (length > CC310_MAX_AES_INPUT_BLOCK) {
             size = CC310_MAX_AES_INPUT_BLOCK;
-            input_length -= CC310_MAX_AES_INPUT_BLOCK;
+            length -= CC310_MAX_AES_INPUT_BLOCK;
         }
         else {
-            size = input_length;
-            input_length = 0;
+            size = length;
+            length = 0;
         }
 
         cryptocell_enable();
@@ -60,15 +61,16 @@ psa_status_t common_aes_encrypt(SaSiAesUserContext_t *ctx, const uint8_t *input,
         }
 
         offset += size;
-    } while ((input_length > 0) && (ret == SASI_OK));
+    } while ((length > 0) && (ret == SASI_OK));
 
     cryptocell_enable();
-    ret = SaSi_AesFinish(ctx, input_length, (uint8_t*)(input + offset), output_size, output, output_length);
+    ret = SaSi_AesFinish(ctx, length, (uint8_t*)(input + offset), input_length, output, output_length);
     cryptocell_disable();
     if (ret != SASI_OK) {
         return SaSi_to_psa_error(ret);
     }
 
+    (void) output_size;
     return PSA_SUCCESS;
 }
 

@@ -12,6 +12,8 @@ psa_status_t common_hash_update(CRYS_HASHUserContext_t * ctx,
                                 size_t input_length);
 
 psa_status_t common_hash_finish(CRYS_HASHUserContext_t * ctx,
-                                uint8_t * hash);
+                                uint8_t * hash,
+                                size_t hash_size,
+                                size_t * hash_length);
 
 #endif /* PSA_PERIPH_HASHES_COMMON_H */

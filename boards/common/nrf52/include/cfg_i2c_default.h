@@ -32,7 +32,7 @@ extern "C" {
  * @{
  */
 static const i2c_conf_t i2c_config[] = {
-#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS) || defined(SE_ECDSA)
     {
         .dev = NRF_TWIM1,
         .scl = 28,

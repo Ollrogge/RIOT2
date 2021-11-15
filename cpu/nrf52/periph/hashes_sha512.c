@@ -35,12 +35,10 @@ psa_status_t psa_hashes_sha512_update(psa_hashes_sha512_ctx_t * ctx,
     return common_hash_update((CRYS_HASHUserContext_t *) ctx, input, input_length);
 }
 
-psa_status_t psa_hashes_sha512_finish(psa_hashes_sha512_ctx_t * ctx,
-                             uint8_t * hash,
-                             size_t hash_size,
-                             size_t * hash_length)
+psa_status_t psa_hashes_sha512_finish(  psa_hashes_sha512_ctx_t * ctx,
+                                        uint8_t * hash,
+                                        size_t hash_size,
+                                        size_t * hash_length)
 {
-    (void) hash_size;
-    (void) hash_length;
-    return common_hash_finish((CRYS_HASHUserContext_t *) ctx, hash);
+    return common_hash_finish((CRYS_HASHUserContext_t *) ctx, hash, hash_size, hash_length);
 }
