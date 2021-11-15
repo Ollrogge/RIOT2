@@ -1,0 +1,135 @@
+# configuration file for run.py
+boards:
+  - "nrf52840dk"
+
+profiles:
+  aes-cbc:
+    dir_path: "../aes-cbc"
+    config: "../aes-cbc/app.config.test"
+    label: "CC310\n(AES-128 CBC)"
+    flags: ""
+  # aes-cbc-multi:
+  #   dir_path: "../aes-cbc"
+  #   config: "../aes-cbc/app.config.test.multiple"
+  #   label: "Cipher CC310 \\& RIOT"
+  #   flags: ""
+  hashes:
+    dir_path: "../hashes"
+    config: "../hashes/app.config.test"
+    label: "RIOT Hashes\n(SHA-256)"
+    flags: ""
+  # hashes-multi:
+  #   dir_path: "../hashes"
+  #   config: "../hashes/app.config.test.multiple"
+  #   label: "Hashes CC310 \\& RIOT"
+  #   flags: ""
+  ecdsa-se:
+    dir_path: "../ecdsa-se"
+    config: "../ecdsa-se/app.config.test.multiple"
+    label: "ATECC608A\n(ECDSA)"
+    flags: ""
+  all-backends:
+    dir_path: "../backend-combination"
+    config: "../backend-combination/app.config.test"
+    label: "All Backends"
+    flags: ""
+
+groups:
+  # For now we ignore common OS and DTLS parts
+  # ? "RIOT"
+  # :
+  #   modules:
+  #     - ["core"]
+  #     - ["boards"]
+  #     - ["cpu"]
+  #     - ["drivers"]
+  #     - ["sys"]
+  #     - ["pkg", "wakaama", "core", "er-coap-13"]
+  #     - ["pkg", "tinydtls"]
+  #     - ["unspecified"]
+  #   config:
+  #     hatch: "|/"
+  #     base: true
+
+  ? "Cryptoauth Library"
+  :
+    modules:
+      - ["pkg", "cryptoauthlib", "contrib"]
+      - ["sys", "auto_init", "auto_init_security", "auto_init_atca"]
+      - ["cryptoauthlib"]
+
+    config:
+      hatch: "\\"
+
+  ? "CC310 Library"
+  :
+    modules:
+      - ["cpu", "nrf52", "periph", "cryptocell_setup"]
+      - ["cpu", "nrf52", "periph", "cryptocell_util"]
+      - ["cpu", "nrf52", "periph", "cryptocell_lib"]
+
+    config:
+      hatch: "."
+
+  # ? "RIOT Cipher Module"
+  # :
+  #   modules:
+  #     - ["sys", "crypto"]
+
+    config:
+      hatch: "-"
+
+  ? "RIOT Hash Module"
+  :
+    modules:
+      - ["sys", "hashes"]
+
+    config:
+      hatch: "+"
+
+  ? "RIOT Random"
+  :
+    modules:
+      - ["sys", "random"]
+
+    config:
+      hatch: "\\"
+
+  # ? "PSA Crypto Glue Code"
+  # :
+  #   modules:
+  #     - ["cpu", "nrf52", "periph", "aes_cbc"]
+  #     - ["cpu", "nrf52", "periph", "aes_common"]
+  #     - ["cpu", "nrf52", "periph", "psa_error"]
+  #     - ["cpu", "nrf52", "periph", "hashes_common"]
+  #     - ["cpu", "nrf52", "periph", "hashes_sha512"]
+  #     - ["pkg", "cryptoauthlib", "psa_se_driver"]
+  #     - ["sys", "crypto", "psa_riot_cipher"]
+  #     - ["sys", "hashes", "psa_riot_hashes"]
+
+  #   config:
+  #     hatch: "X"
+
+  ? "PSA Crypto"
+  :
+    modules:
+      - ["sys", "psa_crypto"]
+      - ["cpu", "nrf52", "periph", "aes_cbc"]
+      - ["cpu", "nrf52", "periph", "aes_common"]
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["cpu", "nrf52", "periph", "hashes_common"]
+      - ["cpu", "nrf52", "periph", "hashes_sha512"]
+      - ["pkg", "cryptoauthlib", "psa_se_driver"]
+      - ["sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "hashes", "psa_riot_hashes"]
+
+    config:
+      hatch: "/"
+
+# # some plot configuration
+plots:
+  config:
+    hatch:
+      linewidth: 0.5
+    label:
+      width: 10

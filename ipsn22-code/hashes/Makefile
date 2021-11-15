@@ -1,5 +1,5 @@
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= /home/lena/Dokumente/work/RIOT
+RIOTBASE ?= $(CURDIR)/../..
 
 APPLICATION = hashes
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(3*THREAD_STACKSIZE_DEFAULT\)

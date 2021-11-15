@@ -1,7 +1,9 @@
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= /home/lena/Dokumente/work/RIOT
+RIOTBASE ?= $(CURDIR)/../..
 
-APPLICATION = ecdsa-hardware
+APPLICATION = ecdsa-sw
+
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
 
 export TEST_KCONFIG ?= 1
 

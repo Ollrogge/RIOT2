@@ -8,8 +8,27 @@
 #include "ps.h"
 #endif
 
+#include "xtimer.h"
+
+#define AES_128_KEY_SIZE    (16)
+#define AES_256_KEY_SIZE    (32)
+
 gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
+
+static const uint8_t KEY_128[] = {
+    0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+};
+
+#ifdef MULTIPLE_BACKENDS
+static const uint8_t KEY_256[] = {
+    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4
+};
+#endif
 
 static uint8_t PLAINTEXT[] = {
     0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
@@ -49,10 +68,10 @@ static void cipher_aes_128(void)
     psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
 
     gpio_clear(external_gpio);
-    status = psa_generate_key(&attr, &key_id);
+    status = psa_import_key(&attr, KEY_128, AES_128_KEY_SIZE, &key_id);
     gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
-        printf("AES 128 Key Generation failed: %ld\n", status);
+        printf("AES 128 Key Import failed: %ld\n", status);
         return;
     }
 
@@ -86,17 +105,17 @@ static void cipher_aes_256(void)
     psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
 
     gpio_clear(external_gpio);
-    status = psa_generate_key(&attr, &key_id);
+    status = psa_import_key(&attr, KEY_256, AES_256_KEY_SIZE, &key_id);
     gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
-        printf("AES 128 Key Generation failed: %ld\n", status);
+        printf("AES 256 Key Import failed: %ld\n", status);
         return;
     }
     gpio_clear(external_gpio);
     status = psa_cipher_encrypt(key_id, PSA_ALG_CBC_NO_PADDING, PLAINTEXT, PLAINTEXT_LEN, cipher_out, combined_output_size, &output_len);
     gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
-        printf("AES 128 CBC Encrypt failed: %ld\n", status);
+        printf("AES 256 CBC Encrypt failed: %ld\n", status);
         return;
     }
     puts("AES 256 CBC Success");
@@ -106,7 +125,6 @@ static void cipher_aes_256(void)
 int main(void)
 {
     _test_init();
-
     cipher_aes_128();
 #ifdef MULTIPLE_BACKENDS
     cipher_aes_256();

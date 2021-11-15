@@ -7,6 +7,10 @@
 #include "ps.h"
 #endif
 
+#include "periph/gpio.h"
+gpio_t external_gpio = GPIO_PIN(1, 8);
+gpio_t internal_gpio = GPIO_PIN(1, 7);
+
 const uint8_t SHA256_MSG[] = {  0x09, 0xfc, 0x1a, 0xcc, 0xc2, 0x30, 0xa2, 0x05,
                                 0xe4, 0xa2, 0x08, 0xe6, 0x4a, 0x8f, 0x20, 0x42,
                                 0x91, 0xf5, 0x81, 0xa1, 0x27, 0x56, 0x39, 0x2d,
@@ -35,12 +39,25 @@ const uint8_t SHA512_DIG[] = {  0x45, 0x51, 0xde, 0xf2, 0xf9, 0x12, 0x73, 0x86,
                                 0x8a, 0x0e, 0x72, 0xb4, 0xe1, 0xdc, 0x0d, 0xa6};
 const size_t SHA512_DIG_LEN = 64;
 
+static void _test_init(void)
+{
+    gpio_init(external_gpio, GPIO_OUT);
+    gpio_init(internal_gpio, GPIO_OUT);
+
+    gpio_set(external_gpio);
+    gpio_clear(internal_gpio);
+}
+
 static void hashes_sha256(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    uint8_t result[SHA256_DIG_LEN];
+    size_t hash_length;
 
-    status = psa_hash_compare(PSA_ALG_SHA_256, SHA256_MSG, SHA256_MSG_LEN, SHA256_DIG, SHA256_DIG_LEN);
-    if (status != PSA_SUCCESS) {
+    gpio_clear(external_gpio);
+    status = psa_hash_compute(PSA_ALG_SHA_256, SHA256_MSG, SHA256_MSG_LEN, result, sizeof(result), &hash_length);
+    gpio_set(external_gpio);
+    if (status != PSA_SUCCESS || hash_length != SHA256_DIG_LEN) {
         printf("SHA 256 failed: %ld\n", status);
         return;
     }
@@ -51,9 +68,13 @@ static void hashes_sha256(void)
 static void hashes_sha512(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    uint8_t result[SHA512_DIG_LEN];
+    size_t hash_length;
 
-    status = psa_hash_compare(PSA_ALG_SHA_512, SHA512_MSG, SHA512_MSG_LEN, SHA512_DIG, SHA512_DIG_LEN);
-    if (status != PSA_SUCCESS) {
+    gpio_clear(external_gpio);
+    status = psa_hash_compute(PSA_ALG_SHA_512, SHA512_MSG, SHA512_MSG_LEN, result, sizeof(result), &hash_length);
+    gpio_set(external_gpio);
+    if (status != PSA_SUCCESS || hash_length != SHA512_DIG_LEN) {
         printf("SHA 512 failed: %ld\n", status);
         return;
     }
@@ -63,6 +84,7 @@ static void hashes_sha512(void)
 
 int main(void)
 {
+    _test_init();
     hashes_sha256();
 #ifdef MULTIPLE_BACKENDS
     hashes_sha512();
