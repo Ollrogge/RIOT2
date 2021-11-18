@@ -145,7 +145,7 @@ static void example_prim_se(void)
 }
 #endif
 
-#if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
+#if IS_ACTIVE(CONFIG_PSA_ECC_P256)
 static void example_sign_verify(void)
 {
     psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
@@ -258,7 +258,7 @@ int main(void)
 {
     psa_crypto_init();
 
-#if IS_ACTIVE(CONFIG_CURVE_ECC_P256)
+#if IS_ACTIVE(CONFIG_PSA_ECC_P256)
     example_sign_verify();
 #endif
 #if IS_ACTIVE(CONFIG_CIPHER_AES_128_CBC)
