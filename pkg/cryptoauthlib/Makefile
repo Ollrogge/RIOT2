@@ -1,9 +1,6 @@
-PKG_SOURCE_LOCAL=/home/einhornhool/work/repos/cryptoauthlib
-# PKG_SOURCE_LOCAL=/home/lena/Dokumente/work/repos/cryptoauthlib
 PKG_NAME=cryptoauthlib
-PKG_URL=https://github.com/MicrochipTech/cryptoauthlib
-# PKG_VERSION=af8187776cd3f3faf8bed412eaf6ff7221862e19
-PKG_VERSION=b177b31182573f439191214d356a34f5db048beb
+PKG_URL=https://github.com/Einhornhool/cryptoauthlib
+PKG_VERSION=a5b1dd9ec4f5601b73cd423ea3fb5c0eb518f521
 PKG_LICENSE=LGPL-2.1
 PKG_TEST_NAME=cryptoauthlib_test
 
