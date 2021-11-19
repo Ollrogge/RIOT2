@@ -10,15 +10,37 @@
 #define PSA_KEY_ID_VOLATILE_MIN (PSA_KEY_ID_VENDOR_MIN)
 #define PSA_KEY_ID_VOLATILE_MAX (PSA_KEY_ID_VENDOR_MIN + PSA_KEY_SLOT_COUNT)
 
+/**
+ * @brief Structure of a virtual key slot in local memory.
+ *
+ * A slot contains key attributes, a lock count and the key_data structure.
+ * Key_data consists of the size of the stored key in bytes and a uint8_t data array large enough
+ * to store the largest key used in the current build.
+ * Keys can be either symmetric or asymmetric and are handled differently depending on the type.
+ *
+ * In case of symmetric keys the data array contains either
+ *      - the raw key bytes, when key is stored locally
+ *      - the address or slot number, when key is stored in secure storage
+ *
+ * In case of asymmetric keys, data will contain either
+ *      - a psa_ecc_keypair_t type struct with a private key and public key,
+ *          when key is stored locally
+ *      - a psa_ecc_keypair_t type struct with a slot number and a public key,
+ *          when private key is stored in secure storage and the public key is stored locally
+ *      - a psa_ecc_keypair_t type struct with only a slot number, when the
+ *          private key is stored in secure storage and public key will be recalculated if needed
+ *      - a psa_ecc_pub_key_t type struct containing a public key,
+ *          when key is stored locally
+ *      - a psa_ecc_pub_key_t type struct containing a slot number,
+ *          when key is stored in secure storage
+ *
+ * Information about the ECC key type structs can be found in psa_ecc.h
+ */
 typedef struct {
     psa_key_attributes_t attr;
     size_t lock_count;
     struct key_data {
-#if IS_ACTIVE(CONFIG_PSA_ECC)
-        uint8_t data[sizeof(psa_ecc_keypair_t)];
-#else
         uint8_t data[PSA_MAX_KEY_DATA_SIZE]; /*!< Contains symmetric raw key, OR slot number for symmetric key in case of SE, OR asymmetric key pair structure */
-#endif
         size_t bytes; /*!< Contains actual size of symmetric key or size of asymmetric key pair  structure, TODO: Is there a better solution? */
     } key;
 } psa_key_slot_t;

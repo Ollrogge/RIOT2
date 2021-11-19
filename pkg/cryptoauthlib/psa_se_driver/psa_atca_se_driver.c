@@ -1,7 +1,6 @@
 #include "atca_params.h"
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"
-
 #include "periph/gpio.h"
 
 #define ENABLE_DEBUG    (0)
@@ -208,7 +207,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
 psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
                                 psa_key_slot_number_t key_slot,
                                 const psa_key_attributes_t *attributes,
-                                uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
+                                psa_ecc_pub_key_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
 {
     ATCA_STATUS status;
     ATCADevice dev = (ATCADevice) drv_context->drv_data;
@@ -221,13 +220,14 @@ psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
         return PSA_ERROR_NOT_SUPPORTED;
     }
     gpio_set(internal_gpio);
-    status = calib_genkey(dev, key_slot, pubkey);
+    status = calib_genkey(dev, key_slot, pubkey->pub_key_data);
     gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         DEBUG("ATCA Error: %x\n", status);
         return atca_to_psa_error(status);
     }
 
+    pubkey->is_plain_key = 1;
     *pubkey_length = ECC_P256_PUB_KEY_SIZE;
 
     return PSA_SUCCESS;
@@ -292,7 +292,7 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
 }
 
 psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
-                            const uint8_t * key_data,
+                            const psa_ecc_pub_key_t * key_data,
                             psa_algorithm_t alg,
                             const uint8_t *p_hash,
                             size_t hash_length,
@@ -311,9 +311,18 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    gpio_set(internal_gpio);
-    status = calib_verify_extern(dev, p_hash, p_signature, key_data, &is_verified);
-    gpio_clear(internal_gpio);
+    if (key_data->is_plain_key) {
+        gpio_set(internal_gpio);
+        status = calib_verify_extern(dev, p_hash, p_signature, key_data->pub_key_data, &is_verified);
+        gpio_clear(internal_gpio);
+    }
+    else {
+        gpio_set(internal_gpio);
+        status = calib_verify_stored(dev, p_hash, p_signature, (uint16_t)*(key_data->pub_key_data), &is_verified);
+        gpio_clear(internal_gpio);
+    }
+
+
     if (status != ATCA_SUCCESS) {
         DEBUG("ATCA Error: %x\n", status);
         return atca_to_psa_error(status);

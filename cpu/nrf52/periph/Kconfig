@@ -21,6 +21,87 @@ config MODULE_SAUL_NRF_VDDH
     depends on HAS_PERIPH_ADC
     select MODULE_PERIPH_ADC
 
+# CryptoCell Related Symbols
+config MODULE_PERIPH_CRYPTOCELL_SETUP
+    bool
+    help
+        Build setup functions for CryptoCell Library
+
+config MODULE_PERIPH_CRYPTOCELL_UTIL
+    bool
+    help
+        Build utility functions for CryptoCell Library
+
+config MODULE_PERIPH_PSA_ERROR
+    bool
+    help
+        Build PSA Error functions
+
+# Hash Related Symbols
+config PERIPH_HASHES
+    bool
+    depends on HAS_CPU_NRF52
+    select MODULE_PERIPH_HASHES
+    select MODULE_PERIPH_HASHES_COMMON
+    select MODULE_PERIPH_PSA_ERROR
+
+config MODULE_PERIPH_HASHES
+    bool
+    help
+        Use CryptoCell Hardware Driver for Hashes
+
+config MODULE_PERIPH_HASHES_COMMON
+    bool
+    help
+        Build common hash functions
+
+config MODULE_PERIPH_HASHES_SHA1
+    bool
+
+config MODULE_PERIPH_HASHES_SHA224
+    bool
+
+config MODULE_PERIPH_HASHES_SHA256
+    bool
+
+config MODULE_PERIPH_HASHES_SHA512
+    bool
+
+#Cipher Related Symbols
+config PERIPH_CIPHER_MODE_CBC
+    bool
+    select MODULE_PERIPH_AES_CBC
+    select MODULE_PERIPH_AES_COMMON
+    select MODULE_PERIPH_PSA_ERROR
+
+config PERIPH_CIPHER_AES
+    bool
+
+config MODULE_PERIPH_AES_CBC
+    bool
+    help
+        Use CryptoCell Hardware Driver for AES CBC
+
+config MODULE_PERIPH_AES_COMMON
+    bool
+    help
+        Build common AES functions
+
+# Asymmetric Crypto Related Symbols
+config PERIPH_ECC
+    bool
+    select PSA_HAS_OWN_ECC_KEY_TYPE
+    select MODULE_PERIPH_ECC
+    select MODULE_PERIPH_PSA_ERROR
+
+config PERIPH_ECC_P192
+    bool
+
+config MODULE_PERIPH_ECC
+    bool
+    help
+        Build Elliptic Curve functions
+
 endif # TEST_KCONFIG
 
 config HAVE_SAUL_NRF_VDDH

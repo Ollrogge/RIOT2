@@ -6,6 +6,7 @@
 
 #include "psa/crypto_values.h"
 #include "psa/crypto_types.h"
+#include "psa_ecc.h"
 
 #define PSA_MAX_PERSISTENT_DATA_SIZE    (16)
 
@@ -18,7 +19,6 @@ typedef enum {
 
 typedef struct
 {
-    /* Kann man das anders machen ohne Allokation?? */
     const uint8_t persistent_data[PSA_MAX_PERSISTENT_DATA_SIZE];
     const size_t persistent_data_size;
     uintptr_t drv_data;
@@ -443,7 +443,7 @@ typedef psa_status_t (*psa_drv_se_asymmetric_sign_t)(psa_drv_se_context_t *drv_c
  *         The signature is valid.
  */
 typedef psa_status_t (*psa_drv_se_asymmetric_verify_t)(psa_drv_se_context_t *drv_context,
-                                                       const uint8_t * key_data,
+                                                       const psa_ecc_pub_key_t * key_data,
                                                        psa_algorithm_t alg,
                                                        const uint8_t *p_hash,
                                                        size_t hash_length,
@@ -968,7 +968,7 @@ typedef psa_status_t (*psa_drv_se_generate_key_t)(
     psa_drv_se_context_t *drv_context,
     psa_key_slot_number_t key_slot,
     const psa_key_attributes_t *attributes,
-    uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length);
+    psa_ecc_pub_key_t *pubkey, size_t pubkey_size, size_t *pubkey_length);
 
 /**
  * \brief A struct containing all of the function pointers needed to for secure

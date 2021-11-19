@@ -48,6 +48,8 @@ static inline int safer_memcmp(const uint8_t *a, const uint8_t *b, size_t n)
 psa_status_t psa_crypto_init(void)
 {
     lib_initialized = 1;
+
+    psa_wipe_all_key_slots();
     return PSA_SUCCESS;
 }
 
@@ -342,6 +344,10 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
                                 PSA_KEY_USAGE_ENCRYPT :
                                 PSA_KEY_USAGE_DECRYPT );
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (!PSA_ALG_IS_CIPHER(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -419,6 +425,10 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (!PSA_ALG_IS_CIPHER(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -465,6 +475,10 @@ psa_status_t psa_cipher_generate_iv(psa_cipher_operation_t * operation,
                                     size_t * iv_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
 
     *iv_length = 0;
 
@@ -518,6 +532,10 @@ psa_status_t psa_cipher_update(psa_cipher_operation_t * operation,
 psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
                             psa_algorithm_t alg)
 {
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (operation->alg != 0) {
         return PSA_ERROR_BAD_STATE;
     }
@@ -537,6 +555,10 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
                              const uint8_t * input,
                              size_t input_length)
 {
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (operation->alg == 0) {
         return PSA_ERROR_BAD_STATE;
     }
@@ -554,6 +576,10 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
                              size_t hash_size,
                              size_t * hash_length)
 {
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (operation->alg == 0) {
         return PSA_ERROR_BAD_STATE;
     }
@@ -582,6 +608,10 @@ psa_status_t psa_hash_verify(psa_hash_operation_t * operation,
     int status = PSA_ERROR_CORRUPTION_DETECTED;
     uint8_t digest[PSA_HASH_MAX_SIZE];
     size_t actual_hash_length = 0;
+
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
 
     status = psa_hash_finish(operation, digest, PSA_HASH_MAX_SIZE, &actual_hash_length);
 
@@ -645,6 +675,10 @@ psa_status_t psa_hash_compare(psa_algorithm_t alg,
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
         return status;
@@ -673,6 +707,10 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
     // gpio_clear(internal_gpio);
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     *hash_length = hash_size;
     status = psa_hash_setup(&operation, alg);
     if (status != PSA_SUCCESS) {
@@ -698,10 +736,14 @@ psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    if (PSA_KEY_TYPE_IS_ECC(slot->attr.type)) {
-        /* When creating an ECC key pair, key data is a psa_ecc_keypair type. When operating on a secure element, the private key data will be a slot number and the public key data will be a public key returned by the device driver. */
+    if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type)) {
+        /* When creating an ECC key pair, key data is a psa_ecc_keypair type. When operating on a secure element, the private key data will be a slot number. */
         psa_ecc_keypair_t * ecc_key = (psa_ecc_keypair_t *) slot->key.data;
         memcpy(ecc_key->priv_key_data, data, data_length);
+    }
+    else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)){
+        psa_ecc_pub_key_t * pub_key = (psa_ecc_pub_key_t *) slot->key.data;
+        memcpy(pub_key->pub_key_data, data, data_length);
     }
     else {
         memcpy(slot->key.data, data, data_length);
@@ -820,6 +862,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
     }
 
 #if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+    /* Find a free slot on a secure element and store SE slot number in key_data */
     if (*p_drv != NULL) {
         psa_key_slot_number_t slot_number;
         status = psa_find_free_se_slot(attributes, method, *p_drv, &slot_number);
@@ -918,6 +961,10 @@ psa_status_t psa_export_public_key(psa_key_id_t key,
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if ((data_size == 0) || (data_size < PSA_EXPORT_PUBLIC_KEY_MAX_SIZE)) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
@@ -974,6 +1021,10 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
     psa_se_drv_data_t *driver = NULL;
     *key = PSA_KEY_ID_NULL;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (psa_get_key_bits(attributes) == 0) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -1020,6 +1071,10 @@ psa_status_t psa_builtin_generate_random(   uint8_t * output,
 psa_status_t psa_generate_random(uint8_t * output,
                                  size_t output_size)
 {
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     return psa_driver_wrapper_generate_random(output, output_size);
 }
 
@@ -1090,7 +1145,12 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     psa_key_slot_t *slot = NULL;
     psa_se_drv_data_t *driver = NULL;
     size_t bits;
-    *key = PSA_KEY_ID_NULL;;
+
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    *key = PSA_KEY_ID_NULL;
 
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_IMPORT, attributes, &slot, &driver);
@@ -1349,6 +1409,10 @@ psa_status_t psa_sign_hash(psa_key_id_t key,
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
 
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (!PSA_ALG_IS_ECDSA(alg)) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
@@ -1404,6 +1468,10 @@ psa_status_t psa_verify_hash(psa_key_id_t key,
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
+
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
 
     if (!PSA_ALG_IS_ECDSA(alg)) {
         return PSA_ERROR_NOT_SUPPORTED;

@@ -96,7 +96,7 @@ static void ecdsa_sec_se(void)
     psa_key_attributes_t pubkey_attr = psa_key_attributes_init();
 
     psa_key_lifetime_t lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_VOLATILE, PSA_ATCA_LOCATION_DEV1);
-    psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH;
+    psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH;
     psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
     psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
@@ -167,6 +167,7 @@ static void ecdsa_sec_se(void)
 int main(void)
 {
     _test_init();
+    psa_crypto_init();
     ecdsa_prim_se();
 #ifdef MULTIPLE_BACKENDS
     ecdsa_sec_se();
