@@ -136,10 +136,12 @@ static void ecdsa_sec_se(void)
         return;
     }
 
+    uint8_t bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),PSA_VENDOR_ECC_MAX_CURVE_BITS);
+
     psa_set_key_lifetime(&pubkey_attr, lifetime);
     psa_set_key_algorithm(&pubkey_attr, alg);
     psa_set_key_usage_flags(&pubkey_attr, PSA_KEY_USAGE_VERIFY_HASH);
-    psa_set_key_bits(&pubkey_attr, 512);
+    psa_set_key_bits(&pubkey_attr, PSA_BYTES_TO_BITS(bytes));
     psa_set_key_type(&pubkey_attr, PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1));
 
     status = psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id);

@@ -743,7 +743,7 @@ psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_
     }
     else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)){
         psa_ecc_pub_key_t * pub_key = (psa_ecc_pub_key_t *) slot->key.data;
-        memcpy(pub_key->pub_key_data, data, data_length);
+        memcpy(pub_key->data, data, data_length);
     }
     else {
         memcpy(slot->key.data, data, data_length);

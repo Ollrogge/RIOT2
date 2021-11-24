@@ -121,8 +121,6 @@
 #define PSA_EXPORT_PUBLIC_KEY_MAX_SIZE \
         (PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_ECC_MAX_CURVE_BITS))
 
-
-
 #if IS_ACTIVE(CONFIG_PSA_ECC_P256)
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 256
 #elif IS_ACTIVE(CONFIG_PSA_ECC_P192)
@@ -131,11 +129,7 @@
 #define PSA_VENDOR_ECC_MAX_CURVE_BITS 0
 #endif
 
-/* Implementations that have its own generic ECC key type define these sizes themselves. For other implementations the private key is the size of the curve in bytes and the public key type is the */
-#if !IS_ACTIVE(CONFIG_PSA_HAS_OWN_ECC_KEY_TYPE)
 #define PSA_MAX_ECC_PRIV_KEY_SIZE   (PSA_BITS_TO_BYTES(PSA_VENDOR_ECC_MAX_CURVE_BITS))
-#define PSA_MAX_ECC_PUB_KEY_SIZE    (PSA_MAX_ECC_PRIV_KEY_SIZE * 2)
-#endif
 
 /**
  * Define maximum key data sizes for initial key buffer declarations.
@@ -148,7 +142,7 @@
  * of the largest asymmetric key pair combination used.
  */
 #if IS_ACTIVE(CONFIG_PSA_ECC)
-#define PSA_MAX_KEY_DATA_SIZE  ((PSA_MAX_ECC_PRIV_KEY_SIZE * 2) + PSA_MAX_ECC_PUB_KEY_SIZE)
+#define PSA_MAX_KEY_DATA_SIZE  ((PSA_MAX_ECC_PRIV_KEY_SIZE * 2) + PSA_EXPORT_PUBLIC_KEY_MAX_SIZE)
 #elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
 #define PSA_MAX_KEY_DATA_SIZE  (32)
 #elif IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)

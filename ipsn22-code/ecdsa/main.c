@@ -85,6 +85,7 @@ static void ecdsa_periph(void)
 int main(void)
 {
     _test_init();
+    psa_crypto_init();
     ecdsa_periph();
 
 #ifdef TEST_STACK

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "kernel_defines.h"
+
 #include "crypto_sizes.h"
 #include "crypto_struct.h"
 #include "crypto_values.h"

@@ -29,32 +29,47 @@ CRYS_ECPKI_Domain_t* pDomain;
 SaSiRndGenerateVectWorkFunc_t rndGenerateVectFunc;
 
 psa_status_t psa_generate_ecc_p192r1_key_pair(  const psa_key_attributes_t *attributes,
-                                                psa_ecc_keypair_t *key_buffer, size_t key_buffer_size,
-                                                size_t *key_buffer_length)
+                                                uint8_t * priv_key_buffer, uint8_t * pub_key_buffer,
+                                                size_t *priv_key_buffer_length, size_t *pub_key_buffer_length)
 {
     int ret = 0;
 
-    CRYS_ECPKI_UserPrivKey_t * priv_key = (CRYS_ECPKI_UserPrivKey_t *) &key_buffer->priv_key_data;
-    CRYS_ECPKI_UserPublKey_t * pub_key = (CRYS_ECPKI_UserPublKey_t *) &key_buffer->pub_key_data;
+    CRYS_ECPKI_UserPrivKey_t priv_key;
+    CRYS_ECPKI_UserPublKey_t pub_key;
 
     CRYS_ECPKI_KG_FipsContext_t FipsBuff;
     CRYS_ECPKI_KG_TempData_t TempECCKGBuff;
     rndGenerateVectFunc = CRYS_RND_GenerateVector;
     pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp192r1);
 
+    uint32_t priv_key_size = PSA_BITS_TO_BYTES(attributes->bits);
+    uint32_t pub_key_size = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(attributes->type, attributes->bits);
+
     cryptocell_enable();
     gpio_set(internal_gpio);
-    ret = CRYS_ECPKI_GenKeyPair(rndState_ptr, rndGenerateVectFunc, pDomain, priv_key, pub_key, &TempECCKGBuff, &FipsBuff);
+    ret = CRYS_ECPKI_GenKeyPair(rndState_ptr, rndGenerateVectFunc, pDomain, &priv_key, &pub_key, &TempECCKGBuff, &FipsBuff);
     gpio_clear(internal_gpio);
     cryptocell_disable();
-
     if (ret != CRYS_OK){
         DEBUG("CRYS_ECPKI_GenKeyPair failed with 0x%x \n", ret);
         return CRYS_to_psa_error(ret);
     }
 
-    *key_buffer_length = key_buffer_size;
-    (void) attributes;
+    ret = CRYS_ECPKI_ExportPrivKey(&priv_key, priv_key_buffer, &priv_key_size);
+    if (ret != CRYS_OK){
+        DEBUG("CRYS_ECPKI_ExportPrivKey failed with 0x%x \n", ret);
+        return CRYS_to_psa_error(ret);
+    }
+
+    ret = CRYS_ECPKI_ExportPublKey(&pub_key, CRYS_EC_PointUncompressed, pub_key_buffer, &pub_key_size);
+    if (ret != CRYS_OK){
+        DEBUG("CRYS_ECPKI_ExportPubKey failed with 0x%x \n", ret);
+        return CRYS_to_psa_error(ret);
+    }
+
+    *priv_key_buffer_length = priv_key_size;
+    *pub_key_buffer_length = pub_key_size;
+
     return PSA_SUCCESS;
 }
 
@@ -68,18 +83,23 @@ psa_status_t psa_ecc_p192r1_sign_hash(  const psa_key_attributes_t *attributes,
     int ret = 0;
 
     CRYS_ECDSA_SignUserContext_t SignUserContext;
-
-    rndGenerateVectFunc = CRYS_RND_GenerateVector;
-
+    CRYS_ECPKI_UserPrivKey_t priv_key;
     CRYS_ECPKI_HASH_OpMode_t hash_mode = MAP_PSA_HASH_TO_CRYS_HASH(PSA_ALG_GET_HASH(alg));
+    rndGenerateVectFunc = CRYS_RND_GenerateVector;
+    pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp192r1);
+
+    ret = CRYS_ECPKI_BuildPrivKey(pDomain, key_buffer, PSA_BITS_TO_BYTES(attributes->bits), &priv_key);
+    if (ret != CRYS_OK){
+        DEBUG("CRYS_ECPKI_BuildPrivKey failed with 0x%x \n", ret);
+        return CRYS_to_psa_error(ret);
+    }
 
     cryptocell_enable();
     gpio_set(internal_gpio);
     ret = CRYS_ECDSA_Sign (rndState_ptr, rndGenerateVectFunc,
-    &SignUserContext, (CRYS_ECPKI_UserPrivKey_t *) key_buffer, hash_mode, (uint8_t *) hash, hash_length, signature, (uint32_t *) signature_length);
+    &SignUserContext, &priv_key, hash_mode, (uint8_t *) hash, hash_length, signature, (uint32_t *) signature_length);
     gpio_clear(internal_gpio);
     cryptocell_disable();
-
     if (ret != CRYS_OK){
         DEBUG("CRYS_ECDSA_Sign failed with 0x%x \n", ret);
         return CRYS_to_psa_error(ret);
@@ -100,12 +120,21 @@ psa_status_t psa_ecc_p192r1_verify_hash(const psa_key_attributes_t *attributes,
     int ret = 0;
 
     CRYS_ECDSA_VerifyUserContext_t VerifyUserContext;
-
+    CRYS_ECPKI_UserPublKey_t pub_key;
     CRYS_ECPKI_HASH_OpMode_t hash_mode = MAP_PSA_HASH_TO_CRYS_HASH(PSA_ALG_GET_HASH(alg));
+    pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp192r1);
+
+    printf("PubKeySize: %d\n", key_buffer_size);
+    /* For more security, use CRYS_ECPKI_BuildPublKeyPartlyCheck or CRYS_ECPKI_BuildPublKeyFullCheck -> Those take longer and use more memory space */
+    ret = CRYS_ECPKI_BuildPublKey(pDomain, (uint8_t *) key_buffer, key_buffer_size, &pub_key);
+    if (ret != CRYS_OK){
+        DEBUG("CRYS_ECPKI_BuildPublKey failed with 0x%x \n", ret);
+        return CRYS_to_psa_error(ret);
+    }
 
     cryptocell_enable();
     gpio_set(internal_gpio);
-    ret =  CRYS_ECDSA_Verify (&VerifyUserContext, (CRYS_ECPKI_UserPublKey_t *) key_buffer, hash_mode, (uint8_t *) signature, signature_length, (uint8_t *) hash, hash_length);
+    ret =  CRYS_ECDSA_Verify (&VerifyUserContext, &pub_key, hash_mode, (uint8_t *) signature, signature_length, (uint8_t *) hash, hash_length);
     gpio_clear(internal_gpio);
     cryptocell_disable();
 

@@ -4,10 +4,6 @@
 #include "psa/crypto.h"
 #include "kernel_defines.h"
 
-#if IS_ACTIVE(CONFIG_PSA_HAS_OWN_ECC_KEY_TYPE)
-#include "psa_periph_ecc.h"
-#endif
-
 /**
  * @brief Structure to hold an ECC public key or a reference to an ECC public key
  *
@@ -17,7 +13,7 @@
  * When is_plain_key == 1, pub_key_data contains an actual key.
  */
 typedef struct {
-    uint8_t pub_key_data[PSA_MAX_ECC_PUB_KEY_SIZE];
+    uint8_t data[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE];
     uint8_t is_plain_key;
     size_t bytes;
 } psa_ecc_pub_key_t;
@@ -33,12 +29,11 @@ typedef struct {
  */
 typedef struct {
     uint8_t priv_key_data[PSA_MAX_ECC_PRIV_KEY_SIZE]; /*!< Contains private key or, in case of SE, slot number of private key */
-    psa_ecc_pub_key_t pub_key_data; /*!< Contains public key material */
+    psa_ecc_pub_key_t pub_key; /*!< Contains public key material */
 } psa_ecc_keypair_t;
 
 psa_status_t psa_generate_ecc_p192r1_key_pair(  const psa_key_attributes_t *attributes,
-                                                psa_ecc_keypair_t *key_buffer, size_t key_buffer_size,
-                                                size_t *key_buffer_length);
+                                                uint8_t * priv_key_buffer, uint8_t * pub_key_buffer, size_t *priv_key_buffer_length, size_t *pub_key_buffer_length);
 
 psa_status_t psa_ecc_p192r1_export_public_key(  const psa_key_attributes_t *attributes,
                                                 uint8_t *key_buffer,
