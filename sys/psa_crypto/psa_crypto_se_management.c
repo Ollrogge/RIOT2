@@ -60,11 +60,11 @@ psa_status_t psa_register_secure_element(psa_key_location_t location, const psa_
 psa_se_drv_data_t *psa_get_se_driver_data(psa_key_lifetime_t lifetime)
 {
     psa_se_drv_data_t * drv = NULL;
-#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(lifetime);
     if (location == 0) {
         return NULL;
     }
+#if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
     for (size_t i = 0; i < PSA_MAX_SE_COUNT; i++) {
         if (driver_table[i].location == location) {
             drv = &driver_table[i];

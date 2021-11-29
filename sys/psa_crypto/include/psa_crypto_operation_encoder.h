@@ -29,7 +29,7 @@ typedef enum {
              PSA_INVALID_OPERATION)
 
 #define PSA_ENCODE_ECC_KEY_TYPE(bits, curve) \
-            ((bits == 256) ? GET_ECC_KEY_TYPE_256(curve) : \
+            ((bits == 256) || (bits == 520) ? GET_ECC_KEY_TYPE_256(curve) : \
              (bits == 192) || (bits == 392) ? GET_ECC_KEY_TYPE_192(curve) : \
              PSA_INVALID_OPERATION)
 

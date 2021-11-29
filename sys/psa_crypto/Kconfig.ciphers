@@ -9,7 +9,7 @@ menuconfig CIPHER_AES_128_ECB
     bool "AES-128 ECB"
     select PSA_CIPHER_MODE_ECB
     select PSA_CIPHER_AES
-    select PSA_CIPHER_AES_KEY_SIZE_128
+    select PSA_KEY_SIZE_128
 
 if CIPHER_AES_128_ECB
 
@@ -23,12 +23,6 @@ config RIOT_CIPHER_AES_128_ECB
     select MODULE_CRYPTO_AES_128
     select MODULE_PSA_RIOT_CIPHER_AES_ECB
 
-config CRYPTOAUTHLIB_CIPHER_AES_128
-    bool "Microchip Cryptoauthlib"
-    select PACKAGE_CRYPTOAUTHLIB
-    select MODULE_PSA_SE_DRIVER
-    select PSA_CRYPTO_SECURE_ELEMENT
-
 endchoice
 
 endif # CIPHER_AES_128_ECB
@@ -37,7 +31,7 @@ menuconfig CIPHER_AES_128_CBC
     bool "AES-128 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
-    select PSA_CIPHER_AES_KEY_SIZE_128
+    select PSA_KEY_SIZE_128
 
 if CIPHER_AES_128_CBC
 
@@ -71,7 +65,7 @@ menuconfig CIPHER_AES_192_CBC
     bool "AES-192 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
-    select PSA_CIPHER_AES_KEY_SIZE_192
+    select PSA_KEY_SIZE_192
 
 if CIPHER_AES_192_CBC
 
@@ -93,7 +87,7 @@ menuconfig CIPHER_AES_256_CBC
     bool "AES-256 CBC"
     select PSA_CIPHER_MODE_CBC
     select PSA_CIPHER_AES
-    select PSA_CIPHER_AES_KEY_SIZE_256
+    select PSA_KEY_SIZE_256
 
 if CIPHER_AES_256_CBC
 

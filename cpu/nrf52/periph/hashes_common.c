@@ -7,15 +7,15 @@
 #include "debug.h"
 
 #include "periph/gpio.h"
-// extern gpio_t internal_gpio;
+extern gpio_t internal_gpio;
 
 #define CC310_MAX_HASH_INPUT_BLOCK       (0xFFF0)
 
 psa_status_t common_hash_setup(CRYS_HASHUserContext_t * ctx, CRYS_HASH_OperationMode_t mode)
 {
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     int ret = CRYS_HASH_Init(ctx, mode);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (ret != CRYS_OK) {
         return CRYS_to_psa_error(ret);
     }
@@ -40,9 +40,9 @@ psa_status_t common_hash_update(CRYS_HASHUserContext_t * ctx,
         }
 
         cryptocell_enable();
-        // gpio_set(internal_gpio);
+        gpio_set(internal_gpio);
         ret = CRYS_HASH_Update(ctx, (uint8_t*)(input + offset), size);
-        // gpio_clear(internal_gpio);
+        gpio_clear(internal_gpio);
         cryptocell_disable();
 
         offset += size;
@@ -57,9 +57,9 @@ psa_status_t common_hash_update(CRYS_HASHUserContext_t * ctx,
 psa_status_t common_hash_finish(CRYS_HASHUserContext_t * ctx, uint8_t * hash, size_t hash_size, size_t * hash_length)
 {
     cryptocell_enable();
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     int ret = CRYS_HASH_Finish(ctx, (uint32_t *) hash);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     cryptocell_disable();
     if (ret != CRYS_OK) {
         return CRYS_to_psa_error(ret);

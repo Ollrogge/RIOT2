@@ -40,7 +40,7 @@ config MODULE_PERIPH_PSA_ERROR
 # Hash Related Symbols
 config PERIPH_HASHES
     bool
-    depends on HAS_CPU_NRF52
+    select MODULE_LIB_CRYPTOCELL
     select MODULE_PERIPH_HASHES
     select MODULE_PERIPH_HASHES_COMMON
     select MODULE_PERIPH_PSA_ERROR
@@ -52,8 +52,6 @@ config MODULE_PERIPH_HASHES
 
 config MODULE_PERIPH_HASHES_COMMON
     bool
-    help
-        Build common hash functions
 
 config MODULE_PERIPH_HASHES_SHA1
     bool
@@ -70,12 +68,14 @@ config MODULE_PERIPH_HASHES_SHA512
 #Cipher Related Symbols
 config PERIPH_CIPHER_MODE_CBC
     bool
+    select MODULE_LIB_CRYPTOCELL
     select MODULE_PERIPH_AES_CBC
     select MODULE_PERIPH_AES_COMMON
     select MODULE_PERIPH_PSA_ERROR
 
 config PERIPH_CIPHER_AES
     bool
+    select MODULE_LIB_CRYPTOCELL
 
 config MODULE_PERIPH_AES_CBC
     bool
@@ -84,23 +84,34 @@ config MODULE_PERIPH_AES_CBC
 
 config MODULE_PERIPH_AES_COMMON
     bool
-    help
-        Build common AES functions
 
 # Asymmetric Crypto Related Symbols
-config PERIPH_ECC
-    bool
-    select PSA_HAS_OWN_ECC_KEY_TYPE
-    select MODULE_PERIPH_ECC
-    select MODULE_PERIPH_PSA_ERROR
-
 config PERIPH_ECC_P192
     bool
+    select MODULE_LIB_CRYPTOCELL
+    select MODULE_PERIPH_ECC_P192
+    select MODULE_PERIPH_PSA_ERROR
+    select MODULE_PERIPH_ECC_COMMON
 
-config MODULE_PERIPH_ECC
+config PERIPH_ECC_P256
+    bool
+    select MODULE_LIB_CRYPTOCELL
+    select MODULE_PERIPH_ECC_P256
+    select MODULE_PERIPH_PSA_ERROR
+    select MODULE_PERIPH_ECC_COMMON
+
+config MODULE_PERIPH_ECC_P192
     bool
     help
-        Build Elliptic Curve functions
+        Build functions for ECC P192
+
+config MODULE_PERIPH_ECC_P256
+    bool
+    help
+        Build functions for ECC P256
+
+config MODULE_PERIPH_ECC_COMMON
+    bool
 
 endif # TEST_KCONFIG
 

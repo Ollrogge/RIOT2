@@ -5,7 +5,7 @@
 #include "debug.h"
 
 #include "periph/gpio.h"
-// extern gpio_t internal_gpio;
+extern gpio_t internal_gpio;
 
 static psa_status_t cipher_to_psa_error(int error)
 {
@@ -24,15 +24,15 @@ static psa_status_t cbc_aes_common( cipher_t * ctx, const uint8_t * key_buffer, 
                                 uint8_t * output, size_t * output_length)
 {
     int ret = 0;
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     ret = cipher_init(ctx, CIPHER_AES, key_buffer, key_buffer_size);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (ret != CIPHER_INIT_SUCCESS) {
         return cipher_to_psa_error(ret);
     }
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     ret = cipher_encrypt_cbc(ctx, iv, input, input_length, output);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (ret <= 0) {
         return cipher_to_psa_error(ret);
     }
@@ -53,14 +53,18 @@ psa_status_t psa_cipher_cbc_aes_128_encrypt(const psa_key_attributes_t *attribut
 {
     DEBUG("RIOT AES 128 Cipher");
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    gpio_set(internal_gpio);
     psa_cipher_operation_t operation = psa_cipher_operation_init();
+    gpio_clear(internal_gpio);
     size_t iv_length = 0;
 
     operation.iv_required = 1;
     operation.default_iv_length = PSA_CIPHER_IV_LENGTH(attributes->type, alg);
     output_length = 0;
 
+    gpio_set(internal_gpio);
     status = psa_cipher_generate_iv(&operation, output, operation.default_iv_length, &iv_length);
+    gpio_clear(internal_gpio);
     if (status != PSA_SUCCESS) {
         return status;
     }
@@ -91,15 +95,15 @@ psa_status_t psa_cipher_cbc_aes_256_encrypt(const psa_key_attributes_t *attribut
     operation.iv_required = 1;
     operation.default_iv_length = PSA_CIPHER_IV_LENGTH(attributes->type, alg);
     output_length = 0;
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     status = psa_cipher_generate_iv(&operation, output, operation.default_iv_length, &iv_length);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (status != PSA_SUCCESS) {
         return status;
     }
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     status = cbc_aes_common(&operation.ctx.aes_256, key_buffer, key_buffer_size, output, input, input_length, output + operation.default_iv_length, output_length);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     (void) output_size;
     return status;
 }

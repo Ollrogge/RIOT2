@@ -111,10 +111,10 @@ config HAS_PERIPH_ECC_P192
     help
         Indicates that there is ECC P192 hardware acceleration present
 
-config PSA_HAS_OWN_ECC_KEY_TYPE
+config HAS_PERIPH_ECC_P256
     bool
     help
-        Indicates that implementation has own ECC key type with specific size
+        Indicates that there is ECC P256 hardware acceleration present
 
 config HAS_HIGHLEVEL_STDIO
     bool

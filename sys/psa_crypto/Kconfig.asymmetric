@@ -9,6 +9,7 @@ menuconfig PSA_ECC_P192
     bool "NIST P192"
     select PSA_ECC_KEY_SIZE_192
     select PSA_ECC
+    select PSA_KEY_SIZE_192
 
 if PSA_ECC_P192
 
@@ -22,7 +23,6 @@ config PERIPH_ECC_CURVE_P192
     depends on HAS_PERIPH_ECC_P192
     select PSA_ECC_P192_DRIVER
     select PERIPH_ECC_P192
-    select PERIPH_ECC
 
 config MICRO_ECC_CURVE_P192
     bool "Micro-ECC Library"
@@ -38,18 +38,19 @@ menuconfig PSA_ECC_P256
     bool "NIST P256"
     select PSA_ECC_KEY_SIZE_256
     select PSA_ECC
+    select PSA_KEY_SIZE_256
 
 if PSA_ECC_P256
 
 choice PSA_ECC_P256_IMPLEMENTATION
     bool "NIST P256 Implementation"
-    default MICRO_ECC_CURVE_P256
+    default PERIPH_ECC_CURVE_P256 if HAS_PERIPH_ECC_P256
 
-config CRYPTOAUTHLIB_PSA_ECC_P256
-    bool "Microchip Cryptoauthlib"
-    select PACKAGE_CRYPTOAUTHLIB
-    select MODULE_PSA_SE_DRIVER
-    select PSA_CRYPTO_SECURE_ELEMENT
+config PERIPH_ECC_CURVE_P256
+    bool "Hardware Accelerated"
+    depends on HAS_PERIPH_ECC_P256
+    select PSA_ECC_P256_DRIVER
+    select PERIPH_ECC_P256
 
 config MICRO_ECC_CURVE_P256
     bool "Micro-ECC Library"
@@ -75,8 +76,3 @@ config PSA_ECC_P192_DRIVER
     bool
     help
         Indicates that an ECC Curve implementation other than a secure element is present
-
-config PSA_ECC
-    bool
-    help
-        Indicates that an elliptic curve operation is being used

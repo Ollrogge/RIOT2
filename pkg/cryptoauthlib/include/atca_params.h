@@ -26,7 +26,7 @@
 #include "atca.h"
 #include "cryptoauthlib.h"
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_SE_ATECCX08A)
 #include "psa/crypto_values.h"
 #endif
 
@@ -70,7 +70,7 @@ extern "C" {
 #define ATCA_DEVTYPE            (ATECC608A)
 #endif
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_SE_ATECCX08A)
 #define PSA_ATCA_LOCATION_DEV0  (PSA_KEY_LOCATION_SE_MIN + ATCA_PARAM_I2C_DEV0)
 #define PSA_ATCA_LOCATION_DEV1  (PSA_KEY_LOCATION_SE_MIN + ATCA_PARAM_I2C_DEV1)
 #endif
@@ -100,7 +100,7 @@ extern "C" {
 /**@}*/
 
 typedef struct {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_SE_ATECCX08A)
     psa_key_location_t atca_loc;
 #endif
     ATCAIfaceCfg cfg;
@@ -123,7 +123,7 @@ static const atca_params_t atca_params[] =
     },
 #endif
     {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_SE_ATECCX08A)
         .atca_loc = PSA_ATCA_LOCATION_DEV0,
 #endif
         .cfg = ATCA_PARAMS_DEV0

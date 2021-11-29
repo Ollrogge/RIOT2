@@ -1,0 +1,27 @@
+# Copyright (c) 2021 HAW Hamburg
+#
+# This file is subject to the terms and conditions of the GNU Lesser
+# General Public License v2.1. See the file LICENSE in the top level
+# directory for more details.
+#
+
+
+config PSA_KEY_SIZE_128
+    bool
+
+config PSA_KEY_SIZE_192
+    bool
+
+config PSA_KEY_SIZE_256
+    bool
+
+config PSA_KEY_SIZE_512
+    bool
+
+config PSA_MAX_KEY_SIZE
+    int
+    default 64 if PSA_KEY_SIZE_512
+    default 32 if PSA_KEY_SIZE_256
+    default 24 if PSA_KEY_SIZE_192
+    default 16 if PSA_KEY_SIZE_128
+    default 0

@@ -33,6 +33,18 @@ if PSA_ASYMMETRIC
 rsource "Kconfig.asymmetric"
 endif # PSA_ASYMMETRIC
 
-rsource "Kconfig.config"
+menuconfig PSA_SECURE_ELEMENT
+    bool "PSA Secure Element Configuration"
+
+if PSA_SECURE_ELEMENT
+rsource "Kconfig.se"
+endif # PSA_SECURE_ELEMENT
+
+rsource "Kconfig.keysizes"
+
+config PSA_ECC
+    bool
+    help
+        Indicates that an elliptic curve operation is being used
 
 endif # MODULE_PSA_CRYPTO

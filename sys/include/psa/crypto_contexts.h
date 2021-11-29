@@ -46,16 +46,16 @@ typedef union {
 
 typedef union {
     unsigned dummy;
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     uint64_t se_key_slot;
 #endif
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_128)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_128)
     psa_cipher_aes_128_ctx_t aes_128;
 #endif
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_192)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_192)
     psa_cipher_aes_192_ctx_t aes_192;
 #endif
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_KEY_SIZE_256)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_256)
     psa_cipher_aes_256_ctx_t aes_256;
 #endif
 } psa_cipher_context_t;

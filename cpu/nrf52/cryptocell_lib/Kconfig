@@ -7,7 +7,6 @@
 
 config MODULE_LIB_CRYPTOCELL
     bool "CryptoCell Library"
-    default y if MODULE_PERIPH_HASHES || MODULE_PERIPH_AES_CBC || MODULE_PERIPH_ECC
     depends on CPU_FAM_NRF52
     depends on TEST_KCONFIG
     select MODULE_PERIPH_CRYPTOCELL_SETUP

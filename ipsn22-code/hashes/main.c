@@ -85,6 +85,7 @@ static void hashes_sha512(void)
 int main(void)
 {
     _test_init();
+    psa_crypto_init();
     hashes_sha256();
 #ifdef MULTIPLE_BACKENDS
     hashes_sha512();

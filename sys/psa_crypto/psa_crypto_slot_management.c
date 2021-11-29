@@ -162,7 +162,7 @@ psa_status_t psa_unlock_key_slot(psa_key_slot_t *slot)
 psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_data_t **p_drv)
 {
     if (psa_key_lifetime_is_external(lifetime)) {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
         psa_se_drv_data_t *driver = psa_get_se_driver_data(lifetime);
         if (driver != NULL) {
             if (p_drv != NULL) {
@@ -172,7 +172,7 @@ psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_d
         }
 #else
         (void) p_drv;
-#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+#endif /* CONFIG_PSA_CRYPTO_SE */
         return PSA_ERROR_INVALID_ARGUMENT;
     }
     else {

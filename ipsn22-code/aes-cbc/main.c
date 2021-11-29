@@ -125,6 +125,7 @@ static void cipher_aes_256(void)
 int main(void)
 {
     _test_init();
+    psa_crypto_init();
     cipher_aes_128();
 #ifdef MULTIPLE_BACKENDS
     cipher_aes_256();

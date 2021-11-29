@@ -1,7 +1,7 @@
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
 
-APPLICATION = ecdsa-sw
+APPLICATION = ecdsa-periph
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
 

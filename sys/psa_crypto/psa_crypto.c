@@ -30,7 +30,7 @@
 #include "kernel_defines.h"
 
 #include "periph/gpio.h"
-// extern gpio_t internal_gpio;
+extern gpio_t internal_gpio;
 
 static uint8_t lib_initialized = 0;
 
@@ -419,9 +419,9 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
                                 size_t * output_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     psa_key_attributes_t attr = psa_key_attributes_init();
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
 
@@ -702,9 +702,9 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
                               size_t hash_size,
                               size_t * hash_length)
 {
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
     if (!lib_initialized) {
@@ -861,7 +861,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
         slot->attr.id = key_id;
     }
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SECURE_ELEMENT)
+#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
     /* Find a free slot on a secure element and store SE slot number in key_data */
     if (*p_drv != NULL) {
         psa_key_slot_number_t slot_number;
@@ -878,7 +878,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
     if (*p_drv == NULL && method == PSA_KEY_CREATION_REGISTER) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-#endif /* CONFIG_PSA_CRYPTO_SECURE_ELEMENT */
+#endif /* CONFIG_PSA_CRYPTO_SE */
 
     (void) method;
     return PSA_SUCCESS;
@@ -1124,13 +1124,15 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
 
         return PSA_SUCCESS;
     }
-    else if (PSA_KEY_TYPE_IS_ECC(type)) {
+    else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)) {
         if (data_length > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-
-        memcpy(key_buffer, data, data_length);
+        psa_ecc_pub_key_t * pub_key = (psa_ecc_pub_key_t *) key_buffer;
+        memcpy(pub_key->data, data, data_length);
         *key_buffer_length = data_length;
+        pub_key->bytes = data_length;
+        pub_key->is_plain_key = 1;
         return PSA_SUCCESS;
     }
     return status;

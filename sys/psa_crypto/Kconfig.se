@@ -5,18 +5,18 @@
 # directory for more details.
 #
 
-menuconfig PSA_SE_CONFIGURATION
-    bool "Secure Element Configuration"
-    depends on PSA_CRYPTO_SECURE_ELEMENT
-
-if PSA_SE_CONFIGURATION
+config PSA_SE_ATECCX08A
+    bool "Microchip Cryptoauthlib Driver"
+    select PACKAGE_CRYPTOAUTHLIB
+    select MODULE_PSA_SE_DRIVER
+    select PSA_ECC
+    select PSA_KEY_SIZE_256
+    select PSA_CRYPTO_SE
 
 config PSA_MULTIPLE_SECURE_ELEMENTS
     bool "Use multiple secure elements"
 
-endif # SE_CONFIGURATION
-
-config PSA_CRYPTO_SECURE_ELEMENT
+config PSA_CRYPTO_SE
     bool
     help
         Indicates a Secure Element is being used
