@@ -6,7 +6,7 @@ profiles:
   aes-cbc:
     dir_path: "../aes-cbc"
     config: "../aes-cbc/app.config.test"
-    label: "CC310\n(AES-128 CBC)"
+    label: "CryptoCell\n(AES-128 CBC)"
     flags: ""
   # aes-cbc-multi:
   #   dir_path: "../aes-cbc"
@@ -28,11 +28,11 @@ profiles:
     config: "../ecdsa-se/app.config.test.multiple"
     label: "ATECC608A\n(ECDSA)"
     flags: ""
-  all-backends:
-    dir_path: "../backend-combination"
-    config: "../backend-combination/app.config.test"
-    label: "All Backends"
-    flags: ""
+  # all-backends:
+  #   dir_path: "../backend-combination"
+  #   config: "../backend-combination/app.config.test"
+  #   label: "All Backends"
+  #   flags: ""
 
 groups:
   # For now we ignore common OS and DTLS parts
@@ -61,7 +61,7 @@ groups:
     config:
       hatch: "\\"
 
-  ? "CC310 Library"
+  ? "CryptoCell Library"
   :
     modules:
       - ["cpu", "nrf52", "periph", "cryptocell_setup"]

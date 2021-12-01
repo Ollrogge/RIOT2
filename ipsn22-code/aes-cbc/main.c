@@ -84,6 +84,7 @@ static void cipher_aes_128(void)
     }
     puts("AES 128 CBC Success");
 }
+
 #ifdef MULTIPLE_BACKENDS
 static void cipher_aes_256(void)
 {

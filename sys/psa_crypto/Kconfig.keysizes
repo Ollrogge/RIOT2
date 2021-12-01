@@ -5,7 +5,6 @@
 # directory for more details.
 #
 
-
 config PSA_KEY_SIZE_128
     bool
 

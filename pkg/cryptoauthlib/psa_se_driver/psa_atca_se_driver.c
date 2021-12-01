@@ -6,7 +6,7 @@
 #define ENABLE_DEBUG    (1)
 #include "debug.h"
 
-extern gpio_t internal_gpio;
+// extern gpio_t internal_gpio;
 
 #define AES_ECB_128_BLOCK_SIZE  (16)
 #define AES_128_KEY_SIZE        (16)
@@ -133,7 +133,7 @@ psa_status_t atca_allocate (
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    /* TODO: Look for empty key slot that can be used for desired algorithm */
+    /* TODO: Look for empty key slot that can be used for desired algorithm -> utilize driver persistent data */
 
     if (attributes->type == PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1)) {
         /* At the time of the implementation we are using an SE in which key slot 1 is configured for ECC private keys, so we return key slot nr. 1 */
@@ -189,9 +189,9 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
         return PSA_SUCCESS;
     }
     else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(attributes->type)) {
-        gpio_set(internal_gpio);
+        // gpio_set(internal_gpio);
         status = calib_write_pubkey(dev, key_slot, data + 1);
-        gpio_clear(internal_gpio);
+        // gpio_clear(internal_gpio);
         if (status != ATCA_SUCCESS) {
             DEBUG("ATCA Error: %d\n", status);
             return atca_to_psa_error(status);
@@ -220,9 +220,9 @@ psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    gpio_set(internal_gpio);
+    // gpio_set(internal_gpio);
     status = calib_genkey(dev, key_slot, &pubkey->data[1]);
-    gpio_clear(internal_gpio);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         DEBUG("ATCA Error: %d\n", status);
         return atca_to_psa_error(status);
@@ -248,9 +248,9 @@ psa_status_t atca_export_public_key(psa_drv_se_context_t *drv_context,
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
 
-    gpio_set(internal_gpio);
+    // gpio_set(internal_gpio);
     status = calib_get_pubkey(dev, key_slot, &pubkey->data[1]);
-    gpio_clear(internal_gpio);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         DEBUG("ATCA Error: %d\n", status);
         return atca_to_psa_error(status);
@@ -283,9 +283,9 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    gpio_set(internal_gpio);
+    // gpio_set(internal_gpio);
     status = calib_sign(dev, key_slot, p_hash, p_signature);
-    gpio_clear(internal_gpio);
+    // gpio_clear(internal_gpio);
     if (status != ATCA_SUCCESS) {
         DEBUG("ATCA Error: %d\n", status);
         return atca_to_psa_error(status);
@@ -317,14 +317,14 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
     }
 
     if (key_data->is_plain_key) {
-        gpio_set(internal_gpio);
+        // gpio_set(internal_gpio);
         status = calib_verify_extern(dev, p_hash, p_signature, &key_data->data[1], &is_verified);
-        gpio_clear(internal_gpio);
+        // gpio_clear(internal_gpio);
     }
     else {
-        gpio_set(internal_gpio);
+        // gpio_set(internal_gpio);
         status = calib_verify_stored(dev, p_hash, p_signature, (uint16_t) *(key_data->data), &is_verified);
-        gpio_clear(internal_gpio);
+        // gpio_clear(internal_gpio);
     }
 
     if (status != ATCA_SUCCESS) {
