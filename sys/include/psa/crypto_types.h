@@ -117,5 +117,4 @@ typedef struct psa_asym_pub_key_s psa_asym_pub_key_t;
  */
 typedef struct psa_asym_keypair_s psa_asym_keypair_t;
 
-typedef struct psa_unstructured_key_s psa_unstructured_key_t;
 #endif /* PSA_CRYPTO_TYPES_H */

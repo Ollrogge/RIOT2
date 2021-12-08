@@ -1,5 +1,5 @@
-#ifndef PSA_CRYPTO_SE_DRIVER_H
-#define PSA_CRYPTO_SE_DRIVER_H
+#ifndef PSA_SECURE_ELEMENT_DRIVER_H
+#define PSA_SECURE_ELEMENT_DRIVER_H
 
 #include <stdint.h>
 #include <stdlib.h>

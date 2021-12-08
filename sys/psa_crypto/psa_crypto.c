@@ -740,11 +740,11 @@ psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_
 
     if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type)) {
         /* When creating an ECC key pair, key data is a psa_ecc_keypair type. When operating on a secure element, the private key data will be a slot number. */
-        psa_ecc_keypair_t * ecc_key = (psa_ecc_keypair_t *) slot->key.data;
+        psa_asym_keypair_t * ecc_key = (psa_asym_keypair_t *) slot->key.data;
         memcpy(ecc_key->priv_key_data, data, data_length);
     }
     else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)){
-        psa_ecc_pub_key_t * pub_key = (psa_ecc_pub_key_t *) slot->key.data;
+        psa_asym_pub_key_t * pub_key = (psa_asym_pub_key_t *) slot->key.data;
         memcpy(pub_key->data, data, data_length);
     }
     else {
@@ -791,7 +791,7 @@ static psa_status_t psa_validate_key_for_key_generation(psa_key_type_t type, siz
     if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
         return psa_validate_unstructured_key_size(type, bits);
     }
-#if IS_ACTIVE(CONFIG_PSA_ECC)
+#if IS_ACTIVE(CONFIG_PSA_ECC) || IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT_ECC)
     else if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type)) {
         return PSA_ECC_KEY_SIZE_IS_VALID(bits) ? PSA_SUCCESS : PSA_ERROR_INVALID_ARGUMENT;
     }
@@ -862,7 +862,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
         slot->attr.id = key_id;
     }
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     /* Find a free slot on a secure element and store SE slot number in key_data */
     if (*p_drv != NULL) {
         psa_key_slot_number_t slot_number;
@@ -879,7 +879,7 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
     if (*p_drv == NULL && method == PSA_KEY_CREATION_REGISTER) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     (void) method;
     return PSA_SUCCESS;

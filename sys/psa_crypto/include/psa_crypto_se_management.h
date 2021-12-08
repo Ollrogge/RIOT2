@@ -1,5 +1,5 @@
-#ifndef PSA_CRYPTO_SE_MANAGEMENT_H
-#define PSA_CRYPTO_SE_MANAGEMENT_H
+#ifndef PSA_SECURE_ELEMENT_MANAGEMENT_H
+#define PSA_SECURE_ELEMENT_MANAGEMENT_H
 
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"

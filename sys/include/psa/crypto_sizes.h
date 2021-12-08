@@ -128,9 +128,20 @@
         (PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_MAX_PRIV_KEY_SIZE))
 
 /**
- * The maximum size of an Elliptic Curve private key.
+ * The maximum size of an asymmetric private key.
  */
 #define PSA_MAX_PRIV_KEY_SIZE   (PSA_BYTES_TO_BITS(CONFIG_PSA_MAX_KEY_SIZE))
+
+/**
+ * The maximum size of an asymmetric private key buffer. If only a secure element driver is
+ * present, the private key will always be stored in a key slot and PSA Crypto will only allocate
+ * memory for an 8 Byte key slot number.
+ */
+#if !IS_ACTIVE(CONFIG_PSA_ECC)
+#define PSA_MAX_PRIV_KEY_BUFFER_SIZE (sizeof(uint64_t))
+#else
+#define PSA_MAX_PRIV_KEY_BUFFER_SIZE (PSA_MAX_PRIV_KEY_SIZE)
+#endif
 
 /**
  * Define maximum key data sizes for initial key buffer declarations.
@@ -142,7 +153,7 @@
  * When using asymmetric ciphers, PSA_MAX_KEY_DATA_SIZE is the size
  * of the largest asymmetric key pair combination used.
  */
-#if IS_ACTIVE(CONFIG_PSA_ECC)
+#if IS_ACTIVE(CONFIG_PSA_ECC) || IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT_ECC)
 #define PSA_MAX_KEY_DATA_SIZE   (sizeof(psa_asym_keypair_t))
 #else
 #define PSA_MAX_KEY_DATA_SIZE  (CONFIG_PSA_MAX_KEY_SIZE)

@@ -104,16 +104,8 @@ struct psa_asym_pub_key_s {
  * if it's returned by the driver in use. Otherwise this structure stays empty.
  */
 struct psa_asym_keypair_s {
-    uint8_t priv_key_data[PSA_MAX_PRIV_KEY_SIZE]; /*!< Contains private key or, in case of SE, slot number of private key */
-    size_t priv_key_bytes;
+    uint8_t priv_key_data[PSA_MAX_PRIV_KEY_BUFFER_SIZE]; /*!< Contains private key or, in case of SE, slot number of private key */
     psa_asym_pub_key_t pub_key; /*!< Contains public key material */
 };
 
-/**
- * @brief Structure to hold an unstructured key (e.g. AES or DES)
- */
-struct psa_unstructured_key_s {
-    uint8_t data[PSA_MAX_KEY_DATA_SIZE];
-    size_t bytes;
-};
 #endif /* PSA_CRYPTO_STRUCT_H */

@@ -9,14 +9,13 @@ config PSA_SE_ATECCX08A
     bool "Microchip Cryptoauthlib Driver"
     select PACKAGE_CRYPTOAUTHLIB
     select MODULE_PSA_SE_DRIVER
-    select PSA_ECC
+    select PSA_SECURE_ELEMENT_ECC
     select PSA_KEY_SIZE_256
-    select PSA_CRYPTO_SE
 
 config PSA_MULTIPLE_SECURE_ELEMENTS
     bool "Use multiple secure elements"
 
-config PSA_CRYPTO_SE
+config PSA_SECURE_ELEMENT_ECC
     bool
     help
-        Indicates a Secure Element is being used
+        Indicate that an ECC Curve Algorithm on a Secure Element is present

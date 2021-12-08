@@ -181,7 +181,7 @@ psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *
     /* If key_buffer does not contain the actual public key, the private key (or a reference to a
     private key) is passed to an implementation (either a secure element or some other driver) */
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
@@ -192,7 +192,7 @@ psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *
 
         return drv->key_management->p_export_public(drv_context, *((psa_key_slot_number_t*) pub_key->data), data, data_size, data_length);
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     if (PSA_KEY_TYPE_IS_ECC(attributes->type)) {
         asym_key = PSA_ENCODE_ECC_KEY_TYPE(attributes->bits, PSA_KEY_TYPE_ECC_GET_CURVE(attributes->type));
@@ -224,7 +224,7 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
@@ -252,7 +252,7 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 
         return drv->key_management->p_generate(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, NULL, 0, &pubkey_length);
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
         psa_asymmetric_keytype_t asym_key = PSA_INVALID_OPERATION;
@@ -265,7 +265,7 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
             }
         }
 
-        psa_ecc_keypair_t * keypair = (psa_ecc_keypair_t *) key_buffer;
+        psa_asym_keypair_t * keypair = (psa_asym_keypair_t *) key_buffer;
 
         switch(asym_key) {
 #if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
@@ -308,7 +308,7 @@ psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attribut
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime);
 
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
@@ -336,7 +336,7 @@ psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attribut
         }
         return PSA_SUCCESS;
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     switch(location) {
         case PSA_KEY_LOCATION_LOCAL_STORAGE:
@@ -353,7 +353,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *
                                                     size_t key_buffer_size,
                                                     psa_algorithm_t alg)
 {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     psa_key_location_t location = PSA_KEY_LIFETIME_GET_LOCATION(attributes->lifetime);
     if (location != PSA_KEY_LOCATION_LOCAL_STORAGE) {
         const psa_drv_se_t *drv;
@@ -371,7 +371,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt_setup(   psa_cipher_operation_t *
             return PSA_SUCCESS;
         }
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
     (void) operation;
     (void) attributes;
     (void) key_buffer;
@@ -402,7 +402,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
                                                 size_t output_size,
                                                 size_t * output_length)
 {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
@@ -420,7 +420,7 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
         }
         return PSA_SUCCESS;
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     psa_key_attributes_t * attributes = &slot->attr;
     psa_cipher_op_t op = PSA_ENCODE_CIPHER_OPERATION(alg, attributes->bits, attributes->type);
@@ -430,15 +430,15 @@ psa_status_t psa_driver_wrapper_cipher_encrypt( psa_key_slot_t *slot,
     }
 
     switch(op) {
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_128)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_128)
         case PSA_CBC_NO_PAD_AES_128:
             return psa_cipher_cbc_aes_128_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
 #endif
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_192)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_192)
         case PSA_CBC_NO_PAD_AES_192:
             return psa_cipher_cbc_aes_192_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
 #endif
-#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES) && IS_ACTIVE(CONFIG_PSA_KEY_SIZE_256)
+#if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_256)
         case PSA_CBC_NO_PAD_AES_256:
             return psa_cipher_cbc_aes_256_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
 #endif
@@ -462,7 +462,7 @@ psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attribut
                                             size_t signature_size,
                                             size_t * signature_length)
 {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
@@ -473,7 +473,7 @@ psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attribut
 
         return drv->asymmetric->p_sign(drv_context, *((psa_key_slot_number_t*)key_buffer), alg, hash, hash_length, signature, signature_size, signature_length);
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     psa_asymmetric_keytype_t asym_key = PSA_INVALID_OPERATION;
 
@@ -516,7 +516,7 @@ psa_status_t psa_driver_wrapper_verify_hash(const psa_key_attributes_t *attribut
                                             const uint8_t * signature,
                                             size_t signature_length)
 {
-#if IS_ACTIVE(CONFIG_PSA_CRYPTO_SE)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
@@ -530,7 +530,7 @@ psa_status_t psa_driver_wrapper_verify_hash(const psa_key_attributes_t *attribut
             return drv->asymmetric->p_verify(drv_context, pub_key, alg, hash, hash_length, signature, signature_length);
         }
     }
-#endif /* CONFIG_PSA_CRYPTO_SE */
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
 
     psa_asymmetric_keytype_t asym_key = PSA_INVALID_OPERATION;
 

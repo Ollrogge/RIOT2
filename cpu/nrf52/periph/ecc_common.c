@@ -2,7 +2,7 @@
 #include "psa_periph_ecc_common.h"
 #include "cryptocell_util.h"
 
-#define ENABLE_DEBUG    (1)
+#define ENABLE_DEBUG    (0)
 #include "debug.h"
 
 #include "periph/gpio.h"
