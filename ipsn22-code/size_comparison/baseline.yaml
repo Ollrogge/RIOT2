@@ -3,26 +3,41 @@ boards:
   - "nrf52840dk"
 
 profiles:
-  aes-cbc-multi:
+  aes-cbc-cc310:
     dir_path: "../baseline"
-    config: "../baseline/app.config.test.riot ../baseline/app.config.test.cryptocell ../baseline/app.config.test.random"
-    label: "Cipher CC310 \\& RIOT"
-    flags: "-DCRYPTOCELL_CIPHER -DRIOT_CIPHER"
-  hashes-multi:
+    config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.random"
+    label: "310"
+    flags: "-DCRYPTOCELL_CIPHER"
+  aes-cbc-riot:
     dir_path: "../baseline"
-    config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.riot.hashes"
-    label: "Hashes CC310 \\& RIOT"
-    flags: "-DCRYPTOCELL_HASHES -DRIOT_HASHES"
-  se-ecdsa:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes"
-    label: "ECDSA SE"
-    flags: "-DSE_ECDSA"
-  all-backends:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.riot ../baseline/app.config.test.cryptocell ../baseline/app.config.test.uecc ../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes ../baseline/app.config.test.random"
-    label: "All Backends"
-    flags: "-DMICRO_ECC_ECDSA -DSE_ECDSA -DCRYPTOCELL_HASHES -DRIOT_HASHES -DCRYPTOCELL_CIPHER -DRIOT_CIPHER"
+    config: "../baseline/app.config.test.riot ../baseline/app.config.test.random"
+    label: "RIOT"
+    flags: "-DRIOT_CIPHER"
+  # hashes-cc310:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.cryptocell"
+  #   label: "CryptoCell 310"
+  #   flags: "-DCRYPTOCELL_HASHES"
+  # hashes-riot:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.riot.hashes"
+  #   label: "RIOT"
+  #   flags: "-DRIOT_HASHES"
+  # cc-ecdsa:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.riot.hashes"
+  #   label: "CryptoCell 310"
+  #   flags: "-DCC_ECDSA"
+  # se-ecdsa:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes"
+  #   label: "ATECC608A"
+  #   flags: "-DSE_ECDSA"
+  # all-backends:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.se ../baseline/app.config.test.random"
+  #   label: "All Backends"
+  #   flags: "-DSE_ECDSA -DCRYPTOCELL_HASHES -DCRYPTOCELL_CIPHER"
 
 groups:
   # For now we ignore common OS and DTLS parts
@@ -41,30 +56,22 @@ groups:
   #     hatch: "|/"
   #     base: true
 
-  ? "Cryptoauth Library"
-  :
-    modules:
-      - ["pkg", "cryptoauthlib", "contrib"]
-      - ["sys", "auto_init", "auto_init_security", "auto_init_atca"]
-      - ["cryptoauthlib"]
-
-    config:
-      hatch: "\\"
-
-  # ? "Micro ECC Library"
+  # ? "Cryptoauth Library"
   # :
   #   modules:
-  #     - ["pkg", "micro-ecc"]
+  #     - ["pkg", "cryptoauthlib", "contrib"]
+  #     - ["sys", "auto_init", "auto_init_security", "auto_init_atca"]
+  #     - ["cryptoauthlib"]
 
   #   config:
   #     hatch: "\\"
 
-  ? "CC310 Library"
+  ? "CryptoCell 310 Library"
   :
     modules:
       - ["cpu", "nrf52", "periph", "cryptocell_setup"]
       - ["cpu", "nrf52", "periph", "cryptocell_util"]
-      - ["cpu", "nrf52", "periph", "cryptocell_lib"]
+      - ["cpu", "nrf52", "cryptocell_util"]
 
     config:
       hatch: "."
@@ -77,18 +84,19 @@ groups:
     config:
       hatch: "-"
 
-  ? "RIOT Hash Module"
-  :
-    modules:
-      - ["sys", "hashes"]
+  # ? "RIOT Hash Module"
+  # :
+  #   modules:
+  #     - ["sys", "hashes"]
 
-    config:
-      hatch: "+"
+  #   config:
+  #     hatch: "+"
 
   ? "RIOT Random"
   :
     modules:
       - ["sys", "random"]
+      - ["sys", "hashes"]
 
     config:
       hatch: "\\"

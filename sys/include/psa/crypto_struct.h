@@ -22,6 +22,7 @@
 #define PSA_CRYPTO_STRUCT_H
 
 #include "crypto_types.h"
+#include "crypto_sizes.h"
 #include "crypto_contexts.h"
 
 struct psa_hash_operation_s
@@ -79,4 +80,40 @@ static inline struct psa_cipher_operation_s psa_cipher_operation_init(void)
     return v;
 }
 
+/**
+ * @brief Structure to hold an asymmetric public key or a reference to an ECC public key
+ *
+ * When is_plain_key == 0, the key is stored in protected memory and pub_key_data
+ * contains a slot number. This is the default value, as all key slots are initialized with 0.
+ *
+ * When is_plain_key == 1, pub_key_data contains an actual key.
+ */
+struct psa_asym_pub_key_s {
+    uint8_t data[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE];
+    uint8_t is_plain_key;
+    size_t bytes;
+};
+
+/**
+ * @brief Structure to hold an asymmetric private and public key pair.
+ *
+ * priv_key_data contains either an actual private key, when key is stored locally,
+ * or a slot number referencing to an actual key in protected memory.
+ *
+ * The structure holds a psa_asym_pub_key_t struct, which contains the actual public key,
+ * if it's returned by the driver in use. Otherwise this structure stays empty.
+ */
+struct psa_asym_keypair_s {
+    uint8_t priv_key_data[PSA_MAX_PRIV_KEY_SIZE]; /*!< Contains private key or, in case of SE, slot number of private key */
+    size_t priv_key_bytes;
+    psa_asym_pub_key_t pub_key; /*!< Contains public key material */
+};
+
+/**
+ * @brief Structure to hold an unstructured key (e.g. AES or DES)
+ */
+struct psa_unstructured_key_s {
+    uint8_t data[PSA_MAX_KEY_DATA_SIZE];
+    size_t bytes;
+};
 #endif /* PSA_CRYPTO_STRUCT_H */

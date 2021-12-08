@@ -13,6 +13,7 @@ gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
 
 #define ECDSA_MESSAGE_SIZE  (127)
+#define ECC_KEY_SIZE    (256)
 
 static void _test_init(void)
 {
@@ -34,7 +35,7 @@ static void ecdsa_periph(void)
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH;
     psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
-    psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
+    psa_key_bits_t bits = ECC_KEY_SIZE;
 
     uint8_t signature[PSA_SIGN_OUTPUT_SIZE(type, bits, alg)];
     size_t sig_length;

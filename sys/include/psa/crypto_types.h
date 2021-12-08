@@ -58,9 +58,11 @@ typedef uint32_t psa_key_usage_t;
 /* The type used internally for key sizes.
  * Public interfaces use size_t, but internally we use a smaller type. */
 typedef uint16_t psa_key_bits_t;
+
 /* The maximum value of the type used to represent bit-sizes.
  * This is used to mark an invalid key size. */
-#define PSA_KEY_BITS_TOO_LARGE          ( ( psa_key_bits_t ) -1 )
+#define PSA_KEY_BITS_TOO_LARGE          ((psa_key_bits_t) - 1)
+
 /* The maximum size of a key in bits.
  * Currently defined as the maximum that can be represented, rounded down
  * to a whole number of bytes.
@@ -105,5 +107,15 @@ typedef struct psa_key_attributes_s psa_key_attributes_t;
 
 typedef struct psa_cipher_operation_s psa_cipher_operation_t;
 
+/**
+ * @brief Type of a key data structure for an Elliptic Curve public key.
+ */
+typedef struct psa_asym_pub_key_s psa_asym_pub_key_t;
 
+/**
+ * @brief Type of a key data structure for an Elliptic Curve public/private keypair.
+ */
+typedef struct psa_asym_keypair_s psa_asym_keypair_t;
+
+typedef struct psa_unstructured_key_s psa_unstructured_key_t;
 #endif /* PSA_CRYPTO_TYPES_H */

@@ -786,15 +786,14 @@ static psa_status_t psa_validate_unstructured_key_size(psa_key_type_t type, size
     return PSA_SUCCESS;
 }
 
-
 static psa_status_t psa_validate_key_for_key_generation(psa_key_type_t type, size_t bits)
 {
     if (PSA_KEY_TYPE_IS_UNSTRUCTURED(type)) {
         return psa_validate_unstructured_key_size(type, bits);
     }
-#if IS_ACTIVE(CONFIG_PSA_ASYMMETRIC)
-    else if (PSA_KEY_TYPE_IS_ECC(type) && PSA_KEY_TYPE_IS_KEY_PAIR(type)) {
-        return PSA_SUCCESS;
+#if IS_ACTIVE(CONFIG_PSA_ECC)
+    else if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type)) {
+        return PSA_ECC_KEY_SIZE_IS_VALID(bits) ? PSA_SUCCESS : PSA_ERROR_INVALID_ARGUMENT;
     }
 #endif
     /* TODO: add validation for other key types */
@@ -1130,7 +1129,7 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
         if (data_length > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-        psa_ecc_pub_key_t * pub_key = (psa_ecc_pub_key_t *) key_buffer;
+        psa_asym_pub_key_t * pub_key = (psa_asym_pub_key_t *) key_buffer;
         memcpy(pub_key->data, data, data_length);
         *key_buffer_length = data_length;
         pub_key->bytes = data_length;

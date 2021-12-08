@@ -46,6 +46,12 @@
         PSA_ALG_HMAC_GET_HASH(alg) == PSA_ALG_SHA3_512 ? 64 :       \
         0)
 
+#define PSA_ECC_KEY_SIZE_IS_VALID(bits)     \
+        (   bits == 128 || \
+            bits == 192 || \
+            bits == 224 || \
+            bits == 256 || \
+            bits == 384)
 /* Maximum size of the export encoding of an ECC public key.
  *
  * The representation of an ECC public key is:
@@ -119,9 +125,12 @@
  * See also #PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(\p key_type, \p key_bits).
  */
 #define PSA_EXPORT_PUBLIC_KEY_MAX_SIZE \
-        (PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_MAX_ECC_PRIV_KEY_SIZE))
+        (PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_MAX_PRIV_KEY_SIZE))
 
-#define PSA_MAX_ECC_PRIV_KEY_SIZE   (PSA_BYTES_TO_BITS(CONFIG_PSA_MAX_KEY_SIZE))
+/**
+ * The maximum size of an Elliptic Curve private key.
+ */
+#define PSA_MAX_PRIV_KEY_SIZE   (PSA_BYTES_TO_BITS(CONFIG_PSA_MAX_KEY_SIZE))
 
 /**
  * Define maximum key data sizes for initial key buffer declarations.
@@ -134,7 +143,7 @@
  * of the largest asymmetric key pair combination used.
  */
 #if IS_ACTIVE(CONFIG_PSA_ECC)
-#define PSA_MAX_KEY_DATA_SIZE  ((PSA_MAX_ECC_PRIV_KEY_SIZE * 2) + PSA_EXPORT_PUBLIC_KEY_MAX_SIZE)
+#define PSA_MAX_KEY_DATA_SIZE   (sizeof(psa_asym_keypair_t))
 #else
 #define PSA_MAX_KEY_DATA_SIZE  (CONFIG_PSA_MAX_KEY_SIZE)
 #endif

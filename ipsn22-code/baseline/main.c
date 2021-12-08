@@ -44,32 +44,19 @@
 #include "periph/gpio.h"
 
 #define AES_128_KEY_SIZE    (16)
-#define AES_256_KEY_SIZE    (32)
 #define AES_CBC_IV_SIZE     (16)
 #define ECDSA_MESSAGE_SIZE  (127)
-#define UECC_CURVE_192_SIZE (24)
-#define PUB_KEY_SIZE        (UECC_CURVE_192_SIZE * 2)
+#define PUB_KEY_SIZE        (64)
 #define SHA256_DIGEST_SIZE  (32)
 
 gpio_t active_gpio = GPIO_PIN(1, 8);
 
-#if defined(CRYPTOCELL_CIPHER)
+#if defined(CRYPTOCELL_CIPHER) || defined(RIOT_CIPHER)
 static uint8_t KEY_128[] = {
     0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
-#endif
 
-#if defined(RIOT_CIPHER)
-static uint8_t KEY_256[] = {
-    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
-    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
-    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
-    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4
-};
-#endif
-
-#if defined(CRYPTOCELL_CIPHER) || defined(RIOT_CIPHER)
 static uint8_t PLAINTEXT[] = {
     0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
     0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
@@ -80,7 +67,7 @@ static uint8_t PLAINTEXT_LEN = 32;
 static uint8_t CBC_CIPHER_LEN = 32;
 #endif /* CIPHER */
 
-#if defined(RIOT_HASHES)
+#if defined(RIOT_HASHES) || defined(CRYPTOCELL_HASHES)
 uint8_t SHA256_MSG[] = {  0x09, 0xfc, 0x1a, 0xcc, 0xc2, 0x30, 0xa2, 0x05,
                                 0xe4, 0xa2, 0x08, 0xe6, 0x4a, 0x8f, 0x20, 0x42,
                                 0x91, 0xf5, 0x81, 0xa1, 0x27, 0x56, 0x39, 0x2d,
@@ -92,24 +79,6 @@ uint8_t SHA256_DIG[] = {  0x4f, 0x44, 0xc1, 0xc7, 0xfb, 0xeb, 0xb6, 0xf9,
                                 0x0c, 0x56, 0xfa, 0x07, 0x84, 0x4b, 0xe7, 0x64,
                                 0x89, 0x07, 0x63, 0x56, 0xac, 0x18, 0x86, 0xa4};
 size_t SHA256_DIG_LEN = 32;
-#endif
-
-#if defined(CRYPTOCELL_HASHES)
-uint8_t SHA512_MSG[] = {  0x8c, 0xcb, 0x08, 0xd2, 0xa1, 0xa2, 0x82, 0xaa,
-                                0x8c, 0xc9, 0x99, 0x02, 0xec, 0xaf, 0x0f, 0x67,
-                                0xa9, 0xf2, 0x1c, 0xff, 0xe2, 0x80, 0x05, 0xcb,
-                                0x27, 0xfc, 0xf1, 0x29, 0xe9, 0x63, 0xf9, 0x9d};
-size_t SHA512_MSG_LEN = 32;
-
-uint8_t SHA512_DIG[] = {  0x45, 0x51, 0xde, 0xf2, 0xf9, 0x12, 0x73, 0x86,
-                                0xee, 0xa8, 0xd4, 0xda, 0xe1, 0xea, 0x8d, 0x8e,
-                                0x49, 0xb2, 0xad, 0xd0, 0x50, 0x9f, 0x27, 0xcc,
-                                0xbc, 0xe7, 0xd9, 0xe9, 0x50, 0xac, 0x7d, 0xb0,
-                                0x1d, 0x5b, 0xca, 0x57, 0x9c, 0x27, 0x1b, 0x9f,
-                                0x2d, 0x80, 0x67, 0x30, 0xd8, 0x8f, 0x58, 0x25,
-                                0x2f, 0xd0, 0xc2, 0x58, 0x78, 0x51, 0xc3, 0xac,
-                                0x8a, 0x0e, 0x72, 0xb4, 0xe1, 0xdc, 0x0d, 0xa6};
-size_t SHA512_DIG_LEN = 64;
 #endif
 
 #ifdef CC_ECDSA
@@ -187,43 +156,43 @@ void cryptocell_aes_cbc_128(void)
 #endif /* CRYPTOCELL_CIPHER */
 
 #if defined(CRYPTOCELL_HASHES)
-void cryptocell_sha512(void)
+void cryptocell_sha256(void)
 {
     CRYS_HASHUserContext_t ctx;
     CRYS_HASH_Result_t result;
     int ret;
 
-    puts("SHA512 Init");
+    puts("SHA256 Init");
     gpio_clear(active_gpio);
-    ret = CRYS_HASH_Init(&ctx, CRYS_HASH_SHA512_mode);
+    ret = CRYS_HASH_Init(&ctx, CRYS_HASH_SHA256_mode);
     gpio_set(active_gpio);
     if (ret != CRYS_OK) {
         printf("CRYS Init failed: %x\n", ret);
         return;
     }
 
-    puts("SHA512 Update");
+    puts("SHA256 Update");
     cryptocell_enable();
     gpio_clear(active_gpio);
-    ret = CRYS_HASH_Update(&ctx, SHA512_MSG, SHA512_MSG_LEN);
+    ret = CRYS_HASH_Update(&ctx, SHA256_MSG, SHA256_MSG_LEN);
     gpio_set(active_gpio);
     cryptocell_disable();
     if (ret != CRYS_OK) {
-        printf("SHA512 Update failed: %x\n", ret);
+        printf("SHA256 Update failed: %x\n", ret);
         return;
     }
 
-    puts("SHA512 Finish");
+    puts("SHA256 Finish");
     cryptocell_enable();
     gpio_clear(active_gpio);
     ret = CRYS_HASH_Finish(&ctx, result);
     gpio_set(active_gpio);
     cryptocell_disable();
     if (ret != CRYS_OK) {
-        printf("SHA512 Finish failed: %x\n", ret);
+        printf("SHA256 Finish failed: %x\n", ret);
         return;
     }
-    puts("CryptoCell SHA512 Done");
+    puts("CryptoCell SHA256 Done");
 }
 #endif
 
@@ -253,7 +222,7 @@ void riot_sha256(void)
 #endif
 
 #ifdef RIOT_CIPHER
-void riot_aes_cbc_256(void)
+void riot_aes_cbc_128(void)
 {
     int ret;
 
@@ -261,26 +230,26 @@ void riot_aes_cbc_256(void)
     uint8_t iv[AES_CBC_IV_SIZE];
     uint8_t result[CBC_CIPHER_LEN];
 
-    puts("AES 256 IV Generation");
+    puts("AES 128 IV Generation");
     gpio_clear(active_gpio);
     random_bytes(iv, AES_CBC_IV_SIZE);
     gpio_set(active_gpio);
 
-    puts("AES 256 Init");
+    puts("AES 128 Init");
     gpio_clear(active_gpio);
-    ret = cipher_init(&ctx, CIPHER_AES, KEY_256, AES_256_KEY_SIZE);
+    ret = cipher_init(&ctx, CIPHER_AES, KEY_128, AES_128_KEY_SIZE);
     gpio_set(active_gpio);
     if (ret != CIPHER_INIT_SUCCESS) {
-        printf("AES 256 Init failed: %d\n", ret);
+        printf("AES 128 Init failed: %d\n", ret);
         return;
     }
 
-    puts("AES 256 Encryption");
+    puts("AES 128 Encryption");
     gpio_clear(active_gpio);
     ret = cipher_encrypt_cbc(&ctx, iv, PLAINTEXT, PLAINTEXT_LEN, result);
     gpio_set(active_gpio);
     if (ret <= 0) {
-        printf("AES 256 Encrypt failed: %d\n", ret);
+        printf("AES 128 Encrypt failed: %d\n", ret);
         return;
     }
     puts("RIOT AES Done");
@@ -301,8 +270,10 @@ void cc_ecdsa(void)
     CRYS_ECDSA_VerifyUserContext_t VerifyUserContext;
     CRYS_ECDH_TempData_t signOutBuff;
     CRYS_ECPKI_HASH_OpMode_t ecdsa_hash_mode = CRYS_ECPKI_AFTER_HASH_SHA256_mode;
+
     uint8_t hash[SHA256_DIGEST_SIZE];
     uint8_t msg[ECDSA_MESSAGE_SIZE] = { 0x0b };
+
     uint32_t ecdsa_sig_size = 64;
     rndGenerateVectFunc = CRYS_RND_GenerateVector;
     pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp192r1);
@@ -527,10 +498,10 @@ int main(void)
     cryptocell_aes_cbc_128();
 #endif
 #ifdef RIOT_CIPHER
-    riot_aes_cbc_256();
+    riot_aes_cbc_128();
 #endif
 #ifdef CRYPTOCELL_HASHES
-    cryptocell_sha512();
+    cryptocell_sha256();
 #endif
 #ifdef RIOT_HASHES
     riot_sha256();

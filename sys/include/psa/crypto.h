@@ -61,11 +61,11 @@
  *
  *
  * @return      PSA_SUCCESS
- * @return      PSA_ERROR_INSUFFICIENT_MEMORY
- * @return      PSA_ERROR_COMMUNICATION_FAILURE
- * @return      PSA_ERROR_HARDWARE_FAILURE
- * @return      PSA_ERROR_CORRUPTION_DETECTED
- * @return      PSA_ERROR_INSUFFICIENT_ENTROPY
+ *              PSA_ERROR_INSUFFICIENT_MEMORY
+ *              PSA_ERROR_COMMUNICATION_FAILURE
+ *              PSA_ERROR_HARDWARE_FAILURE
+ *              PSA_ERROR_CORRUPTION_DETECTED
+ *              PSA_ERROR_INSUFFICIENT_ENTROPY
  */
 psa_status_t psa_crypto_init(void);
 
@@ -100,24 +100,24 @@ psa_status_t psa_crypto_init(void);
  *                                    encryption.
  * @param ciphertext_length         On success, the size of the output in the ciphertext buffer.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_ENCRYPT
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_ENCRYPT
  *                                              flag, or it does not permit the requested algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
- * @return PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_BUFFER_TOO_SMALL           ciphertext_size is too small.
+ *          PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
+ *          PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_BUFFER_TOO_SMALL           ciphertext_size is too small.
  *                                              PSA_AEAD_ENCRYPT_OUTPUT_SIZE() or
  *                                              PSA_AEAD_ENCRYPT_OUTPUT_MAX_SIZE() can be used to
  *                                              determine the required buffer size.
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -164,25 +164,25 @@ psa_status_t psa_aead_encrypt(psa_key_id_t key,
  *                                    decryption.
  * @param plaintext_length          On success, the size of the output in the plaintext buffer.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_INVALID_SIGNATURE          The ciphertext is not authentic.
- * @return PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_DECRYPT
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_INVALID_SIGNATURE          The ciphertext is not authentic.
+ *          PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_DECRYPT
  *                                              flag, or it does not permit the requested algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
- * @return PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_BUFFER_TOO_SMALL           plaintext_size is too small.
+ *          PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
+ *          PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_BUFFER_TOO_SMALL           plaintext_size is too small.
  *                                              PSA_AEAD_DECRYPT_OUTPUT_SIZE() or
  *                                              PSA_AEAD_DECRYPT_OUTPUT_MAX_SIZE() can be used to
  *                                              determine the required buffer size.
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -244,22 +244,22 @@ psa_aead_operation_t psa_aead_operation_init(void);
  * @param alg           The AEAD algorithm to compute (PSA_ALG_XXX value such that
  *                      PSA_ALG_IS_AEAD(alg) is true).
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid:
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid:
  *                                              it must be inactive.
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_ENCRYPT
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_ENCRYPT
  *                                              flag, or it does not permit the requested algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
- * @return PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
+ *          PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -304,22 +304,22 @@ psa_status_t psa_aead_encrypt_setup(psa_aead_operation_t * operation,
  * @param alg           The AEAD algorithm to compute (PSA_ALG_XXX value such that
  *                      PSA_ALG_IS_AEAD(alg) is true).
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid:
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid:
  *                                              it must be inactive.
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_DECRYPT
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED              The key does not have the PSA_KEY_USAGE_DECRYPT
  *                                              flag, or it does not permit the requested algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
- * @return PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INVALID_ARGUMENT           key is not compatible with alg.
+ *          PSA_ERROR_NOT_SUPPORTED              alg is not supported or is not an AEAD algorithm.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -348,18 +348,18 @@ psa_status_t psa_aead_decrypt_setup(psa_aead_operation_t * operation,
  * @param ad_length             Size of the non-encrypted additional authenticated data in bytes.
  * @param plaintext_length      Size of the plaintext to encrypt in bytes.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
  *                                              active, and psa_aead_set_nonce() and
  *                                              psa_aead_generate_nonce() must not have been
  *                                              called yet.
- * @return PSA_ERROR_INVALID_ARGUMENT           At least one of the lengths is not acceptable
+ *          PSA_ERROR_INVALID_ARGUMENT           At least one of the lengths is not acceptable
  *                                              for the chosen algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -388,23 +388,23 @@ psa_status_t psa_aead_set_lengths(psa_aead_operation_t * operation,
  *                      were used to set up the AEAD operation.
  * @param nonce_length  On success, the number of bytes of the generated nonce.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
  *                                              active AEAD encryption operation, with no nonce set.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: this is an
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: this is an
  *                                              algorithm which requires psa_aead_set_lengths() to
  *                                              be called before setting the nonce.
- * @return PSA_ERROR_BUFFER_TOO_SMALL           The size of the nonce buffer is too small.
+ *          PSA_ERROR_BUFFER_TOO_SMALL           The size of the nonce buffer is too small.
  *                                              PSA_AEAD_NONCE_LENGTH() or PSA_AEAD_NONCE_MAX_SIZE
  *                                              can be used to determine the required buffer size.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -436,22 +436,22 @@ psa_status_t psa_aead_generate_nonce(psa_aead_operation_t * operation,
  *                      where key_type and alg are type of key and the algorithm respectively that
  *                      were used to set up the AEAD operation.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
  *                                              active AEAD encryption operation, with no nonce set.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: this is an
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: this is an
  *                                              algorithm which requires psa_aead_set_lengths() to
  *                                              be called before setting the nonce.
- * @return PSA_ERROR_INVALID_ARGUMENT           The size of nonce is not acceptable for the chosen
+ *          PSA_ERROR_INVALID_ARGUMENT           The size of nonce is not acceptable for the chosen
  *                                              algorithm.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -479,25 +479,25 @@ psa_status_t psa_aead_set_nonce(psa_aead_operation_t * operation,
  * @param input         Buffer containing the fragment of additional data.
  * @param input_length  Size of the input buffer in bytes.
  *
- * @return PSA_SUCCESS                          Success.
+ * @return  PSA_SUCCESS                          Success.
  *                                              @warning When decrypting, do not trust the input
  *                                                       until psa_aead_verify() succeeds.
  *                                                       See the detailed warning.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
  *                                              active, have a nonce set, have lengths set if
  *                                              required by the algorithm, and psa_aead_update()
  *                                              must not have been called yet.
- * @return PSA_ERROR_INVALID_ARGUMENT           The total input length overflows the additional
+ *          PSA_ERROR_INVALID_ARGUMENT           The total input length overflows the additional
  *                                              data length that was previously specified with
  *                                              psa_aead_set_lengths().
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -538,31 +538,31 @@ psa_status_t psa_aead_update_ad(psa_aead_operation_t * operation,
  *                        output size of any supported AEAD algorithm.
  * @param output_length On success, the number of bytes that make up the returned output.
  *
- * @return PSA_SUCCESS                          Success.
+ * @return  PSA_SUCCESS                          Success.
  *                                              @warning When decrypting, do not trust the input
  *                                                       until psa_aead_verify() succeeds.
  *                                                       See the detailed warning.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be
  *                                              active, have a nonce set, and have lengths set if
  *                                              required by the algorithm.
- * @return PSA_ERROR_BUFFER_TOO_SMALL           The size of the output buffer is too small.
+ *          PSA_ERROR_BUFFER_TOO_SMALL           The size of the output buffer is too small.
  *                                              PSA_AEAD_UPDATE_OUTPUT_SIZE() or
  *                                              PSA_AEAD_UPDATE_OUTPUT_MAX_SIZE() can be used to
  *                                              determine the required buffer size.
- * @return PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
+ *          PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
  *                                              so far is less than the additional data length that
  *                                              was previously specified with psa_aead_set_lengths()
- * @return PSA_ERROR_INVALID_ARGUMENT           The total input length overflows the plaintext
+ *          PSA_ERROR_INVALID_ARGUMENT           The total input length overflows the plaintext
  *                                              length that was previously specified with
  *                                              psa_aead_set_lengths().
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -612,29 +612,29 @@ psa_status_t psa_aead_update(psa_aead_operation_t * operation,
  *                                supported AEAD algorithm.
  * @param tag_length            On success, the number of bytes that make up the returned tag.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
  *                                              active encryption operation with a nonce set.
- * @return PSA_ERROR_BUFFER_TOO_SMALL           The size of the ciphertext or tag buffer is too
+ *          PSA_ERROR_BUFFER_TOO_SMALL           The size of the ciphertext or tag buffer is too
  *                                              small. PSA_AEAD_FINISH_OUTPUT_SIZE() or
  *                                              PSA_AEAD_FINISH_OUTPUT_MAX_SIZE can be used to
  *                                              determine the required ciphertext buffer size.
  *                                              PSA_AEAD_TAG_LENGTH() or PSA_AEAD_TAG_MAX_SIZE can
  *                                              be used to determine the required tag buffer size.
- * @return PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
+ *          PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
  *                                              so far is less than the additional data length that
  *                                              was previously specified with psa_aead_set_lengths()
- * @return PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update() so
+ *          PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update() so
  *                                              far is less than the plaintext length that was
  *                                              previously specified with psa_aead_set_lengths().
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -685,29 +685,29 @@ psa_status_t psa_aead_finish(psa_aead_operation_t * operation,
  * @param tag                   Buffer containing the authentication tag.
  * @param tag_length            Size of the tag buffer in bytes.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_INVALID_SIGNATURE          The calculations were successful, but the
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_INVALID_SIGNATURE          The calculations were successful, but the
  *                                              authentication tag is not correct.
- * @return PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
+ *          PSA_ERROR_BAD_STATE                  The operation state is not valid: it must be an
  *                                              active encryption operation with a nonce set.
- * @return PSA_ERROR_BUFFER_TOO_SMALL           The size of the plaintext buffer is too small.
+ *          PSA_ERROR_BUFFER_TOO_SMALL           The size of the plaintext buffer is too small.
  *                                              PSA_AEAD_VERIFY_OUTPUT_SIZE() or
  *                                              PSA_AEAD_VERIFY_OUTPUT_MAX_SIZE can be used to
  *                                              determine the required buffer size.
- * @return PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
+ *          PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update_ad()
  *                                              so far is less than the additional data length that
  *                                              was previously specified with psa_aead_set_lengths()
- * @return PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update() so
+ *          PSA_ERROR_INVALID_ARGUMENT           The total length of input to psa_aead_update() so
  *                                              far is less than the plaintext length that was
  *                                              previously specified with psa_aead_set_lengths().
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -734,11 +734,11 @@ psa_status_t psa_aead_verify(psa_aead_operation_t * operation,
  *
  * @param operation             Initialized AEAD operation.
  *
- * @return PSA_SUCCESS                          Success.
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
+ * @return  PSA_SUCCESS                          Success.
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_BAD_STATE                  The library has not been previously initialized by
  *                                              psa_crypto_init(). It is implementation-dependent
  *                                              whether a failure to initialize results in this
  *                                              error code.
@@ -771,25 +771,25 @@ psa_status_t psa_aead_abort(psa_aead_operation_t * operation);
  *                            output size of any supported asymmetric encryption.
  * @param output_length     On success, the number of bytes that make up the returned output.
  *
- * @return PSA_SUCCESS
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_NOT_PERMITTED          The key does not have the PSA_KEY_USAGE_ENCRYPT flag,
+ * @return  PSA_SUCCESS
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED          The key does not have the PSA_KEY_USAGE_ENCRYPT flag,
  *                                          or it does not permit the requested algorithm.
- * @return PSA_ERROR_BUFFER_TOO_SMALL       The size of the output buffer is too small.
+ *          PSA_ERROR_BUFFER_TOO_SMALL       The size of the output buffer is too small.
  *                                          PSA_ASYMMETRIC_ENCRYPT_OUTPUT_SIZE() or
  *                                          PSA_ASYMMETRIC_ENCRYPT_OUTPUT_MAX_SIZE can be used to
  *                                          determine the required buffer size.
- * @return PSA_ERROR_NOT_SUPPORTED
- * @return PSA_ERROR_INVALID_ARGUMENT
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_INSUFFICIENT_ENTROPY
- * @return PSA_ERROR_BAD_STATE              The library has not been previously initialized by
+ *          PSA_ERROR_NOT_SUPPORTED
+ *          PSA_ERROR_INVALID_ARGUMENT
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_INSUFFICIENT_ENTROPY
+ *          PSA_ERROR_BAD_STATE              The library has not been previously initialized by
  *                                          psa_crypto_init(). It is implementation-dependent
  *                                          whether a failure to initialize results in this error
  *                                          code.
@@ -829,26 +829,26 @@ psa_status_t psa_asymmetric_encrypt(psa_key_id_t key,
  *                            output size of any supported asymmetric decryption.
  * @param output_length     On success, the number of bytes that make up the returned output.
  *
- * @return PSA_SUCCESS
- * @return PSA_ERROR_INVALID_HANDLE
- * @return PSA_ERROR_NOT_PERMITTED          The key does not have the PSA_KEY_USAGE_DECRYPT flag,
+ * @return  PSA_SUCCESS
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED          The key does not have the PSA_KEY_USAGE_DECRYPT flag,
  *                                          or it does not permit the requested algorithm.
- * @return PSA_ERROR_BUFFER_TOO_SMALL       The size of the output buffer is too small.
+ *          PSA_ERROR_BUFFER_TOO_SMALL       The size of the output buffer is too small.
  *                                          PSA_ASYMMETRIC_DECRYPT_OUTPUT_SIZE() or
  *                                          PSA_ASYMMETRIC_DECRYPT_OUTPUT_MAX_SIZE can be used to
  *                                          determine the required buffer size.
- * @return PSA_ERROR_NOT_SUPPORTED
- * @return PSA_ERROR_INVALID_ARGUMENT
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_INSUFFICIENT_ENTROPY
- * @return PSA_ERROR_INVALID_PADDING
- * @return PSA_ERROR_BAD_STATE              The library has not been previously initialized by
+ *          PSA_ERROR_NOT_SUPPORTED
+ *          PSA_ERROR_INVALID_ARGUMENT
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_INSUFFICIENT_ENTROPY
+ *          PSA_ERROR_INVALID_PADDING
+ *          PSA_ERROR_BAD_STATE              The library has not been previously initialized by
  *                                          psa_crypto_init(). It is implementation-dependent
  *                                          whether a failure to initialize results in this error
  *                                          code.
@@ -902,32 +902,32 @@ psa_status_t psa_cipher_decrypt_setup(psa_cipher_operation_t * operation,
  * @param output_length On success, the number of bytes that make up the output.
  *
  * @return  PSA_SUCCESS
- *          Success.
- * @return  PSA_ERROR_INVALID_HANDLE
- * @return  PSA_ERROR_NOT_PERMITTED
- *          The key does not have the PSA_KEY_USAGE_ENCRYPT flag, or it does not permit the
- *          requested algorithm.
- * @return  PSA_ERROR_INVALID_ARGUMENT
- *          key is not compatible with alg.
- * @return  PSA_ERROR_INVALID_ARGUMENT
- *          The input_length is not valid for the algorithm and key type. For example, the
- *          algorithm is a based on block cipher and requires a whole number of blocks, but the
- *          total input size is not a multiple of the block size.
- * @return  PSA_ERROR_NOT_SUPPORTED
- *          alg is not supported or is not a cipher algorithm.
- * @return  PSA_ERROR_BUFFER_TOO_SMALL
- *          output_size is too small. PSA_CIPHER_ENCRYPT_OUTPUT_SIZE() or
+ *              Success.
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_NOT_PERMITTED
+ *              The key does not have the PSA_KEY_USAGE_ENCRYPT flag, or it does not permit the
+ *              requested algorithm.
+ *          PSA_ERROR_INVALID_ARGUMENT
+ *              key is not compatible with alg.
+ *          PSA_ERROR_INVALID_ARGUMENT
+ *              The input_length is not valid for the algorithm and key type. For example, the
+ *              algorithm is a based on block cipher and requires a whole number of blocks, but the
+ *              total input size is not a multiple of the block size.
+ *          PSA_ERROR_NOT_SUPPORTED
+ *              alg is not supported or is not a cipher algorithm.
+ *          PSA_ERROR_BUFFER_TOO_SMALL
+ *              output_size is too small. PSA_CIPHER_ENCRYPT_OUTPUT_SIZE() or
  *          PSA_CIPHER_ENCRYPT_OUTPUT_MAX_SIZE() can be used to determine the required buffer size.
- * @return  PSA_ERROR_INSUFFICIENT_MEMORY
- * @return  PSA_ERROR_COMMUNICATION_FAILURE
- * @return  PSA_ERROR_HARDWARE_FAILURE
- * @return  PSA_ERROR_CORRUPTION_DETECTED
- * @return  PSA_ERROR_STORAGE_FAILURE
- * @return  PSA_ERROR_DATA_CORRUPT
- * @return  PSA_ERROR_DATA_INVALID
- * @return  PSA_ERROR_BAD_STATE
- *          The library has not been previously initialized by psa_crypto_init(). It is
- *          implementation-dependent whether a failure to initialize results in this error code.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE
+ *              The library has not been previously initialized by psa_crypto_init(). It is
+ *              implementation-dependent whether a failure to initialize results in this error code.
  */
 psa_status_t psa_cipher_encrypt(psa_key_id_t key,
                                 psa_algorithm_t alg,
@@ -972,21 +972,21 @@ psa_status_t psa_cipher_finish(psa_cipher_operation_t * operation,
  *
  * @return  PSA_SUCCESS
  *          Success.
- * @return  PSA_ERROR_BAD_STATE
+ *          PSA_ERROR_BAD_STATE
  *          Either:
  *          - The cipher algorithm does not use an IV.
  *          - The operation state is not valid: it must be active, with no IV set.
- * @return  PSA_ERROR_BUFFER_TOO_SMALL
+ *          PSA_ERROR_BUFFER_TOO_SMALL
  *          The size of the iv buffer is too small. PSA_CIPHER_IV_LENGTH() or
  *          PSA_CIPHER_IV_MAX_SIZE can be used to determine the required buffer size.
- * @return  PSA_ERROR_INSUFFICIENT_MEMORY
- * @return  PSA_ERROR_COMMUNICATION_FAILURE
- * @return  PSA_ERROR_HARDWARE_FAILURE
- * @return  PSA_ERROR_CORRUPTION_DETECTED
- * @return  PSA_ERROR_STORAGE_FAILURE
- * @return  PSA_ERROR_DATA_CORRUPT
- * @return  PSA_ERROR_DATA_INVALID
- * @return  PSA_ERROR_BAD_STATE
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE
  *          The library has not been previously initialized by psa_crypto_init(). It is
  *          implementation-dependent whether a failure to initialize results in this error code.
  */
@@ -1035,25 +1035,28 @@ psa_status_t psa_builtin_generate_key(const psa_key_attributes_t *attributes, ui
  *                                psa_get_key_attributes() with the key’s identifier.
  * @param key               On success, an identifier for the newly created key. PSA_KEY_ID_NULL on failure.
  *
- * @return PSA_SUCCESS                      Success. If the key is persistent, the key material and the key’s metadata
- *                                          have been saved to persistent storage.
- * @return PSA_ERROR_ALREADY_EXISTS         This is an attempt to create a persistent key, and there is already a
- *                                          persistent key with the given identifier.
- * @return PSA_ERROR_NOT_SUPPORTED          The key type or key size is not supported, either by the implementation in
- *                                          general or in this particular persistent location.
- * @return PSA_ERROR_INVALID_ARGUMENT       The key attributes, as a whole, are invalid.
- * @return PSA_ERROR_INVALID_ARGUMENT       The key type is an asymmetric public key type.
- * @return PSA_ERROR_INVALID_ARGUMENT       The key size is not a valid size for the key type.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_INSUFFICIENT_ENTROPY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_INSUFFICIENT_STORAGE
- * @return PSA_ERROR_STORAGE_FAILURE
- * @return PSA_ERROR_DATA_CORRUPT
- * @return PSA_ERROR_DATA_INVALID
- * @return PSA_ERROR_BAD_STATE              The library has not been previously initialized by
+ * @return  PSA_SUCCESS                     Success. If the key is persistent, the key material
+ *                                          and the key’s metadata have been saved to persistent
+ *                                          storage.
+ *          PSA_ERROR_ALREADY_EXISTS        This is an attempt to create a persistent key, and
+ *                                          there is already a persistent key with the given
+ *                                          identifier.
+ *          PSA_ERROR_NOT_SUPPORTED         The key type or key size is not supported, either by
+ *                                          the implementation in general or in this particular
+ *                                          persistent location.
+ *          PSA_ERROR_INVALID_ARGUMENT       The key attributes, as a whole, are invalid.
+ *          PSA_ERROR_INVALID_ARGUMENT       The key type is an asymmetric public key type.
+ *          PSA_ERROR_INVALID_ARGUMENT       The key size is not a valid size for the key type.
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_INSUFFICIENT_ENTROPY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_INSUFFICIENT_STORAGE
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE              The library has not been previously initialized by
  *                                          psa_crypto_init(). It is implementation-dependent
  *                                          whether a failure to initialize results in this error
  *                                          code.
@@ -1285,14 +1288,14 @@ static inline void psa_reset_key_attributes(psa_key_attributes_t * attributes)
  *                      to a freshly-initialized attribute object.
  *
  * @return  PSA_SUCCESS
- * @return  PSA_ERROR_INVALID_HANDLE
- * @return  PSA_ERROR_INSUFFICIENT_MEMORY
- * @return  PSA_ERROR_COMMUNICATION_FAILURE
- * @return  PSA_ERROR_CORRUPTION_DETECTED
- * @return  PSA_ERROR_STORAGE_FAILURE
- * @return  PSA_ERROR_DATA_CORRUPT
- * @return  PSA_ERROR_DATA_INVALID
- * @return  PSA_ERROR_BAD_STATE
+ *          PSA_ERROR_INVALID_HANDLE
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_BAD_STATE
  *          The library has not been previously initialized by psa_crypto_init(). It is
  *          implementation-dependent whether a failure to initialize results in this error code.
  */
@@ -1316,10 +1319,10 @@ psa_status_t psa_get_key_attributes(psa_key_id_t key,
  * @param[in,out] operation     Initialized hash operation.
  *
  * @return PSA_SUCCESS
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1342,15 +1345,15 @@ psa_status_t psa_hash_abort(psa_hash_operation_t * operation);
  *                                  It must be initialized but not active.
  *
  * @return PSA_SUCCESS
- * @return PSA_ERROR_BAD_STATE
- *         The \p source_operation state is not valid (it must be active).
- * @return PSA_ERROR_BAD_STATE
- *         The \p target_operation state is not valid (it must be inactive).
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_BAD_STATE
+ *         The source_operation state is not valid (it must be active).
+ *         PSA_ERROR_BAD_STATE
+ *         The target_operation state is not valid (it must be inactive).
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1362,27 +1365,27 @@ psa_status_t psa_hash_clone(const psa_hash_operation_t * source_operation,
  * reference value.
  *
  * @param alg               The hash algorithm to compute (\c PSA_ALG_XXX value
- *                          such that #PSA_ALG_IS_HASH(\p alg) is true).
+ *                          such that #PSA_ALG_IS_HASH(alg) is true).
  * @param[in] input         Buffer containing the message to hash.
- * @param input_length      Size of the \p input buffer in bytes.
+ * @param input_length      Size of the input buffer in bytes.
  * @param[out] hash         Buffer containing the expected hash value.
- * @param hash_length       Size of the \p hash buffer in bytes.
+ * @param hash_length       Size of the hash buffer in bytes.
  *
  * @return PSA_SUCCESS
  *         The expected hash is identical to the actual hash of the input.
- * @return PSA_ERROR_INVALID_SIGNATURE
+ *         PSA_ERROR_INVALID_SIGNATURE
  *         The hash of the message was calculated successfully, but it
  *         differs from the expected hash.
- * @return PSA_ERROR_NOT_SUPPORTED
- *         \p alg is not supported or is not a hash algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT
- *         \p input_length or \p hash_length do not match the hash size for \p alg
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_NOT_SUPPORTED
+ *         alg is not supported or is not a hash algorithm.
+ *         PSA_ERROR_INVALID_ARGUMENT
+ *         input_length or hash_length do not match the hash size for alg
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1410,17 +1413,17 @@ psa_status_t psa_hash_compare(psa_algorithm_t alg,
  *
  * @return PSA_SUCCESS
  *         Success.
- * @return PSA_ERROR_NOT_SUPPORTED
- *         \p alg is not supported or is not a hash algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT
- * @return PSA_ERROR_BUFFER_TOO_SMALL
- *         \p hash_size is too small
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_NOT_SUPPORTED
+ *         alg is not supported or is not a hash algorithm.
+ *         PSA_ERROR_INVALID_ARGUMENT
+ *         PSA_ERROR_BUFFER_TOO_SMALL
+ *         hash_size is too small
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1460,17 +1463,17 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
  *
  * @return PSA_SUCCESS
  *         Success.
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_BAD_STATE
  *         The operation state is not valid (it must be active).
- * @return PSA_ERROR_BUFFER_TOO_SMALL
- *         The size of the \p hash buffer is too small. You can determine a
+ *         PSA_ERROR_BUFFER_TOO_SMALL
+ *         The size of the hash buffer is too small. You can determine a
  *         sufficient buffer size by calling #PSA_HASH_LENGTH(\c alg)
  *         where \c alg is the hash algorithm that is calculated.
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1518,21 +1521,21 @@ psa_status_t psa_hash_resume(psa_hash_operation_t * operation,
  *                          been initialized as per the documentation for
  *                          #psa_hash_operation_t and not yet in use.
  * @param alg               The hash algorithm to compute (\c PSA_ALG_XXX value
- *                          such that #PSA_ALG_IS_HASH(\p alg) is true).
+ *                          such that #PSA_ALG_IS_HASH(alg) is true).
  *
  * @return PSA_SUCCESS
  *         Success.
- * @return PSA_ERROR_NOT_SUPPORTED
- *         \p alg is not a supported hash algorithm.
- * @return PSA_ERROR_INVALID_ARGUMENT
- *         \p alg is not a hash algorithm.
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_NOT_SUPPORTED
+ *         alg is not a supported hash algorithm.
+ *         PSA_ERROR_INVALID_ARGUMENT
+ *         alg is not a hash algorithm.
+ *         PSA_ERROR_BAD_STATE
  *         The operation state is not valid (it must be inactive).
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1557,13 +1560,13 @@ psa_status_t psa_hash_suspend(psa_hash_operation_t * operation,
  *
  * @return PSA_SUCCESS
  *         Success.
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_BAD_STATE
  *         The operation state is not valid (it muct be active).
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1596,16 +1599,16 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
  *
  * @return PSA_SUCCESS
  *         The expected hash is identical to the actual hash of the message.
- * @return PSA_ERROR_INVALID_SIGNATURE
+ *         PSA_ERROR_INVALID_SIGNATURE
  *         The hash of the message was calculated successfully, but it
  *         differs from the expected hash.
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_BAD_STATE
  *         The operation state is not valid (it must be active).
- * @return PSA_ERROR_INSUFFICIENT_MEMORY
- * @return PSA_ERROR_COMMUNICATION_FAILURE
- * @return PSA_ERROR_HARDWARE_FAILURE
- * @return PSA_ERROR_CORRUPTION_DETECTED
- * @return PSA_ERROR_BAD_STATE
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_BAD_STATE
  *         The library has not been previously initialized by psa_crypto_init().
  *         It is implementation-dependent whether a failure to initialize
  *         results in this error code.
@@ -1676,27 +1679,27 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
  * @return  PSA_SUCCESS
  *          Success. If the key is persistent, the key material and the key’s metadata have been
  *          saved to persistent storage.
- * @return  PSA_ERROR_ALREADY_EXISTS
+ *          PSA_ERROR_ALREADY_EXISTS
  *          This is an attempt to create a persistent key, and there is already a persistent key
  *          with the given identifier.
- * @return  PSA_ERROR_NOT_SUPPORTED
+ *          PSA_ERROR_NOT_SUPPORTED
  *          The key type or key size is not supported, either by the implementation in general or
  *          in this particular persistent location.
- * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          PSA_ERROR_INVALID_ARGUMENT
  *          The key attributes, as a whole, are invalid.
- * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          PSA_ERROR_INVALID_ARGUMENT
  *          The key data is not correctly formatted.
- * @return  PSA_ERROR_INVALID_ARGUMENT
+ *          PSA_ERROR_INVALID_ARGUMENT
  *          The size in attributes is nonzero and does not match the size of the key data.
- * @return  PSA_ERROR_INSUFFICIENT_MEMORY
- * @return  PSA_ERROR_INSUFFICIENT_STORAGE
- * @return  PSA_ERROR_COMMUNICATION_FAILURE
- * @return  PSA_ERROR_STORAGE_FAILURE
- * @return  PSA_ERROR_DATA_CORRUPT
- * @return  PSA_ERROR_DATA_INVALID
- * @return  PSA_ERROR_HARDWARE_FAILURE
- * @return  PSA_ERROR_CORRUPTION_DETECTED
- * @return  PSA_ERROR_BAD_STATE
+ *          PSA_ERROR_INSUFFICIENT_MEMORY
+ *          PSA_ERROR_INSUFFICIENT_STORAGE
+ *          PSA_ERROR_COMMUNICATION_FAILURE
+ *          PSA_ERROR_STORAGE_FAILURE
+ *          PSA_ERROR_DATA_CORRUPT
+ *          PSA_ERROR_DATA_INVALID
+ *          PSA_ERROR_HARDWARE_FAILURE
+ *          PSA_ERROR_CORRUPTION_DETECTED
+ *          PSA_ERROR_BAD_STATE
  *          The library has not been previously initialized by psa_crypto_init(). It is
  *          implementation-dependent whether a failure to initialize results in this error code.
  *

@@ -36,7 +36,7 @@ static void ecdsa_prim_se(void)
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH;
     psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
-    psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
+    psa_key_bits_t bits = 256;
 
     uint8_t signature[PSA_SIGN_OUTPUT_SIZE(type, bits, alg)];
     size_t sig_length;
@@ -99,7 +99,7 @@ static void ecdsa_sec_se(void)
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH;
     psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
-    psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
+    psa_key_bits_t bits = 256;
 
     uint8_t public_key[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE] = { 0 };
     size_t pubkey_length;
@@ -136,7 +136,7 @@ static void ecdsa_sec_se(void)
         return;
     }
 
-    uint8_t bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),PSA_VENDOR_ECC_MAX_CURVE_BITS);
+    uint8_t bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),bits);
 
     psa_set_key_lifetime(&pubkey_attr, lifetime);
     psa_set_key_algorithm(&pubkey_attr, alg);

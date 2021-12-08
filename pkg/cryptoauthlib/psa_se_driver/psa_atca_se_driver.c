@@ -207,7 +207,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
 psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
                                 psa_key_slot_number_t key_slot,
                                 const psa_key_attributes_t *attributes,
-                                psa_ecc_pub_key_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
+                                psa_asym_pub_key_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
 {
     ATCA_STATUS status;
     ATCADevice dev = (ATCADevice) drv_context->drv_data;
@@ -242,7 +242,7 @@ psa_status_t atca_export_public_key(psa_drv_se_context_t *drv_context,
 {
     ATCA_STATUS status;
     ATCADevice dev = (ATCADevice) drv_context->drv_data;
-    psa_ecc_pub_key_t * pubkey = (psa_ecc_pub_key_t *) p_data;
+    psa_asym_pub_key_t * pubkey = (psa_asym_pub_key_t *) p_data;
 
     if (data_size < ECC_P256_PUB_KEY_SIZE) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
@@ -296,7 +296,7 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
 }
 
 psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
-                            const psa_ecc_pub_key_t * key_data,
+                            const psa_asym_pub_key_t * key_data,
                             psa_algorithm_t alg,
                             const uint8_t *p_hash,
                             size_t hash_length,

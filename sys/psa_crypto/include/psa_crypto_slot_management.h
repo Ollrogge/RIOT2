@@ -2,7 +2,6 @@
 #define PSA_CRYPTO_SLOT_MANAGEMENT_H
 
 #include "psa/crypto.h"
-#include "psa_ecc.h"
 #include "psa_crypto_se_management.h"
 
 #define PSA_KEY_SLOT_COUNT       (4)
@@ -23,15 +22,15 @@
  *      - the address or slot number, when key is stored in secure storage
  *
  * In case of asymmetric keys, data will contain either
- *      - a psa_ecc_keypair_t type struct with a private key and public key,
+ *      - a psa_asym_keypair_t type struct with a private key and public key,
  *          when key is stored locally
- *      - a psa_ecc_keypair_t type struct with a slot number and a public key,
+ *      - a psa_asym_keypair_t type struct with a slot number and a public key,
  *          when private key is stored in secure storage and the public key is stored locally
- *      - a psa_ecc_keypair_t type struct with only a slot number, when the
+ *      - a psa_asym_keypair_t type struct with only a slot number, when the
  *          private key is stored in secure storage and public key will be recalculated if needed
- *      - a psa_ecc_pub_key_t type struct containing a public key,
+ *      - a psa_asym_pub_key_t type struct containing a public key,
  *          when key is stored locally
- *      - a psa_ecc_pub_key_t type struct containing a slot number,
+ *      - a psa_asym_pub_key_t type struct containing a slot number,
  *          when key is stored in secure storage
  *
  * Information about the ECC key type structs can be found in psa_ecc.h

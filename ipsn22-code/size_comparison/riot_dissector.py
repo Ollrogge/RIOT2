@@ -194,6 +194,8 @@ def plot_for_board(results, export_path=None):
     }
 
     colors = plt.get_cmap("Set3").colors
+    colors = colors[::2]
+
     i = 0
 
     logging.info("Total: {}".format(sizes_sum))
@@ -205,9 +207,9 @@ def plot_for_board(results, export_path=None):
         }
         logging.info("{}:{} ({})".format(group, size, percentage))
 
-        if group == "PSA Crypto" or group == "PSA Crypto Glue Code":
-            accumulated_percentage['flash'] += percentage['flash']
-            accumulated_percentage['ram'] += percentage['ram']
+        # if group == "PSA Crypto" or group == "PSA Crypto Glue Code":
+        accumulated_percentage['flash'] += percentage['flash']
+        accumulated_percentage['ram'] += percentage['ram']
 
         # use KiB
         values = {
@@ -264,8 +266,8 @@ def plot_for_board(results, export_path=None):
         y_min['ram'] = np.min(axis_base['ram'])
 
     # set maximum and minimum values for Y axis
-    axs['flash'].set_ylim(y_min['flash'], 8.5)
-    axs['ram'].set_ylim(y_min['ram'], 8.5)
+    axs['flash'].set_ylim(y_min['flash'], 10)
+    axs['ram'].set_ylim(y_min['ram'], 10)
 
     # set labels and legends
     axs['flash'].set_ylabel('ROM [KiB]')
@@ -320,6 +322,10 @@ def plot_for_board(results, export_path=None):
     axs['ram'].set_xticklabels(runs, rotation=45, va='top', ha='right')
 
     if export_path is not None:
+        # plt.suptitle('Hash SHA-256',fontsize=16, y=0, x=0.65)
+        plt.suptitle('Cipher AES 128 CBC',fontsize=16, y=0, x=0.65)
+        # plt.suptitle('ECDSA',fontsize=16, y=0, x=0.65)
+        # plt.suptitle('All Operations',fontsize=16, y=0, x=0.65)
         plt.savefig(export_path, bbox_inches='tight')
     else:
         plt.show()
