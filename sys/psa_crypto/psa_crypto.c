@@ -49,7 +49,9 @@ psa_status_t psa_crypto_init(void)
 {
     lib_initialized = 1;
 
+#if PSA_KEY_SLOT_COUNT
     psa_wipe_all_key_slots();
+#endif
     return PSA_SUCCESS;
 }
 

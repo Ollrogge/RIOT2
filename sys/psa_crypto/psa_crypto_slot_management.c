@@ -32,6 +32,7 @@ psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot)
 static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+#if PSA_KEY_SLOT_COUNT
     size_t slot_index;
     psa_key_slot_t *slot = NULL;
 
@@ -59,7 +60,9 @@ static psa_status_t psa_get_and_lock_key_slot_in_memory(psa_key_id_t id, psa_key
             *p_slot = slot;
         }
     }
-
+#endif
+    (void) id;
+    (void) p_slot;
     return status;
 }
 
@@ -93,6 +96,7 @@ void psa_wipe_all_key_slots(void)
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+#if PSA_KEY_SLOT_COUNT
     psa_key_slot_t *selected_slot, *unlocked_persistent_slot;
 
     selected_slot = unlocked_persistent_slot = NULL;
@@ -129,6 +133,7 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
     }
 
     status = PSA_ERROR_INSUFFICIENT_MEMORY;
+#endif
     *p_slot = NULL;
     *id = 0;
     return status;
