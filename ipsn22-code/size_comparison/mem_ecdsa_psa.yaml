@@ -1,0 +1,85 @@
+# configuration file for run.py
+meta:
+  title: "ECDSA"
+  hw_subtitle: "PSA \\& ATECC608A"
+  sw_subtitle: "PSA \\& CryptoCell"
+  export: "comb-ecdsa-psa-sizes.png"
+  type: "pie"
+  num: 2
+
+boards:
+  - "nrf52840dk"
+
+profiles:
+  ecdsa-bl-se:
+    dir_path: "../baseline"
+    config: "../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes"
+    label: "ATECC608A"
+    flags: "-DSE_ECDSA"
+  ecdsa-psa-se:
+    dir_path: "../ecdsa-se"
+    config: "../ecdsa-se/app.config.test ../ecdsa-se/app.config.test.multiple"
+    label: "PSA \\& ATECC608A"
+    flags: "-DUSE_MULTIPLE_BACKENDS"
+  ecdsa-bl-cc:
+    dir_path: "../baseline"
+    config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.riot.hashes"
+    label: "CryptoCell 310"
+    flags: "-DCC_ECDSA"
+  ecdsa-psa-cc:
+    dir_path: "../ecdsa_periph"
+    config: "../ecdsa_periph/app.config.test"
+    label: "PSA \\& CryptoCell 310"
+    flags: ""
+
+groups:
+  ? "PSA Crypto Glue Code"
+  :
+    modules:
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["cpu", "nrf52", "periph", "ecc_common"]
+      - ["cpu", "nrf52", "periph", "ecc_p256"]
+      - ["pkg", "cryptoauthlib", "psa_se_driver"]
+
+    config:
+      hatch: "-"
+
+  ? "PSA Crypto Key Slot Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_slot_management"]
+
+    config:
+      hatch: "/"
+
+  ? "PSA Crypto Driver Wrapper"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_driver_wrapper"]
+
+    config:
+      hatch: "/"
+
+  ? "PSA Crypto SE Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_se_management"]
+
+    config:
+      hatch: "/"
+
+  ? "PSA Crypto"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto"]
+
+    config:
+      hatch: "/"
+
+# # some plot configuration
+plots:
+  config:
+    hatch:
+      linewidth: 0.2
+    label:
+      width: 20

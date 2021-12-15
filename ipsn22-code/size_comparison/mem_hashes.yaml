@@ -1,0 +1,91 @@
+# configuration file for run.py
+meta:
+  title: "SHA 256"
+  export: "comb-hashes.png"
+  ylim_rom: 12
+  ylim_ram: 8
+  type: "bar"
+  cols: 2
+
+boards:
+  - "nrf52840dk"
+
+profiles:
+  hashes-bl-cc:
+    dir_path: "../baseline"
+    config: "../baseline/app.config.test.cryptocell"
+    label: "CryptoCell 310"
+    flags: "-DCRYPTOCELL_HASHES"
+  hashes-psa-cc:
+    dir_path: "../hashes"
+    config: "../hashes/app.config.test"
+    label: "PSA \\& CryptoCell 310"
+    flags: ""
+  hashes-bl-riot:
+    dir_path: "../baseline"
+    config: "../baseline/app.config.test.riot.hashes"
+    label: "RIOT"
+    flags: "-DRIOT_HASHES"
+  hashes-psa-riot:
+    dir_path: "../hashes"
+    config: "../hashes/app.config.test ../hashes/app.config.test.software"
+    label: "PSA \\& RIOT"
+    flags: "-DSOFTWARE"
+
+groups:
+  # For now we ignore common OS and DTLS parts
+  # ? "RIOT"
+  # :
+  #   modules:
+  #     - ["core"]
+  #     - ["boards"]
+  #     - ["cpu"]
+  #     - ["drivers"]
+  #     - ["sys"]
+  #     - ["pkg", "wakaama", "core", "er-coap-13"]
+  #     - ["pkg", "tinydtls"]
+  #     - ["unspecified"]
+  #   config:
+  #     hatch: "|/"
+  #     base: true
+
+  ? "CryptoCell Library"
+  :
+    modules:
+      - ["cpu", "nrf52", "periph", "cryptocell_setup"]
+      - ["cpu", "nrf52", "periph", "cryptocell_util"]
+      - ["cpu", "nrf52", "cryptocell_lib"]
+
+    config:
+      hatch: "."
+
+  ? "RIOT Hash Module"
+  :
+    modules:
+      - ["sys", "hashes"]
+      - ["~", "sys", "hashes", "psa_riot_hashes"]
+
+    config:
+      hatch: "+"
+
+
+  ? "PSA Crypto"
+  :
+    modules:
+      - ["sys", "psa_crypto"]
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["cpu", "nrf52", "periph", "hashes_common"]
+      - ["cpu", "nrf52", "periph", "hashes_sha256"]
+      - ["sys", "hashes", "psa_riot_hashes"]
+
+    config:
+      color: [1.0, 0.9294117647058824, 0.43529411764705883]
+      hatch: "/"
+
+# # some plot configuration
+plots:
+  config:
+    hatch:
+      linewidth: 0.2
+    label:
+      width: 20

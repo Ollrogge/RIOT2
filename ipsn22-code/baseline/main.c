@@ -34,10 +34,6 @@
 #include "cryptocell_util.h"
 #endif
 
-#ifdef MICRO_ECC_ECDSA
-#include "uECC.h"
-#endif
-
 #include "random.h"
 #include "hashes/sha256.h"
 
@@ -46,6 +42,7 @@
 #define AES_128_KEY_SIZE    (16)
 #define AES_CBC_IV_SIZE     (16)
 #define ECDSA_MESSAGE_SIZE  (127)
+#define PRIV_KEY_SIZE       (32)
 #define PUB_KEY_SIZE        (64)
 #define SHA256_DIGEST_SIZE  (32)
 
@@ -271,12 +268,17 @@ void cc_ecdsa(void)
     CRYS_ECDH_TempData_t signOutBuff;
     CRYS_ECPKI_HASH_OpMode_t ecdsa_hash_mode = CRYS_ECPKI_AFTER_HASH_SHA256_mode;
 
+    uint8_t pub_key_buffer[PUB_KEY_SIZE + 1];
+    uint8_t priv_key_buffer[PRIV_KEY_SIZE];
+    uint32_t pub_key_buffer_length = sizeof(pub_key_buffer);
+    uint32_t priv_key_buffer_length = sizeof(priv_key_buffer);
+
     uint8_t hash[SHA256_DIGEST_SIZE];
     uint8_t msg[ECDSA_MESSAGE_SIZE] = { 0x0b };
 
     uint32_t ecdsa_sig_size = 64;
     rndGenerateVectFunc = CRYS_RND_GenerateVector;
-    pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp192r1);
+    pDomain = (CRYS_ECPKI_Domain_t*)CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp256r1);
 
     cryptocell_enable();
     gpio_clear(active_gpio);
@@ -288,6 +290,18 @@ void cc_ecdsa(void)
         return;
     }
 
+    ret = CRYS_ECPKI_ExportPrivKey(&priv_key, priv_key_buffer, &priv_key_buffer_length);
+    if (ret != CRYS_OK){
+        printf("CRYS_ECPKI_ExportPrivKey failed with 0x%x \n", ret);
+        return;
+    }
+
+    ret = CRYS_ECPKI_ExportPublKey(&pub_key, CRYS_EC_PointUncompressed, pub_key_buffer, &pub_key_buffer_length);
+    if (ret != CRYS_OK){
+        printf("CRYS_ECPKI_ExportPubKey failed with 0x%x \n", ret);
+        return;
+    }
+
     cryptocell_enable();
     gpio_clear(active_gpio);
     ret = CRYS_HASH(CRYS_HASH_SHA256_mode, msg, ECDSA_MESSAGE_SIZE, (uint32_t *) hash);
@@ -295,6 +309,12 @@ void cc_ecdsa(void)
     cryptocell_disable();
     if (ret != CRYS_OK) {
         printf("CRYS Hash failed: %x\n", ret);
+        return;
+    }
+
+    ret = CRYS_ECPKI_BuildPrivKey(pDomain, priv_key_buffer, sizeof(priv_key_buffer), &priv_key);
+    if (ret != CRYS_OK){
+        printf("CRYS_ECPKI_BuildPrivKey failed with 0x%x \n", ret);
         return;
     }
 
@@ -309,6 +329,11 @@ void cc_ecdsa(void)
         return;
     }
 
+    ret = CRYS_ECPKI_BuildPublKey(pDomain, pub_key_buffer, sizeof(pub_key_buffer), &pub_key);
+    if (ret != CRYS_OK){
+        printf("CRYS_ECPKI_BuildPublKey failed with 0x%x \n", ret);
+        return;
+    }
     cryptocell_enable();
     gpio_clear(active_gpio);
     ret = CRYS_ECDSA_Verify (&VerifyUserContext, &pub_key, ecdsa_hash_mode, (uint8_t *) &signOutBuff, ecdsa_sig_size, hash, SHA256_DIGEST_SIZE);
@@ -385,6 +410,7 @@ void se2_ecdsa(void)
 {
     uint8_t UserPubKey[ATCA_PUB_KEY_SIZE];
     uint8_t key_id = 1;
+    uint8_t pub_key_id = 9;
 
     uint8_t signature[ATCA_SIG_SIZE];
     bool is_verified = false;
@@ -407,10 +433,17 @@ void se2_ecdsa(void)
 
     puts("SE Key Generation");
     gpio_clear(active_gpio);
-    status = calib_genkey(dev, key_id, UserPubKey);
+    status = calib_genkey(dev, key_id, NULL);
     gpio_set(active_gpio);
     if (status != ATCA_SUCCESS){
         printf("SE2 Key Generation failed with 0x%x \n",status);
+        return;
+    }
+
+    puts("SE Key Export");
+    status = calib_get_pubkey(dev, key_id, UserPubKey);
+    if (status != ATCA_SUCCESS){
+        printf("SE2 Key Export failed with 0x%x \n",status);
         return;
     }
 
@@ -418,6 +451,12 @@ void se2_ecdsa(void)
     gpio_clear(active_gpio);
     sha256(msg, ECDSA_MESSAGE_SIZE, hash);
     gpio_set(active_gpio);
+
+    status = calib_write_pubkey(dev, pub_key_id, UserPubKey);
+    if (status != ATCA_SUCCESS){
+        printf("SE2 Write PubKey failed with 0x%x \n",status);
+        return;
+    }
 
     puts("SE2 Sign");
     gpio_clear(active_gpio);
@@ -430,7 +469,7 @@ void se2_ecdsa(void)
 
     puts("SE2 Verify");
     gpio_clear(active_gpio);
-    status = calib_verify_extern(dev, hash, signature, UserPubKey, &is_verified);
+    status = calib_verify_stored(dev, hash, signature, pub_key_id, &is_verified);
     gpio_set(active_gpio);
     if (status != ATCA_SUCCESS){
         printf("SE2 Verification failed with 0x%x \n",status);

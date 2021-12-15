@@ -13,6 +13,11 @@ import logging
 import yaml
 import textwrap
 
+DEFAULT_META = {
+    "title" : "",
+    "export": ""
+}
+
 DEFAULT_BOARDS = [
     "samr21-xpro"
 ]
@@ -46,6 +51,7 @@ MAKE = environ.get("MAKE", "make")
 BASE_HATCHES = ['/', '\\', '|', '-', '+', 'x', '.']
 
 CONFIG = {
+    'meta': DEFAULT_META,
     'boards': DEFAULT_BOARDS,
     'profiles': DEFAULT_PROFILES,
     'groups': DEFAULT_MODULE_GROUPS,
@@ -129,9 +135,7 @@ def aggregate_group_sizes(group, dump):
 
     return (flash_size, ram_size)
 
-def plot_for_board(results, export_path=None):
-    # sizes is a dictionary where the keys are the module groups and the values
-    # are maps containing arrays containing the sizes of the corresponding modules, one per configuration
+def get_sizes_and_runs(results):
     sizes = {}
     for group in CONFIG['groups'].keys():
         sizes[group] = {'flash': [], 'ram': []}
@@ -156,6 +160,74 @@ def plot_for_board(results, export_path=None):
             (flash, ram) = aggregate_group_sizes(group, dump)
             sizes[group]['flash'].append(flash)
             sizes[group]['ram'].append(ram)
+
+    return sizes, sizes_sum, runs
+
+
+def plot_psa_sizes(results, export_path=None):
+    sizes, sizes_sum, runs = get_sizes_and_runs(results)
+
+    flash_sizes_hw = {}
+    flash_sizes_sw = {}
+
+    colors = plt.get_cmap("Set3").colors
+
+    for g in sizes:
+        if len(sizes[g]['flash']) == 4:
+            flash_sizes_hw[g] = sizes[g]['flash'][1]
+            flash_sizes_sw[g] = sizes[g]['flash'][3]
+        else:
+            flash_sizes_hw[g] = sizes[g]['flash'][1]
+
+    width = 0.7
+    wedgeprops={"edgecolor":"dimgray",'linewidth': 1, 'linestyle': 'solid', 'antialiased': True}
+    legend_coords = (0,0)
+    plt.style.use('styles.mplstyle')
+
+    if CONFIG['meta']['num'] == 2:
+        legend_coords = (0.5, 0.15)
+        fig, [hw_ax, sw_ax] = plt.subplots(nrows=1, ncols=2,
+                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
+                                        pt2inch(1.6*LATEX_FIG_HEIGHT_PT)))
+        hw_ax.set_title(CONFIG['meta']['hw_subtitle'], y=0.95)
+        sw_ax.set_title(CONFIG['meta']['sw_subtitle'], y=0.95)
+
+        hw_sizes = [flash_sizes_hw[s] for s in flash_sizes_hw]
+        sw_sizes = [flash_sizes_sw[s] for s in flash_sizes_sw]
+        hw_sizes.reverse()
+        sw_sizes.reverse()
+
+        hw_ax.pie(hw_sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
+        sw_ax.pie(sw_sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
+
+        axs = {"hw" : hw_ax, "sw" : sw_ax}
+    else:
+        legend_coords = (0.5, 0.05)
+        fig, ax = plt.subplots(nrows=1, ncols=1,
+                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
+                                        pt2inch(1.6*LATEX_FIG_HEIGHT_PT)))
+        ax.set_title(CONFIG['meta']['hw_subtitle'], y=1)
+        sizes = [flash_sizes_hw[s] for s in flash_sizes_hw]
+        sizes.reverse()
+        ax.pie(sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
+
+    labels = [k for k in flash_sizes_hw]
+
+    # LEGEND
+    # - in the middle
+    fig.legend(labels[::-1], ncol=2, bbox_to_anchor=legend_coords, loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
+
+    export_path = CONFIG['meta']['export']
+    if export_path is not None:
+        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0.85, x=0.5)
+        plt.savefig(export_path, bbox_inches='tight')
+    else:
+        plt.show()
+
+def plot_for_board(results, export_path=None):
+    # sizes is a dictionary where the keys are the module groups and the values
+    # are maps containing arrays containing the sizes of the corresponding modules, one per configuration
+    sizes, sizes_sum, runs = get_sizes_and_runs(results)
 
     width = 0.7
 
@@ -200,16 +272,38 @@ def plot_for_board(results, export_path=None):
 
     logging.info("Total: {}".format(sizes_sum))
 
+    if len(sizes['PSA Crypto']['flash']) == 4:
+        flash_acc = [1, 0, 1, 0]
+        ram_acc = [1, 0, 1, 0]
+    else:
+        flash_acc = [0, 0]
+        ram_acc = [0, 0]
+
     for (group, size) in sizes.items():
+        if len(sizes[group]['flash']) == 4:
+            flash_acc[1] += sizes[group]['flash'][1]
+            flash_acc[3] += sizes[group]['flash'][3]
+            ram_acc[1] += sizes[group]['ram'][1]
+            ram_acc[3] += sizes[group]['ram'][3]
+        else:
+            flash_acc[0] += sizes[group]['flash'][0]
+            flash_acc[1] += sizes[group]['flash'][1]
+            ram_acc[0] += sizes[group]['ram'][0]
+            ram_acc[1] += sizes[group]['ram'][1]
+
+        # percentage = {
+        #     'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), sizes_sum['flash']),
+        #     'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), sizes_sum['ram'])
+        # }
         percentage = {
-            'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), sizes_sum['flash']),
-            'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), sizes_sum['ram'])
+            'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), flash_acc),
+            'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), ram_acc)
         }
         logging.info("{}:{} ({})".format(group, size, percentage))
 
-        # if group == "PSA Crypto" or group == "PSA Crypto Glue Code":
-        accumulated_percentage['flash'] += percentage['flash']
-        accumulated_percentage['ram'] += percentage['ram']
+        if group == "PSA Crypto":
+            accumulated_percentage['flash'] += percentage['flash']
+            accumulated_percentage['ram'] += percentage['ram']
 
         # use KiB
         values = {
@@ -251,23 +345,28 @@ def plot_for_board(results, export_path=None):
         'flash': 0,
         'ram': 0
     }
+    x= sizes['PSA Crypto']
 
     # draw percentage of total size
     for key, ax in axs.items():
         percentage_offset = max_value[key] * 0.03
         for i, run in enumerate(runs):
-            value = str(round(accumulated_percentage[key][i], 1)) + ' \%'
-            axs[key].text(run, accumulated[key][i] + percentage_offset, value, ha='center',
-                          backgroundcolor='white', fontsize='small')
+            if accumulated_percentage[key][i] != 0:
+                psa_size = x['flash'][i] if key == 'flash' else x['ram'][i]
+                acc = flash_acc[i] if key == 'flash' else ram_acc[i]
+                value = f'{psa_size} Byte\n({round(accumulated_percentage[key][i], 1)} \%)'
+                axs[key].text(run, accumulated[key][i] + percentage_offset, value, ha='center',
+                            backgroundcolor='white', fontsize='small')
 
     # # set the minimum to the base
     if get_plot_configuration('base/offset', False):
         y_min['flash'] = np.min(axis_base['flash'])
         y_min['ram'] = np.min(axis_base['ram'])
 
+
     # set maximum and minimum values for Y axis
-    axs['flash'].set_ylim(y_min['flash'], 10)
-    axs['ram'].set_ylim(y_min['ram'], 10)
+    axs['flash'].set_ylim(y_min['flash'], CONFIG['meta']['ylim_rom'])
+    axs['ram'].set_ylim(y_min['ram'], CONFIG['meta']['ylim_ram'])
 
     # set labels and legends
     axs['flash'].set_ylabel('ROM [KiB]')
@@ -314,18 +413,16 @@ def plot_for_board(results, export_path=None):
 
     # LEGEND
     # - in the middle
-    fig.legend(handles[::-1], labels[::-1], ncol=3, bbox_to_anchor=(0.63, 0.95), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
+    fig.legend(handles[::-1], labels[::-1], ncol=CONFIG['meta']['cols'], bbox_to_anchor=(0.63, 0.95), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
     # - to the right
     #fig.legend(handles[::-1], labels[::-1], ncol=1, bbox_to_anchor=(1.02, 0.5), loc='center', handletextpad=0.5, frameon=False)
 
     axs['flash'].set_xticklabels(runs, rotation=45, va='top', ha='right')
     axs['ram'].set_xticklabels(runs, rotation=45, va='top', ha='right')
 
+    export_path = CONFIG['meta']['export']
     if export_path is not None:
-        # plt.suptitle('Hash SHA-256',fontsize=16, y=0, x=0.65)
-        plt.suptitle('Cipher AES 128 CBC',fontsize=16, y=0, x=0.65)
-        # plt.suptitle('ECDSA',fontsize=16, y=0, x=0.65)
-        # plt.suptitle('All Operations',fontsize=16, y=0, x=0.65)
+        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0, x=0.65)
         plt.savefig(export_path, bbox_inches='tight')
     else:
         plt.show()
@@ -420,7 +517,11 @@ def main():
 
         board_test['runs'] = board_test_runs
         result.append(board_test)
-        plot_for_board(board_test, args.export_plot)
+
+        if CONFIG['meta']['type'] == 'pie':
+            plot_psa_sizes(board_test, args.export_plot)
+        else:
+            plot_for_board(board_test, args.export_plot)
 
 if __name__ == "__main__":
     main()
