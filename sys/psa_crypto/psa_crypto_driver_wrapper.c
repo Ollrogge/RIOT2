@@ -243,7 +243,7 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 
             /* Cast priv_key_data field to psa_key_slot_number_t to store key slot number and
             pass pub_key_data to store public key material */
-            status = drv->key_management->p_generate(drv_context, slot_number, attributes, pub_key, PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(attributes->type, attributes->bits), &pub_key->bytes);
+            status = drv->key_management->p_generate(drv_context, slot_number, attributes, (uint8_t *) pub_key, PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(attributes->type, attributes->bits), &pub_key->bytes);
 
             *key_buffer_length = sizeof(psa_asym_keypair_t);
 

@@ -442,7 +442,7 @@ typedef psa_status_t (*psa_drv_se_asymmetric_sign_t)(psa_drv_se_context_t *drv_c
  *         The signature is valid.
  */
 typedef psa_status_t (*psa_drv_se_asymmetric_verify_t)(psa_drv_se_context_t *drv_context,
-                                                       const psa_asym_pub_key_t * key_data,
+                                                       const uint8_t * key_data,
                                                        psa_algorithm_t alg,
                                                        const uint8_t *p_hash,
                                                        size_t hash_length,
@@ -967,7 +967,7 @@ typedef psa_status_t (*psa_drv_se_generate_key_t)(
     psa_drv_se_context_t *drv_context,
     psa_key_slot_number_t key_slot,
     const psa_key_attributes_t *attributes,
-    psa_asym_pub_key_t *pubkey, size_t pubkey_size, size_t *pubkey_length);
+    uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length);
 
 /**
  * \brief A struct containing all of the function pointers needed to for secure
