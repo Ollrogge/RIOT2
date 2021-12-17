@@ -137,27 +137,13 @@
  * present, the private key will always be stored in a key slot and PSA Crypto will only allocate
  * memory for an 8 Byte key slot number.
  */
-#if !IS_ACTIVE(CONFIG_PSA_ECC)
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT_ECC) && !IS_ACTIVE(CONFIG_PSA_ECC)
 #define PSA_MAX_PRIV_KEY_BUFFER_SIZE (sizeof(uint64_t))
 #else
 #define PSA_MAX_PRIV_KEY_BUFFER_SIZE (PSA_MAX_PRIV_KEY_SIZE)
 #endif
 
-/**
- * Define maximum key data sizes for initial key buffer declarations.
- *
- * When no key based algorithms are used, PSA_MAX_KEY_DATA_SIZE is 0.
- * When using symmetric ciphers, PSA_MAX_KEY_DATA_SIZE is the size
- * of the largest cipher key used.
- *
- * When using asymmetric ciphers, PSA_MAX_KEY_DATA_SIZE is the size
- * of the largest asymmetric key pair combination used.
- */
-#if IS_ACTIVE(CONFIG_PSA_ECC) || IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT_ECC)
-#define PSA_MAX_KEY_DATA_SIZE   (sizeof(psa_asym_keypair_t))
-#else
 #define PSA_MAX_KEY_DATA_SIZE  (CONFIG_PSA_MAX_KEY_SIZE)
-#endif
 
 /**
  * @brief ECDSA signature size for a given curve bit size

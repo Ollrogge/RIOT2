@@ -9,6 +9,8 @@ menuconfig MODULE_PSA_CRYPTO
     bool "PSA Crypto"
     depends on TEST_KCONFIG
     select MODULE_RANDOM
+    select PACKAGE_TLSF
+    select MODULE_TLSF_MALLOC
 
 if MODULE_PSA_CRYPTO
 

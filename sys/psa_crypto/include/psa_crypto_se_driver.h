@@ -23,6 +23,28 @@ typedef struct
     uintptr_t drv_data;
 } psa_drv_se_context_t;
 
+/** @brief A driver initialization function.
+ *
+ * @param drv_context       The driver context structure.
+ * @param persistent_data   A pointer to the persistent data
+ *                          that allows writing.
+ * @param location          The location value for which this driver
+ *                          is registered. The driver will be invoked
+ *                          for all keys whose lifetime is in this
+ *                          location.
+ *
+ * @return #PSA_SUCCESS
+ *         The driver is operational.
+ *         The core will update the persistent data in storage.
+ *
+ *         Any other return value prevents the driver from being used in
+ *         this session.
+ *         The core will NOT update the persistent data in storage.
+ */
+typedef psa_status_t (*psa_drv_se_init_t)(psa_drv_se_context_t *drv_context,
+                                          void *persistent_data,
+                                          psa_key_location_t location);
+
 typedef uint64_t psa_key_slot_number_t;
 
 /**@}*/
@@ -1164,6 +1186,18 @@ typedef struct {
      * persistent data.
      */
     size_t persistent_data_size;
+
+    /** The driver initialization function.
+     *
+     * This function is called once during the initialization of the
+     * PSA Cryptography subsystem, before any other function of the
+     * driver is called. If this function returns a failure status,
+     * the driver will be unusable, at least until the next system reset.
+     *
+     * If this field is \c NULL, it is equivalent to a function that does
+     * nothing and returns #PSA_SUCCESS.
+     */
+    psa_drv_se_init_t p_init;
 
     const psa_drv_se_key_management_t *key_management;
     const psa_drv_se_mac_t *mac;

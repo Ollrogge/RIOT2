@@ -7,6 +7,33 @@ typedef struct
 
 static psa_global_data_t global_data;
 
+// #if PSA_KEY_SLOT_COUNT
+#include "tlsf.h"
+#include "tlsf-malloc.h"
+
+#define PSA_TLSF_HEAP_SIZE      (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE)
+
+static _tlsf_heap[PSA_TLSF_HEAP_SIZE];
+static tlsf_t _tlsf;
+static tlsf_size_container_t _tlsf_container;
+
+void psa_init_key_slots(void)
+{
+    psa_wipe_all_key_slots();
+    _tlsf = tlsf_create_with_pool(_tlsf_heap, sizeof(_tlsf_heap));
+}
+
+void * psa_malloc(size_t s)
+{
+    return tlsf_malloc(_tlsf, s);
+}
+
+void psa_free(void *p)
+{
+    return tlsf_free(_tlsf, p);
+}
+// #endif
+
 int psa_is_valid_key_id(psa_key_id_t id, int vendor_ok)
 {
     if ((PSA_KEY_ID_USER_MIN <= id) &&
@@ -25,7 +52,14 @@ int psa_is_valid_key_id(psa_key_id_t id, int vendor_ok)
 
 psa_status_t psa_wipe_key_slot(psa_key_slot_t *slot)
 {
+    psa_key_type_t type = slot->attr.type;
+
     memset(slot, 0, sizeof(*slot));
+    psa_free(slot->key.data);
+
+    if (PSA_KEY_TYPE_IS_KEY_PAIR(type)) {
+        psa_free(slot->key.pubkey_data);
+    }
     return PSA_SUCCESS;
 }
 
@@ -107,6 +141,7 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
             selected_slot = slot;
             break;
         }
+        /* If a key is stored in persistent memory, we can reuse its slot in local memory */
         if ((!PSA_KEY_LIFETIME_IS_VOLATILE(slot->attr.lifetime) &&
             (psa_key_slot_occupied(slot)))) {
             unlocked_persistent_slot = slot;

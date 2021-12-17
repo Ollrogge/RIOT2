@@ -107,14 +107,4 @@ typedef struct psa_key_attributes_s psa_key_attributes_t;
 
 typedef struct psa_cipher_operation_s psa_cipher_operation_t;
 
-/**
- * @brief Type of a key data structure for an Elliptic Curve public key.
- */
-typedef struct psa_asym_pub_key_s psa_asym_pub_key_t;
-
-/**
- * @brief Type of a key data structure for an Elliptic Curve public/private keypair.
- */
-typedef struct psa_asym_keypair_s psa_asym_keypair_t;
-
 #endif /* PSA_CRYPTO_TYPES_H */

@@ -50,7 +50,7 @@ psa_status_t psa_crypto_init(void)
     lib_initialized = 1;
 
 #if PSA_KEY_SLOT_COUNT
-    psa_wipe_all_key_slots();
+    psa_init_key_slots();
 #endif
     return PSA_SUCCESS;
 }
@@ -734,24 +734,18 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
 
 /* Key Management */
 
-psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_t *data, size_t data_length)
+psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_t *data, size_t data_length, const uint8_t * pubkey_data, size_t pubkey_length)
 {
     if (data_length > PSA_MAX_KEY_DATA_SIZE) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type)) {
-        /* When creating an ECC key pair, key data is a psa_ecc_keypair type. When operating on a secure element, the private key data will be a slot number. */
-        psa_asym_keypair_t * ecc_key = (psa_asym_keypair_t *) slot->key.data;
-        memcpy(ecc_key->priv_key_data, data, data_length);
+    memcpy(slot->key.data, data, data_length);
+
+    if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type) || PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
+        memcpy(slot->key.pubkey_data, pubkey_data, pubkey_length);
     }
-    else if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)){
-        psa_asym_pub_key_t * pub_key = (psa_asym_pub_key_t *) slot->key.data;
-        memcpy(pub_key->data, data, data_length);
-    }
-    else {
-        memcpy(slot->key.data, data, data_length);
-    }
+
     return PSA_SUCCESS;
 }
 
@@ -840,6 +834,47 @@ static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attr
     return PSA_SUCCESS;
 }
 
+static void psa_allocate_public_key(size_t bytes, psa_key_slot_t * slot)
+{
+    bytes);
+    slot->key.pubkey_bytes = bytes;
+}
+
+static void psa_allocate_key_storage(const psa_key_attributes_t * attr, psa_key_slot_t * slot)
+{
+    psa_key_location_t loc = PSA_KEY_LIFETIME_GET_LOCATION(attr->lifetime);
+    psa_key_type_t type = psa_get_key_type(attr);
+    psa_key_bits_t bits = psa_get_key_bits(bits);
+
+    size_t bytes = 0;
+
+    if (loc != PSA_KEY_LOCATION_LOCAL_STORAGE) {
+        /* If key is stored on SE, only allocate size of key slot number */
+        bytes = sizeof(psa_key_slot_number_t);
+    }
+    else {
+        /* If key is stored locally, allocate key size */
+        bytes = PSA_BITS_TO_BYTES(bits);
+    }
+
+    if (PSA_KEY_TYPE_IS_ASYMMETRIC(type)) {
+        if (PSA_KEY_TYPE_IS_PUBLIC_KEY(type)) {
+            /* If key is only public key, allocate memory for public key*/
+            slot->key.pubkey_data = psa_malloc(bytes);
+            slot->key.pubkey_bytes = bytes;
+            return;
+        }
+        /* If key is key pair, allocate space for private key and public key */
+        slot->key.pubkey_data = psa_malloc(PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits));
+        slot->key.pubkey_bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits);
+        slot->key.data = psa_malloc(bytes);
+        slot->key.bytes = bytes;
+        return;
+    }
+    slot->key.data = psa_malloc(bytes);
+    slot->key.bytes = bytes;
+}
+
 static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, const psa_key_attributes_t *attributes, psa_key_slot_t **p_slot, psa_se_drv_data_t **p_drv)
 {
     psa_status_t status;
@@ -863,6 +898,9 @@ static psa_status_t psa_start_key_creation(psa_key_creation_method_t method, con
     if (PSA_KEY_LIFETIME_IS_VOLATILE(slot->attr.lifetime)) {
         slot->attr.id = key_id;
     }
+
+    /* Allocate memory for key */
+    psa_allocate_key_storage(attributes, slot);
 
 #if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     /* Find a free slot on a secure element and store SE slot number in key_data */
@@ -1131,11 +1169,8 @@ psa_status_t psa_builtin_import_key(const psa_key_attributes_t *attributes,
         if (data_length > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-        psa_asym_pub_key_t * pub_key = (psa_asym_pub_key_t *) key_buffer;
-        memcpy(pub_key->data, data, data_length);
+        memcpy(key_buffer, data, data_length);
         *key_buffer_length = data_length;
-        pub_key->bytes = data_length;
-        pub_key->is_plain_key = 1;
         return PSA_SUCCESS;
     }
     return status;

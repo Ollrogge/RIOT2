@@ -153,14 +153,6 @@ psa_status_t psa_driver_wrapper_hash_finish(psa_hash_operation_t * operation,
     }
 }
 
-static psa_asym_pub_key_t * psa_get_ecc_public_key(const uint8_t * key_buffer, psa_key_type_t type)
-{
-    if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type)) {
-        return &((psa_asym_keypair_t *) key_buffer)->pub_key;
-    }
-    return ((psa_asym_pub_key_t *) key_buffer);
-}
-
 psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *attributes,
                                                     uint8_t *key_buffer,
                                                     size_t key_buffer_size,
@@ -168,59 +160,21 @@ psa_status_t psa_driver_wrapper_export_public_key(  const psa_key_attributes_t *
                                                     size_t data_size,
                                                     size_t * data_length)
 {
-    psa_asym_pub_key_t * pub_key = psa_get_ecc_public_key(key_buffer, attributes->type);
-    psa_asymmetric_keytype_t asym_key = PSA_INVALID_OPERATION;
-
-    /* First check, if key buffer contains actual public key or not. If actual public key is stored in key_buffer, it can just be exported from local memory and does not need to be recalculated. */
-    if (pub_key->is_plain_key) {
-        memcpy(data, pub_key->data, pub_key->bytes);
-        *data_length = pub_key->bytes;
-        return PSA_SUCCESS;
+    if (key_buffer_size == 0 || data_size == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
     }
+    /* Some implementations and drivers can generate a public key from existing private key material. This implementation does not support the recalculation of a public key, yet.
+    It requires the key to already exist in local memory and just copies it into the data output. */
+    memcpy(data, key_buffer, key_buffer_size);
+    *data_length = key_buffer_size;
 
-    /* If key_buffer does not contain the actual public key, the private key (or a reference to a
-    private key) is passed to an implementation (either a secure element or some other driver) */
-
-#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
-    const psa_drv_se_t *drv;
-    psa_drv_se_context_t *drv_context;
-
-    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
-        if (drv->key_management == NULL || drv->key_management->p_export_public == NULL) {
-            return PSA_ERROR_NOT_SUPPORTED;
-        }
-
-        return drv->key_management->p_export_public(drv_context, *((psa_key_slot_number_t*) pub_key->data), data, data_size, data_length);
-    }
-#endif /* CONFIG_PSA_SECURE_ELEMENT */
-
-    if (PSA_KEY_TYPE_IS_ECC(attributes->type)) {
-        asym_key = PSA_ENCODE_ECC_KEY_TYPE(attributes->bits, PSA_KEY_TYPE_ECC_GET_CURVE(attributes->type));
-
-        if (asym_key == PSA_INVALID_OPERATION) {
-            return PSA_ERROR_INVALID_ARGUMENT;
-        }
-    }
-
-    switch(asym_key) {
-#if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
-        case PSA_ECC_P192_R1:
-            return psa_ecc_p192r1_export_public_key(attributes, key_buffer, key_buffer_size, data, data_size, data_length);
-#endif
-        default:
-        (void) key_buffer;
-        (void) key_buffer_size;
-        (void) data;
-        (void) data_size;
-        (void) data_length;
-        return PSA_ERROR_NOT_SUPPORTED;
-    }
-
+    (void) attributes;
+    return PSA_SUCCESS;
 }
 
 psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attributes,
                                                 uint8_t *key_buffer, size_t key_buffer_size,
-                                                size_t *key_buffer_length)
+                                                size_t *key_buffer_length, uint8_t *pubkey_buffer, size_t pubkey_buffer_size, size_t *pubkey_buffer_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
@@ -233,27 +187,11 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
             return PSA_ERROR_NOT_SUPPORTED;
         }
 
-        size_t pubkey_length;
-
-        if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(attributes->type)) {
-            /* Cast key_buffer to psa_asym_keypair_t, so we can store private and public key */
-            psa_asym_keypair_t * ecc_pair = (psa_asym_keypair_t *) key_buffer;
-            psa_key_slot_number_t slot_number = *((psa_key_slot_number_t *)(ecc_pair->priv_key_data));
-            psa_asym_pub_key_t * pub_key = &ecc_pair->pub_key;
-
-            /* Cast priv_key_data field to psa_key_slot_number_t to store key slot number and
-            pass pub_key_data to store public key material */
-            status = drv->key_management->p_generate(drv_context, slot_number, attributes, (uint8_t *) pub_key, PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(attributes->type, attributes->bits), &pub_key->bytes);
-
-            *key_buffer_length = sizeof(psa_asym_keypair_t);
-
-            return status;
-        }
-
-        return drv->key_management->p_generate(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, NULL, 0, &pubkey_length);
+        return drv->key_management->p_generate(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, pubkey_buffer, pubkey_buffer_size, pubkey_buffer_length);
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */
 
+    /* Only asymmetric key generation needs special key generation algorithms. Unstructured keys can be created by generating random bytes. */
     if (PSA_KEY_TYPE_IS_ASYMMETRIC(attributes->type)) {
         psa_asymmetric_keytype_t asym_key = PSA_INVALID_OPERATION;
 
@@ -265,12 +203,10 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
             }
         }
 
-        psa_asym_keypair_t * keypair = (psa_asym_keypair_t *) key_buffer;
-
         switch(asym_key) {
 #if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
             case PSA_ECC_P192_R1:
-                status = psa_generate_ecc_p192r1_key_pair(attributes, keypair->priv_key_data, keypair->pub_key.data, key_buffer_length, &keypair->pub_key.bytes);
+                status = psa_generate_ecc_p192r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
                 break;
                 if (status != PSA_SUCCESS) {
                     return status;
@@ -280,7 +216,7 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 #endif
 #if IS_ACTIVE(CONFIG_PSA_ECC_P256_DRIVER)
             case PSA_ECC_P256_R1:
-                status = psa_generate_ecc_p256r1_key_pair(attributes, keypair->priv_key_data, keypair->pub_key.data, key_buffer_length, &keypair->pub_key.bytes);
+                status = psa_generate_ecc_p256r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
                 if (status != PSA_SUCCESS) {
                     return status;
                 }
@@ -289,7 +225,6 @@ psa_status_t psa_driver_wrapper_generate_key(   const psa_key_attributes_t *attr
 #endif
             default:
             (void) status;
-            (void) keypair;
             (void) key_buffer;
             (void) key_buffer_size;
             (void) key_buffer_length;
@@ -316,18 +251,8 @@ psa_status_t psa_driver_wrapper_import_key( const psa_key_attributes_t *attribut
         if (drv->key_management == NULL || drv->key_management->p_import == NULL) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-
-        if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(attributes->type)) {
-            psa_asym_pub_key_t * pub_key = (psa_asym_pub_key_t *) key_buffer;
-            psa_key_slot_number_t slot_number = *((psa_key_slot_number_t *) pub_key->data);
-            *bits = data_length;
-            pub_key->is_plain_key = 0;
-            status = drv->key_management->p_import(drv_context, slot_number, attributes, data, data_length, bits);
-        }
-        else {
-            *bits = PSA_MAX_KEY_BITS + 1;
-            status = drv->key_management->p_import(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, data, data_length, bits);
-        }
+        *bits = 0;
+        status = drv->key_management->p_import(drv_context, *((psa_key_slot_number_t*)key_buffer), attributes, data, data_length, bits);
         if (status != PSA_SUCCESS) {
             return status;
         }
@@ -488,11 +413,11 @@ psa_status_t psa_driver_wrapper_sign_hash(  const psa_key_attributes_t *attribut
     switch(asym_key) {
 #if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
         case PSA_ECC_P192_R1:
-            return psa_ecc_p192r1_sign_hash(attributes, alg, ((psa_asym_keypair_t *) key_buffer)->priv_key_data, key_buffer_size, hash, hash_length, signature, signature_size, signature_length);
+            return psa_ecc_p192r1_sign_hash(attributes, alg, key_buffer, key_buffer_size, hash, hash_length, signature, signature_size, signature_length);
 #endif
 #if IS_ACTIVE(CONFIG_PSA_ECC_P256_DRIVER)
         case PSA_ECC_P256_R1:
-            return psa_ecc_p256r1_sign_hash(attributes, alg, ((psa_asym_keypair_t *) key_buffer)->priv_key_data, key_buffer_size, hash, hash_length, signature, signature_size, signature_length);
+            return psa_ecc_p256r1_sign_hash(attributes, alg, key_buffer, key_buffer_size, hash, hash_length, signature, signature_size, signature_length);
 #endif
         default:
             (void) alg;
@@ -526,8 +451,7 @@ psa_status_t psa_driver_wrapper_verify_hash(const psa_key_attributes_t *attribut
         }
 
         if (PSA_KEY_TYPE_IS_ECC(attributes->type)) {
-            psa_asym_pub_key_t * pub_key = psa_get_ecc_public_key(key_buffer, attributes->type);
-            return drv->asymmetric->p_verify(drv_context, pub_key, alg, hash, hash_length, signature, signature_length);
+            return drv->asymmetric->p_verify(drv_context, key_buffer, alg, hash, hash_length, signature, signature_length);
         }
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */
@@ -542,16 +466,14 @@ psa_status_t psa_driver_wrapper_verify_hash(const psa_key_attributes_t *attribut
         }
     }
 
-    psa_asym_pub_key_t * pub_key = psa_get_ecc_public_key(key_buffer, attributes->type);
-
     switch(asym_key) {
 #if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
         case PSA_ECC_P192_R1:
-            return psa_ecc_p192r1_verify_hash(attributes, alg, pub_key->data, pub_key->bytes, hash, hash_length, signature, signature_length);
+            return psa_ecc_p192r1_verify_hash(attributes, alg, key_buffer, key_buffer_size, hash, hash_length, signature, signature_length);
 #endif
 #if IS_ACTIVE(CONFIG_PSA_ECC_P256_DRIVER)
         case PSA_ECC_P256_R1:
-            return psa_ecc_p256r1_verify_hash(attributes, alg, pub_key->data, pub_key->bytes, hash, hash_length, signature, signature_length);
+            return psa_ecc_p256r1_verify_hash(attributes, alg, key_buffer, key_buffer_size, hash, hash_length, signature, signature_length);
 #endif
         default:
             (void) alg;

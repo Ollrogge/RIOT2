@@ -20,33 +20,23 @@
  * Key_data consists of the size of the stored key in bytes and a uint8_t data array large enough
  * to store the largest key used in the current build.
  * Keys can be either symmetric or asymmetric and are handled differently depending on the type.
- *
- * In case of symmetric keys the data array contains either
- *      - the raw key bytes, when key is stored locally
- *      - the address or slot number, when key is stored in secure storage
- *
- * In case of asymmetric keys, data will contain either
- *      - a psa_asym_keypair_t type struct with a private key and public key,
- *          when key is stored locally
- *      - a psa_asym_keypair_t type struct with a slot number and a public key,
- *          when private key is stored in secure storage and the public key is stored locally
- *      - a psa_asym_keypair_t type struct with only a slot number, when the
- *          private key is stored in secure storage and public key will be recalculated if needed
- *      - a psa_asym_pub_key_t type struct containing a public key,
- *          when key is stored locally
- *      - a psa_asym_pub_key_t type struct containing a slot number,
- *          when key is stored in secure storage
- *
- * Information about the ECC key type structs can be found in psa_ecc.h
  */
 typedef struct {
     psa_key_attributes_t attr;
     size_t lock_count;
     struct key_data {
-        uint8_t data[PSA_MAX_KEY_DATA_SIZE]; /*!< Contains symmetric raw key, OR slot number for symmetric key in case of SE, OR asymmetric key pair structure */
+        void * data; /*!< Contains symmetric raw key, OR slot number for symmetric key in case of SE, OR asymmetric key pair structure */
         size_t bytes; /*!< Contains actual size of symmetric key or size of asymmetric key pair  structure, TODO: Is there a better solution? */
+        void * pubkey_data;
+        size_t pubkey_bytes;
     } key;
 } psa_key_slot_t;
+
+void psa_init_key_slots(void);
+
+void * psa_malloc(size_t s);
+
+void psa_free(void *p);
 
 /** Test whether a key identifier is a volatile key identifier.
  *
