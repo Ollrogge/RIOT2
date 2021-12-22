@@ -47,7 +47,7 @@ groups:
   ? "PSA Crypto Driver Wrapper"
   :
     modules:
-      - ["sys", "psa_crypto", "psa_crypto_driver_wrapper"]
+      - ["sys", "psa_crypto", "psa_crypto_location_dispatch"]
 
     config:
       hatch: "/"
