@@ -8,7 +8,6 @@
 #include "ps.h"
 #endif
 
-#include "xtimer.h"
 #include "periph/gpio.h"
 gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
@@ -24,7 +23,6 @@ static void _test_init(void)
 
     gpio_set(external_gpio);
     gpio_clear(internal_gpio);
-    xtimer_sleep(1);
 }
 
 static void ecdsa(void)
