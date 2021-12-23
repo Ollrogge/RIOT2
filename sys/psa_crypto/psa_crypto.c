@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include "psa/crypto.h"
-#include "include/psa_builtin_key_manager.h"
 #include "include/psa_crypto_se_driver.h"
 #include "include/psa_crypto_se_management.h"
 #include "include/psa_crypto_slot_management.h"
@@ -28,8 +27,10 @@
 #include "include/psa_crypto_algorithm_dispatch.h"
 
 #include "random.h"
-
 #include "kernel_defines.h"
+
+#define ENABLE_DEBUG    (0)
+#include "debug.h"
 
 #include "periph/gpio.h"
 // extern gpio_t internal_gpio;
@@ -549,7 +550,7 @@ psa_status_t psa_hash_setup(psa_hash_operation_t * operation,
     if (!PSA_ALG_IS_HASH(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-    psa_status_t status = psa_algortihm_dispatch_hash_setup(operation, alg);
+    psa_status_t status = psa_algorithm_dispatch_hash_setup(operation, alg);
     if (status == PSA_SUCCESS) {
         operation->alg = alg;
     }
@@ -569,7 +570,7 @@ psa_status_t psa_hash_update(psa_hash_operation_t * operation,
         return PSA_ERROR_BAD_STATE;
     }
 
-    psa_status_t status = psa_algortihm_dispatch_hash_update(operation, input, input_length);
+    psa_status_t status = psa_algorithm_dispatch_hash_update(operation, input, input_length);
 
     if (status != PSA_SUCCESS) {
         psa_hash_abort(operation);
@@ -595,7 +596,7 @@ psa_status_t psa_hash_finish(psa_hash_operation_t * operation,
     if (hash_size < actual_hash_length) {
         return PSA_ERROR_BUFFER_TOO_SMALL;
     }
-    psa_status_t status = psa_algortihm_dispatch_hash_finish(operation, hash, hash_size, hash_length);
+    psa_status_t status = psa_algorithm_dispatch_hash_finish(operation, hash, hash_size, hash_length);
     if (status != PSA_SUCCESS) {
         /* Make sure operation becomes inactive after successfull execution */
         psa_hash_abort(operation);
@@ -735,16 +736,17 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
 }
 
 /* Key Management */
-static psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_t *data, size_t data_length, const uint8_t * pubkey_data, size_t pubkey_length)
+psa_status_t psa_copy_key_material_into_slot (psa_key_slot_t *slot, const uint8_t *data, size_t data_length)
 {
     if (data_length > PSA_MAX_KEY_DATA_SIZE) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    memcpy(slot->key.data, data, data_length);
-
-    if (PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type) || PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
-        memcpy(slot->key.pubkey_data, pubkey_data, pubkey_length);
+    if (PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
+        memcpy(slot->key.pubkey_data, data, data_length);
+    }
+    else {
+        memcpy(slot->key.data, data, data_length);
     }
 
     return PSA_SUCCESS;
@@ -835,17 +837,11 @@ static psa_status_t psa_validate_key_attributes(const psa_key_attributes_t *attr
     return PSA_SUCCESS;
 }
 
-static void psa_allocate_public_key(size_t bytes, psa_key_slot_t * slot)
-{
-    bytes);
-    slot->key.pubkey_bytes = bytes;
-}
-
 static void psa_allocate_key_storage(const psa_key_attributes_t * attr, psa_key_slot_t * slot)
 {
     psa_key_location_t loc = PSA_KEY_LIFETIME_GET_LOCATION(attr->lifetime);
     psa_key_type_t type = psa_get_key_type(attr);
-    psa_key_bits_t bits = psa_get_key_bits(bits);
+    psa_key_bits_t bits = psa_get_key_bits(attr);
 
     size_t bytes = 0;
 
@@ -869,9 +865,10 @@ static void psa_allocate_key_storage(const psa_key_attributes_t * attr, psa_key_
         slot->key.pubkey_data = psa_malloc(PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits));
         slot->key.pubkey_bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits);
         slot->key.data = psa_malloc(bytes);
-        slot->key.bytes = bytes;
-        return;
+        slot->key.bytes = bytes;return;
     }
+    slot->key.pubkey_data = NULL;
+    slot->key.pubkey_bytes = 0;
     slot->key.data = psa_malloc(bytes);
     slot->key.bytes = bytes;
 }
@@ -994,6 +991,26 @@ psa_status_t psa_export_key(psa_key_id_t key,
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
+psa_status_t psa_builtin_export_public_key( const psa_key_attributes_t *attributes,
+                                            uint8_t *key_buffer,
+                                            size_t key_buffer_size,
+                                            uint8_t * data,
+                                            size_t data_size,
+                                            size_t * data_length)
+{
+    if (key_buffer_size == 0 || data_size == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+    /* Some implementations and drivers can generate a public key from existing private key material. This implementation does not support the recalculation of a public key, yet.
+    It requires the key to already exist in local memory and just copies it into the data output. */
+    memcpy(data, key_buffer, key_buffer_size);
+    *data_length = key_buffer_size;
+
+    (void) attributes;
+    return PSA_SUCCESS;
+}
+
+
 psa_status_t psa_export_public_key(psa_key_id_t key,
                                    uint8_t * data,
                                    size_t data_size,
@@ -1030,7 +1047,7 @@ psa_status_t psa_export_public_key(psa_key_id_t key,
 
     psa_key_attributes_t attributes = slot->attr;
 
-    status = psa_driver_wrapper_export_public_key(&attributes, slot->key.data, slot->key.bytes, data, data_size, data_length);
+    status = psa_builtin_export_public_key(&attributes, slot->key.pubkey_data, slot->key.pubkey_bytes, data, data_size, data_length);
 
     unlock_status = psa_unlock_key_slot(slot);
     return ((status == PSA_SUCCESS) ? unlock_status : status);
@@ -1087,7 +1104,12 @@ psa_status_t psa_generate_key(const psa_key_attributes_t * attributes,
         slot->key.bytes = PSA_MAX_KEY_DATA_SIZE;
     }
 
-    status = psa_location_dispatch_generate_key(attributes, slot->key.data, slot->key.bytes, &slot->key.bytes);
+    if (PSA_KEY_TYPE_IS_KEY_PAIR(attributes->type)) {
+        status = psa_location_dispatch_generate_key(attributes, slot->key.data, slot->key.bytes, &slot->key.bytes, slot->key.pubkey_data, slot->key.pubkey_bytes, &slot->key.pubkey_bytes);
+    }
+    else {
+        status = psa_location_dispatch_generate_key(attributes, slot->key.data, slot->key.bytes, &slot->key.bytes, NULL, 0, NULL);
+    }
 
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
@@ -1202,7 +1224,13 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     }
 
     bits = slot->attr.bits;
-    status = psa_location_dispatch_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
+
+    if (PSA_KEY_TYPE_IS_PUBLIC_KEY(attributes->type)) {
+        status = psa_location_dispatch_import_key(attributes, data, data_length, slot->key.pubkey_data, slot->key.pubkey_bytes, &slot->key.pubkey_bytes, &bits);
+    }
+    else {
+        status = psa_location_dispatch_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
+    }
 
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
@@ -1528,14 +1556,14 @@ psa_status_t psa_verify_hash(psa_key_id_t key,
         return status;
     }
 
-    if (!PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type) && (!PSA_KEY_TYPE_IS_KEY_PAIR(slot->attr.type))) {
+    if (!PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
         unlock_status = psa_unlock_key_slot(slot);
-        return PSA_ERROR_INVALID_ARGUMENT;
+        return PSA_ERROR_NOT_SUPPORTED;
     }
 
     psa_key_attributes_t attributes = slot->attr;
 
-    status = psa_location_dispatch_verify_hash(&attributes, alg, slot->key.data, slot->key.bytes, hash, hash_length, signature, signature_length);
+    status = psa_location_dispatch_verify_hash(&attributes, alg, slot->key.pubkey_data, slot->key.pubkey_bytes, hash, hash_length, signature, signature_length);
 
     unlock_status = psa_unlock_key_slot(slot);
     return ((status == PSA_SUCCESS) ? unlock_status : status);

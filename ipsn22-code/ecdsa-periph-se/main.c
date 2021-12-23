@@ -14,6 +14,8 @@ gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
 
 #define ECDSA_MESSAGE_SIZE  (127)
+#define ECC_P256_BITS       (256)
+#define PUB_KEY_BYTES       (PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),ECC_P256_BITS))
 
 static void _test_init(void)
 {
@@ -38,9 +40,9 @@ static void ecdsa(void)
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH;
     psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
-    psa_key_bits_t bits = PSA_VENDOR_ECC_MAX_CURVE_BITS;
+    psa_key_bits_t bits = ECC_P256_BITS;
 
-    uint8_t public_key[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE] = { 0 };
+    uint8_t public_key[PUB_KEY_BYTES] = { 0 };
     size_t pubkey_length;
 
     uint8_t signature[PSA_SIGN_OUTPUT_SIZE(type, bits, alg)];
@@ -75,14 +77,11 @@ static void ecdsa(void)
         return;
     }
 
-    uint8_t bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),PSA_VENDOR_ECC_MAX_CURVE_BITS);
-
     lifetime = 0;
-
     psa_set_key_lifetime(&pubkey_attr, lifetime);
     psa_set_key_algorithm(&pubkey_attr, alg);
     psa_set_key_usage_flags(&pubkey_attr, PSA_KEY_USAGE_VERIFY_HASH);
-    psa_set_key_bits(&pubkey_attr, PSA_BYTES_TO_BITS(bytes));
+    psa_set_key_bits(&pubkey_attr, PSA_BYTES_TO_BITS(PUB_KEY_BYTES));
     psa_set_key_type(&pubkey_attr, PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1));
 
     status = psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id);
@@ -103,7 +102,7 @@ static void ecdsa(void)
         return;
     }
 
-    puts("ECDSA Secondary SE Success");
+    puts("CryptoCell/SE ECDSA Success");
 }
 
 int main(void)

@@ -154,7 +154,7 @@ psa_status_t psa_algorithm_dispatch_hash_finish(psa_hash_operation_t * operation
 
 psa_status_t psa_algorithm_dispatch_sign_hash(  const psa_key_attributes_t *attributes,
                                             psa_algorithm_t alg,
-                                            uint8_t *key_buffer,
+                                            const uint8_t *key_buffer,
                                             size_t key_buffer_size,
                                             const uint8_t * hash,
                                             size_t hash_length,
@@ -255,22 +255,11 @@ psa_status_t psa_algorithm_dispatch_generate_key(   const psa_key_attributes_t *
         switch(asym_key) {
 #if IS_ACTIVE(CONFIG_PSA_ECC_P192_DRIVER)
             case PSA_ECC_P192_R1:
-                status = psa_generate_ecc_p192r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
-                break;
-                if (status != PSA_SUCCESS) {
-                    return status;
-                }
-                keypair->pub_key.is_plain_key = 1;
-                return PSA_SUCCESS;
+                return psa_generate_ecc_p192r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
 #endif
 #if IS_ACTIVE(CONFIG_PSA_ECC_P256_DRIVER)
             case PSA_ECC_P256_R1:
-                status = psa_generate_ecc_p256r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
-                if (status != PSA_SUCCESS) {
-                    return status;
-                }
-                keypair->pub_key.is_plain_key = 1;
-                return PSA_SUCCESS;
+                return psa_generate_ecc_p256r1_key_pair(attributes, key_buffer, pubkey_buffer, key_buffer_length, pubkey_buffer_length);
 #endif
             default:
             (void) status;

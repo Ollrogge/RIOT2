@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include "kernel_defines.h"
 #include "psa/crypto.h"
-#include "include/psa_crypto_slot_management.h"
+#include "psa_crypto_slot_management.h"
 
 psa_status_t psa_algorithm_dispatch_hash_setup(psa_hash_operation_t * operation,
                                            psa_algorithm_t alg);
@@ -40,7 +40,7 @@ psa_status_t psa_algorithm_dispatch_hash_finish(psa_hash_operation_t * operation
 
 psa_status_t psa_algorithm_dispatch_sign_hash(  const psa_key_attributes_t *attributes,
                                             psa_algorithm_t alg,
-                                            uint8_t *key_buffer,
+                                            const uint8_t *key_buffer,
                                             size_t key_buffer_size,
                                             const uint8_t * hash,
                                             size_t hash_length,

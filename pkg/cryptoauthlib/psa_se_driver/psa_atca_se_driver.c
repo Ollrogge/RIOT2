@@ -144,7 +144,7 @@ psa_status_t atca_allocate (
         *key_slot = (psa_key_slot_number_t) 9;
     }
     else {
-        /* Returns the device's TEMPKEY-Register ID for AES and ECC Public Key import.  */
+        /* Returns the device's TEMPKEY-Register ID for AES and temporary ECC Public Key import.  */
         *key_slot = (psa_key_slot_number_t) ATCA_TEMPKEY_KEYID;
     }
 
@@ -299,7 +299,7 @@ psa_status_t atca_sign( psa_drv_se_context_t *drv_context,
 }
 
 psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
-                            const uint8_t * key_data,
+                            psa_key_slot_number_t key_slot,
                             psa_algorithm_t alg,
                             const uint8_t *p_hash,
                             size_t hash_length,
@@ -311,6 +311,7 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
 
     bool is_verified;
 
+    /* We only support the operation on public key, if they're stored on a device. */
     if (alg != PSA_ALG_ECDSA(PSA_ALG_SHA_256)) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
@@ -320,7 +321,7 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
     }
 
     // gpio_set(internal_gpio);
-    status = calib_verify_stored(dev, p_hash, p_signature, (uint16_t) *key_data, &is_verified);
+    status = calib_verify_stored(dev, p_hash, p_signature, key_slot, &is_verified);
     // gpio_clear(internal_gpio);
 
     if (status != ATCA_SUCCESS) {

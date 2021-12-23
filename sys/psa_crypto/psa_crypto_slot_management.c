@@ -1,5 +1,8 @@
 #include "include/psa_crypto_slot_management.h"
 
+#define ENABLE_DEBUG    (0)
+#include "debug.h"
+
 typedef struct
 {
     psa_key_slot_t key_slots[PSA_KEY_SLOT_COUNT];
@@ -9,18 +12,21 @@ static psa_global_data_t global_data;
 
 // #if PSA_KEY_SLOT_COUNT
 #include "tlsf.h"
-#include "tlsf-malloc.h"
 
-#define PSA_TLSF_HEAP_SIZE      (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE)
+// #define PSA_TLSF_HEAP_SIZE      (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE)
+#define TLSF_SIZE               (3188)
+#define PSA_TLSF_HEAP_SIZE      (TLSF_SIZE + (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE))
 
-static _tlsf_heap[PSA_TLSF_HEAP_SIZE];
+static uint32_t _tlsf_heap[PSA_TLSF_HEAP_SIZE];
 static tlsf_t _tlsf;
-static tlsf_size_container_t _tlsf_container;
+// static tlsf_size_container_t _tlsf_container;
 
 void psa_init_key_slots(void)
 {
     psa_wipe_all_key_slots();
+    memset(_tlsf_heap, 0, sizeof(_tlsf_heap));
     _tlsf = tlsf_create_with_pool(_tlsf_heap, sizeof(_tlsf_heap));
+    DEBUG("%s: TLSF Heap Size: %d\n", __FILE__, PSA_TLSF_HEAP_SIZE);
 }
 
 void * psa_malloc(size_t s)

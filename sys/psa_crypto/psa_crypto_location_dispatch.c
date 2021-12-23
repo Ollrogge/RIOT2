@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include "kernel_defines.h"
 #include "psa/crypto.h"
-#include "include/psa_builtin_key_manager.h"
 #include "include/psa_crypto_algorithm_dispatch.h"
 #include "include/psa_crypto_slot_management.h"
 #include "include/psa_crypto_se_management.h"
@@ -217,9 +216,7 @@ psa_status_t psa_location_dispatch_verify_hash(const psa_key_attributes_t *attri
             return PSA_ERROR_NOT_SUPPORTED;
         }
 
-        if (PSA_KEY_TYPE_IS_ECC(attributes->type)) {
-            return drv->asymmetric->p_verify(drv_context, key_buffer, alg, hash, hash_length, signature, signature_length);
-        }
+        return drv->asymmetric->p_verify(drv_context, *((psa_key_slot_number_t *) key_buffer), alg, hash, hash_length, signature, signature_length);
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */
 

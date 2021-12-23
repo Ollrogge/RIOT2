@@ -466,7 +466,7 @@
  * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) \
-        ((type == PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)) || \
+        ((PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)) || \
          (type == PSA_KEY_TYPE_RSA_PUBLIC_KEY))
 
 /**

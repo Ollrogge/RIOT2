@@ -1012,6 +1012,12 @@ psa_status_t psa_export_key(psa_key_id_t key,
                             uint8_t * data,
                             size_t data_size,
                             size_t * data_length);
+psa_status_t psa_builtin_export_public_key(  const psa_key_attributes_t *attributes,
+                                                    uint8_t *key_buffer,
+                                                    size_t key_buffer_size,
+                                                    uint8_t * data,
+                                                    size_t data_size,
+                                                    size_t * data_length);
 psa_status_t psa_export_public_key(psa_key_id_t key,
                                    uint8_t * data,
                                    size_t data_size,
@@ -1788,6 +1794,55 @@ psa_status_t psa_sign_message(psa_key_id_t key,
                               uint8_t * signature,
                               size_t signature_size,
                               size_t * signature_length);
+
+/**
+ * @brief Verify the signature of a hash or short message using a public key.
+ *
+ * With most signature mechanisms that follow the hash-and-sign paradigm, the hash input to this function is the hash
+ * of the message to sign. The hash algorithm is encoded in the signature algorithm.
+ * Some hash-and-sign mechanisms apply a padding or encoding to the hash. In such cases, the encoded hash must be
+ * passed to this function. The current version of this specification defines one such signature algorithm:
+ * PSA_ALG_RSA_PKCS1V15_SIGN_RAW.
+ *
+ * @note To perform a hash-and-sign verification algorithm, the hash must be calculated before passing it to this
+ * function. This can be done by calling psa_hash_compute() or with a multi-part hash operation. Alternatively, to hash
+ * and verify a message signature in a single call, use psa_verify_message().
+ *
+ * @note When using secure elements as backends in this implementation, the key type can only be of type
+ * PSA_KEY_TYPE_ECC_PUBLIC_KEY(curve) and must be stored on a secure element. To use the public key of a previously
+ * generated key pair, please export the public key first and then import it as a separate key with its own attributes
+ * and identifier.
+ *
+ * @param key               Identifier of the key to use for the operation. It must be a public key or an asymmetric
+ *                          key pair. The key must allow the usage PSA_KEY_USAGE_VERIFY_HASH.
+ * @param alg               An asymmetric signature algorithm that separates the hash and sign operations (PSA_ALG_XXX
+ *                          value such that PSA_ALG_IS_SIGN_HASH(alg) is true), that is compatible with the type of key.
+ * @param hash              The input whose signature is to be verified. This is usually the hash of a message. See the
+ *                          detailed description of this function and the description of individual signature
+ *                          algorithms for a detailed description of acceptable inputs.
+ * @param hash_length       Size of the hash buffer in bytes.
+ * @param signature         Buffer containing the signature to verify.
+ * @param signature_length  Size of the signature buffer in bytes.
+ * @return psa_status_t
+ *
+ * PSA_SUCCESS                  The signature is valid.
+ * PSA_ERROR_INVALID_HANDLE
+ * PSA_ERROR_NOT_PERMITTED      The key does not have the PSA_KEY_USAGE_VERIFY_HASH flag, or it does not permit the
+ *                              requested algorithm.
+ * PSA_ERROR_INVALID_SIGNATURE  The calculation was performed successfully, but the passed signature
+ *                              is not a valid signature.
+ * PSA_ERROR_NOT_SUPPORTED
+ * PSA_ERROR_INVALID_ARGUMENT
+ * PSA_ERROR_INSUFFICIENT_MEMORY
+ * PSA_ERROR_COMMUNICATION_FAILURE
+ * PSA_ERROR_HARDWARE_FAILURE
+ * PSA_ERROR_CORRUPTION_DETECTED
+ * PSA_ERROR_STORAGE_FAILURE
+ * PSA_ERROR_DATA_CORRUPT
+ * PSA_ERROR_DATA_INVALID
+ * PSA_ERROR_BAD_STATE          The library has not been previously initialized by psa_crypto_init(). It is
+ *                              implementation-dependent whether a failure to initialize results in this error code.
+ */
 psa_status_t psa_verify_hash(psa_key_id_t key,
                              psa_algorithm_t alg,
                              const uint8_t * hash,
