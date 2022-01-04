@@ -1742,6 +1742,47 @@ psa_status_t psa_key_derivation_set_capacity(psa_key_derivation_operation_t * op
 psa_status_t psa_key_derivation_setup(psa_key_derivation_operation_t * operation,
                                       psa_algorithm_t alg);
 psa_status_t psa_mac_abort(psa_mac_operation_t * operation);
+
+/**
+ * @brief Calculate the message authentication code (MAC) of a message.
+ *
+ * @note To verify the MAC of a message against an expected value, use psa_mac_verify() instead. Beware that comparing
+ * integrity or authenticity data such as MAC values with a function such as memcmp() is risky because the time taken
+ * by the comparison might leak information about the MAC value which could allow an attacker to guess a valid MAC and
+ * thereby bypass security controls.
+ *
+ * @param key           Identifier of the key to use for the operation. It must allow the usage
+ *                      PSA_KEY_USAGE_SIGN_MESSAGE.
+ * @param alg           The MAC algorithm to compute (PSA_ALG_XXX value such that PSA_ALG_IS_MAC(alg) is true).
+ * @param input         Buffer containing the input message.
+ * @param input_length  Size of the input buffer in bytes.
+ * @param mac           Buffer where the MAC value is to be written.
+ * @param mac_size      Size of the mac buffer in bytes. This must be appropriate for the selected
+ *                      algorithm and key:
+ *                      - The exact MAC size is PSA_MAC_LENGTH(key_type, key_bits, alg) where key_type and
+ *                        key_bits are attributes of the key used to compute the MAC.
+ *                      - PSA_MAC_MAX_SIZE evaluates to the maximum MAC size of any supported MAC algorithm.
+ * @param mac_length    On success, the number of bytes that make up the MAC value.
+ * @return psa_status_t
+ *         PSA_SUCCESS                  Success.
+ *         PSA_ERROR_INVALID_HANDLE
+ *         PSA_ERROR_NOT_PERMITTED      The key does not have the PSA_KEY_USAGE_SIGN_MESSAGE flag,
+ *                                      or it does not permit the requested algorithm.
+ *         PSA_ERROR_INVALID_ARGUMENT   key is not compatible with alg.
+ *         PSA_ERROR_NOT_SUPPORTED      alg is not supported or is not a MAC algorithm.
+ *         PSA_ERROR_BUFFER_TOO_SMALL   The size of the mac buffer is too small. PSA_MAC_LENGTH() or PSA_MAC_MAX_SIZE
+ *                                      can be used to determine the required buffer size.
+ *         PSA_ERROR_INSUFFICIENT_MEMORY
+ *         PSA_ERROR_COMMUNICATION_FAILURE
+ *         PSA_ERROR_HARDWARE_FAILURE
+ *         PSA_ERROR_CORRUPTION_DETECTED
+ *         PSA_ERROR_STORAGE_FAILURE    The key could not be retrieved from storage.
+ *         PSA_ERROR_DATA_CORRUPT       The key could not be retrieved from storage.
+ *         PSA_ERROR_DATA_INVALID       The key could not be retrieved from storage.
+ *         PSA_ERROR_BAD_STATE          The library has not been previously initialized by psa_crypto_init().
+ *                                      It is implementation-dependent whether a failure to initialize results
+ *                                      in this error code.
+ */
 psa_status_t psa_mac_compute(psa_key_id_t key,
                              psa_algorithm_t alg,
                              const uint8_t * input,

@@ -27,6 +27,8 @@
 #define PSA_BITS_TO_BYTES(bits) (((bits) + 7) / 8)
 #define PSA_BYTES_TO_BITS(bytes) ((bytes) * 8)
 
+#define PSA_HASH_MAX_SIZE   (64)
+
 #define PSA_HASH_LENGTH(alg)                                      \
     (                                                           \
         PSA_ALG_HMAC_GET_HASH(alg) == PSA_ALG_MD2 ? 16 :            \
@@ -45,6 +47,28 @@
         PSA_ALG_HMAC_GET_HASH(alg) == PSA_ALG_SHA3_384 ? 48 :       \
         PSA_ALG_HMAC_GET_HASH(alg) == PSA_ALG_SHA3_512 ? 64 :       \
         0)
+/**
+ * @brief The size of the output of psa_mac_compute() and psa_mac_sign_finish(), in bytes.
+ *
+ * This is also the MAC length that psa_mac_verify() and psa_mac_verify_finish() expects.
+ * See also PSA_MAC_MAX_SIZE.
+ *
+ * @param key_type  The type of the MAC key.
+ * @param key_bits  The size of the MAC key in bits.
+ * @param alg       A MAC algorithm (PSA_ALG_XXX value such that PSA_ALG_IS_MAC(alg) is true).
+ *
+ * @return  The MAC length for the specified algorithm with the specified key parameters.
+ *          0 if the MAC algorithm is not recognized.
+ *          Either 0 or the correct length for a MAC algorithm that the implementation recognizes, but does not support
+ *          Unspecified if the key parameters are not consistent with the algorithm.
+ */
+#define PSA_MAC_LENGTH(key_type, key_bits, alg)  \
+        ((PSA_ALG_IS_HMAC(alg)) ? PSA_HASH_LENGTH(PSA_ALG_HMAC_GET_HASH(alg)) :         \
+        PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) ? PSA_BLOCK_CIPHER_BLOCK_LENGTH(key_type) : \
+        ((void)(key_type), (void)(key_bits), 0))
+
+/** Maximum size of a MAC. */
+#define PSA_MAC_MAX_SIZE (PSA_HASH_MAX_SIZE)
 
 #define PSA_ECC_KEY_SIZE_IS_VALID(bits)     \
         (   bits == 128 || \
@@ -52,6 +76,7 @@
             bits == 224 || \
             bits == 256 || \
             bits == 384)
+
 /* Maximum size of the export encoding of an ECC public key.
  *
  * The representation of an ECC public key is:

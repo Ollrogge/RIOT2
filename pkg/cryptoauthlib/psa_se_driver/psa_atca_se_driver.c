@@ -14,7 +14,8 @@
 
 #define ALG_IS_SUPPORTED(alg)   \
     (   (alg == PSA_ALG_ECB_NO_PADDING) || \
-        (alg == PSA_ALG_ECDSA(PSA_ALG_SHA_256)))
+        (alg == PSA_ALG_ECDSA(PSA_ALG_SHA_256)) || \
+        (alg == PSA_ALG_HMAC(PSA_ALG_SHA_256)))
 
 #define KEY_SIZE_IS_SUPPORTED(size) \
     (   (size == AES_128_KEY_SIZE) || \
@@ -332,6 +333,48 @@ psa_status_t atca_verify(   psa_drv_se_context_t *drv_context,
     return is_verified ? PSA_SUCCESS : PSA_ERROR_INVALID_SIGNATURE;
 }
 
+psa_status_t atca_generate_mac( psa_drv_se_context_t *drv_context,
+                                const uint8_t *p_input,
+                                size_t input_length,
+                                psa_key_slot_number_t key_slot,
+                                psa_algorithm_t alg,
+                                uint8_t *p_mac,
+                                size_t mac_size,
+                                size_t *p_mac_length)
+{
+    ATCA_STATUS status;
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
+
+    if (!PSA_ALG_IS_HMAC(alg)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (mac_size < 32) {
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    status = calib_sha_hmac(dev, p_input, input_length, key_slot, p_mac, SHA_MODE_TARGET_OUT_ONLY);
+    if (status != ATCA_SUCCESS) {
+        DEBUG("ATCA Error: %d\n", status);
+        return atca_to_psa_error(status);
+    }
+
+    *p_mac_length = 32;
+
+    return PSA_SUCCESS;
+}
+
+static psa_drv_se_mac_t atca_mac = {
+    .context_size = 0,
+    .p_setup = NULL,
+    .p_update = NULL,
+    .p_finish = NULL,
+    .p_finish_verify = NULL,
+    .p_abort = NULL,
+    .p_mac = atca_generate_mac,
+    .p_mac_verify = NULL,
+};
+
 static psa_drv_se_cipher_t atca_cipher = {
     .context_size = 0,
     .p_setup = atca_cipher_setup,
@@ -364,7 +407,7 @@ psa_drv_se_t atca_methods = {
     .persistent_data_size = 0,
     .p_init = NULL,
     .key_management = &atca_key_management,
-    .mac = NULL,
+    .mac = &atca_mac,
     .cipher = &atca_cipher,
     .aead = NULL,
     .asymmetric = &atca_asymmetric,

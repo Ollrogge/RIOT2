@@ -4,7 +4,7 @@ MODULE = cpu
 # add a list of subdirectories, that should also be build
 DIRS = periph $(RIOTCPU)/cortexm_common $(RIOTCPU)/nrf5x_common vectors
 
-# Cryptocell Driver needs some casts of uint8_t to uint32_t. Silence Warning.
+# Casts happen in PSA Crypto glue code
 CFLAGS += -Wno-cast-align
 
 # build the nrf802154 driver if selected

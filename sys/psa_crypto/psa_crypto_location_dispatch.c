@@ -223,6 +223,32 @@ psa_status_t psa_location_dispatch_verify_hash(const psa_key_attributes_t *attri
     return psa_algorithm_dispatch_verify_hash(attributes, alg, key_buffer, key_buffer_size, hash, hash_length, signature, signature_length);
 }
 
+psa_status_t psa_location_dispatch_mac_compute(const psa_key_attributes_t *attributes,
+                                                psa_algorithm_t alg,
+                                                const uint8_t * key_buffer,
+                                                size_t key_buffer_size,
+                                                const uint8_t * input,
+                                                size_t input_length,
+                                                uint8_t * mac,
+                                                size_t mac_size,
+                                                size_t * mac_length)
+{
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (drv->mac == NULL || drv->mac->p_mac == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+
+        return drv->mac->p_mac(drv_context, input, input_length, *((psa_key_slot_number_t *) key_buffer), alg, mac, mac_size, mac_length);
+    }
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
+    (void) key_buffer_size;
+    return PSA_SUCCESS;
+}
+
 psa_status_t psa_location_dispatch_generate_random(uint8_t * output,
                                                 size_t output_size)
 {

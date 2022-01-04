@@ -314,6 +314,11 @@ static psa_status_t psa_get_and_lock_key_slot_with_policy(
     }
     slot = *p_slot;
 
+    if (PSA_KEY_TYPE_IS_PUBLIC_KEY(slot->attr.type)) {
+        /* Export is always permitted for asymmetric public keys */
+        usage &= ~PSA_KEY_USAGE_EXPORT;
+    }
+
     if ((slot->attr.policy.usage & usage) != usage) {
         *p_slot = NULL;
         psa_unlock_key_slot(slot);
@@ -1351,6 +1356,33 @@ psa_status_t psa_mac_abort(psa_mac_operation_t * operation)
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
+static psa_status_t psa_mac_validate_alg_and_key(psa_key_attributes_t * attr, psa_algorithm_t alg, size_t * mac_size)
+{
+    psa_key_type_t type = psa_get_key_type(attr);
+    psa_key_bits_t bits = psa_get_key_bits(attr);
+
+    if (!PSA_ALG_IS_HMAC(alg) || (PSA_ALG_GET_HASH(alg) != PSA_ALG_SHA_256)) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    *mac_size = PSA_MAC_LENGTH(type, bits, alg);
+
+    if (*mac_size < 4) {
+        /* A very short MAC is too short for security since it can be
+        * brute-forced. Ancient protocols with 32-bit MACs do exist,
+        * so we make this our minimum, even though 32 bits is still
+        * too small for security. */
+        return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    if (*mac_size > PSA_MAC_LENGTH(type, bits, PSA_ALG_FULL_LENGTH_MAC(alg))) {
+        DEBUG("%s: MAC Size is %d, MAX MAC Length is %d\n", __FILE__, *mac_size, PSA_MAC_LENGTH(type, bits, PSA_ALG_FULL_LENGTH_MAC(alg)));
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    return PSA_SUCCESS;
+}
+
 psa_status_t psa_mac_compute(psa_key_id_t key,
                              psa_algorithm_t alg,
                              const uint8_t * input,
@@ -1359,14 +1391,41 @@ psa_status_t psa_mac_compute(psa_key_id_t key,
                              size_t mac_size,
                              size_t * mac_length)
 {
-    (void) key;
-    (void) alg;
-    (void) input;
-    (void) input_length;
-    (void) mac;
-    (void) mac_size;
-    (void) mac_length;
-    return PSA_ERROR_NOT_SUPPORTED;
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_attributes_t attr = psa_key_attributes_init();
+    psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
+    psa_key_slot_t *slot;
+    size_t operation_mac_size = 0;
+
+    if (!lib_initialized) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
+    status = psa_get_key_attributes(key, &attr);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_mac_validate_alg_and_key(&attr, alg, &operation_mac_size);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    if (mac_size < operation_mac_size) {
+        DEBUG("%s: Buffer Size: %d, Buffer Needed: %d\n", __FILE__, mac_size, operation_mac_size);
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        if (unlock_status != PSA_SUCCESS) {
+            status = unlock_status;
+        }
+        return status;
+    }
+
+    return psa_location_dispatch_mac_compute(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, mac, mac_size, mac_length);
 }
 
 psa_mac_operation_t psa_mac_operation_init(void)

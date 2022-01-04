@@ -67,20 +67,51 @@
 #define PSA_AEAD_VERIFY_OUTPUT_MAX_SIZE /* implementation-defined value */
 #define PSA_AEAD_VERIFY_OUTPUT_SIZE(key_type, alg) \
 /* implementation-defined value */
+
 #define PSA_ALG_AEAD_WITH_DEFAULT_LENGTH_TAG(aead_alg) \
-/* specification-defined value */
+    ((((aead_alg) & ~0x003f0000) == 0x05400100) ? PSA_ALG_CCM : \
+     (((aead_alg) & ~0x003f0000) == 0x05400200) ? PSA_ALG_GCM : \
+     (((aead_alg) & ~0x003f0000) == 0x05000500) ? PSA_ALG_CHACHA20_POLY1305 : \
+     PSA_ALG_NONE)
+
 #define PSA_ALG_AEAD_WITH_SHORTENED_TAG(aead_alg, tag_length) \
-/* specification-defined value */
+    ((psa_algorithm_t) (((aead_alg) & ~0x003f0000) | (((tag_length) & 0x3f) << 16)))
+
+#define PSA_ALG_DETERMINISTIC_ECDSA(hash_alg) \
+    ((psa_algorithm_t) (0x06000700 | ((hash_alg) & 0x000000ff)))
+
+/**
+ * @brief Macro to construct the MAC algorithm with a full length MAC, from a truncated MAC algorithm.
+ *
+ * @param mac_alg   A MAC algorithm identifier (value of type psa_algorithm_t such that PSA_ALG_IS_MAC(alg) is true).
+ *                  This can be a truncated or untruncated MAC algorithm.
+ *
+ * @return  The corresponding MAC algorithm with a full length MAC.
+ *          Unspecified if alg is not a supported MAC algorithm. *
+ */
+#define PSA_ALG_FULL_LENGTH_MAC(mac_alg) \
+    ((psa_algorithm_t) ((mac_alg) & ~0x003f0000))
+
+#define PSA_ALG_HKDF(hash_alg) \
+    ((psa_algorithm_t) (0x08000100 | ((hash_alg) & 0x000000ff)))
+
 
 #define PSA_ALG_GET_HASH(alg) \
         (((alg) & PSA_ALG_HASH_MASK) == 0 ? ((psa_algorithm_t)0) : PSA_ALG_CATEGORY_HASH | ((alg) & PSA_ALG_HASH_MASK))
 
-#define PSA_ALG_HKDF(hash_alg) /* specification-defined value */
-#define PSA_ALG_HMAC(hash_alg) /* specification-defined value */
-#define PSA_ALG_IS_AEAD(alg) /* specification-defined value */
-#define PSA_ALG_IS_AEAD_ON_BLOCK_CIPHER(alg) /* specification-defined value */
-#define PSA_ALG_IS_ASYMMETRIC_ENCRYPTION(alg) /* specification-defined value */
-#define PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) /* specification-defined value */
+#define PSA_ALG_HMAC_BASE   (0x03800000)
+/**
+ * @brief Macro to build an HMAC message-authentication-code algorithm from an underlying hash algorithm.
+ *
+ * For example, PSA_ALG_HMAC(PSA_ALG_SHA_256) is HMAC-SHA-256.
+ * The HMAC construction is defined in HMAC: Keyed-Hashing for Message Authentication [RFC2104].
+ *
+ * @param hash_alg A hash algorithm (PSA_ALG_XXX value such that PSA_ALG_IS_HASH(hash_alg) is true).
+ *
+ * @return The corresponding HMAC algorithm. Unspecified if hash_alg is not a supported hash algorithm.
+ */
+#define PSA_ALG_HMAC(hash_alg) \
+        ((psa_algorithm_t) (PSA_ALG_HMAC_BASE | ((hash_alg) & PSA_ALG_HASH_MASK)))
 
 /**
  * @brief Whether the specified algorithm is a symmetric cipher algorithm.
@@ -94,13 +125,29 @@
 #define PSA_ALG_IS_CIPHER(alg)                                          \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_CIPHER)
 
-#define PSA_ALG_IS_DETERMINISTIC_ECDSA(alg) /* specification-defined value */
-#define PSA_ALG_IS_ECDH(alg) /* specification-defined value */
+#define PSA_ALG_IS_AEAD(alg) \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == 0x05000000)
+
+#define PSA_ALG_IS_AEAD_ON_BLOCK_CIPHER(alg) \
+    (((alg) & 0x7f400000) == 0x05400000)
+
+#define PSA_ALG_IS_ASYMMETRIC_ENCRYPTION(alg) \
+    (((alg) & PSA_ALG_CATEGORY_MASK) == 0x07000000)
+
+#define PSA_ALG_IS_BLOCK_CIPHER_MAC(alg) \
+    (((alg) & 0x7fc00000) == 0x03c00000)
+
+#define PSA_ALG_IS_DETERMINISTIC_ECDSA(alg) \
+    (((alg) & ~0x000000ff) == 0x06000700)
+
+#define PSA_ALG_IS_ECDH(alg) \
+    (((alg) & 0x7fff0000) == 0x09020000)
+
+#define PSA_ALG_IS_FFDH(alg) \
+    (((alg) & 0x7fff0000) == 0x09010000)
 
 #define PSA_ALG_IS_ECDSA(alg) \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_SIGN)
-
-#define PSA_ALG_IS_FFDH(alg) /* specification-defined value */
 
 #define PSA_ALG_IS_HASH(alg) \
     (((alg) & PSA_ALG_CATEGORY_MASK) == PSA_ALG_CATEGORY_HASH)
@@ -108,29 +155,69 @@
 #define PSA_ALG_HMAC_GET_HASH(hmac_alg)                             \
     (PSA_ALG_CATEGORY_HASH | ((hmac_alg) & PSA_ALG_HASH_MASK))
 
-#define PSA_ALG_IS_HASH_AND_SIGN(alg) /* specification-defined value */
-#define PSA_ALG_IS_HKDF(alg) /* specification-defined value */
-#define PSA_ALG_IS_HMAC(alg) /* specification-defined value */
-#define PSA_ALG_IS_KEY_AGREEMENT(alg) /* specification-defined value */
-#define PSA_ALG_IS_KEY_DERIVATION(alg) /* specification-defined value */
-#define PSA_ALG_IS_MAC(alg) /* specification-defined value */
-#define PSA_ALG_IS_RANDOMIZED_ECDSA(alg) /* specification-defined value */
-#define PSA_ALG_IS_RAW_KEY_AGREEMENT(alg) /* specification-defined value */
-#define PSA_ALG_IS_RSA_OAEP(alg) /* specification-defined value */
-#define PSA_ALG_IS_RSA_PKCS1V15_SIGN(alg) /* specification-defined value */
-#define PSA_ALG_IS_RSA_PSS(alg) /* specification-defined value */
-#define PSA_ALG_IS_SIGN(alg) /* specification-defined value */
-#define PSA_ALG_IS_SIGN_HASH(alg) /* specification-defined value */
-#define PSA_ALG_IS_SIGN_MESSAGE(alg) /* specification-defined value */
-#define PSA_ALG_IS_STREAM_CIPHER(alg) /* specification-defined value */
-#define PSA_ALG_IS_TLS12_PRF(alg) /* specification-defined value */
-#define PSA_ALG_IS_TLS12_PSK_TO_MS(alg) /* specification-defined value */
-#define PSA_ALG_IS_WILDCARD(alg) /* specification-defined value */
+#define PSA_ALG_IS_HASH_AND_SIGN(alg) \
+    (PSA_ALG_IS_RSA_PSS(alg) || PSA_ALG_IS_RSA_PKCS1V15_SIGN(alg) || PSA_ALG_IS_ECDSA(alg))
+
+#define PSA_ALG_IS_HKDF(alg) \
+    (((alg) & ~0x000000ff) == 0x08000100)
+
+#define PSA_ALG_IS_HMAC(alg) \
+    (((alg) & 0x7fc0ff00) == 0x03800000)
+
+#define PSA_ALG_IS_KEY_AGREEMENT(alg) \
+    (((alg) & 0x7f000000) == 0x09000000)
+
+#define PSA_ALG_IS_KEY_DERIVATION(alg) \
+    (((alg) & 0x7f000000) == 0x08000000)
+
+#define PSA_ALG_IS_MAC(alg) \
+    (((alg) & 0x7f000000) == 0x03000000)
+
+#define PSA_ALG_IS_RANDOMIZED_ECDSA(alg) \
+    (((alg) & ~0x000000ff) == 0x06000600)
+
+#define PSA_ALG_IS_RAW_KEY_AGREEMENT(alg) \
+    (((alg) & 0x7f00ffff) == 0x09000000)
+
+#define PSA_ALG_IS_RSA_OAEP(alg) \
+    (((alg) & ~0x000000ff) == 0x07000300)
+
+#define PSA_ALG_IS_RSA_PKCS1V15_SIGN(alg) \
+    (((alg) & ~0x000000ff) == 0x06000200)
+
+#define PSA_ALG_IS_RSA_PSS(alg) \
+    (((alg) & ~0x000000ff) == 0x06000300)
+
+#define PSA_ALG_IS_SIGN(alg) \
+    (((alg) & 0x7f000000) == 0x06000000)
+
+#define PSA_ALG_IS_SIGN_HASH(alg) \
+    PSA_ALG_IS_SIGN(alg)
+
+#define PSA_ALG_IS_SIGN_MESSAGE(alg) \
+    (PSA_ALG_IS_SIGN(alg) && \
+     (alg) != PSA_ALG_ECDSA_ANY && (alg) != PSA_ALG_RSA_PKCS1V15_SIGN_RAW)
+
+#define PSA_ALG_IS_STREAM_CIPHER(alg) \
+    (((alg) & 0x7f800000) == 0x04800000)
+
+#define PSA_ALG_IS_TLS12_PRF(alg) \
+    (((alg) & ~0x000000ff) == 0x08000200)
+
+#define PSA_ALG_IS_TLS12_PSK_TO_MS(alg) \
+    (((alg) & ~0x000000ff) == 0x08000300)
+
+#define PSA_ALG_IS_WILDCARD(alg) \
+    (PSA_ALG_GET_HASH(alg) == PSA_ALG_HASH_ANY)
 
 #define PSA_ALG_KEY_AGREEMENT(ka_alg, kdf_alg) \
-/* specification-defined value */
-#define PSA_ALG_KEY_AGREEMENT_GET_BASE(alg) /* specification-defined value */
-#define PSA_ALG_KEY_AGREEMENT_GET_KDF(alg) /* specification-defined value */
+    ((ka_alg) | (kdf_alg))
+
+#define PSA_ALG_KEY_AGREEMENT_GET_BASE(alg) \
+    ((psa_algorithm_t)((alg) & 0xffff0000))
+
+#define PSA_ALG_KEY_AGREEMENT_GET_KDF(alg) \
+    ((psa_algorithm_t)((alg) & 0xfe00ffff))
 
 #define PSA_ALG_HASH_MASK   ((psa_algorithm_t)0x000000ff)
 
@@ -184,18 +271,23 @@
 #define PSA_ALG_FFDH ((psa_algorithm_t)0x09010000)
 #define PSA_ALG_ECDH ((psa_algorithm_t)0x09020000)
 
-#define PSA_ALG_DETERMINISTIC_ECDSA(hash_alg) /* specification-defined value */
-#define PSA_ALG_FULL_LENGTH_MAC(mac_alg) /* specification-defined value */
-#define PSA_ALG_RSA_OAEP(hash_alg) /* specification-defined value */
-#define PSA_ALG_RSA_PKCS1V15_SIGN(hash_alg) /* specification-defined value */
-#define PSA_ALG_RSA_PSS(hash_alg) /* specification-defined value */
+#define PSA_ALG_RSA_OAEP(hash_alg) \
+    ((psa_algorithm_t)(0x07000300 | ((hash_alg) & 0x000000ff)))
 
+#define PSA_ALG_RSA_PKCS1V15_SIGN(hash_alg) \
+    ((psa_algorithm_t)(0x06000200 | ((hash_alg) & 0x000000ff)))
 
-#define PSA_ALG_TLS12_PRF(hash_alg) /* specification-defined value */
-#define PSA_ALG_TLS12_PSK_TO_MS(hash_alg) /* specification-defined value */
+#define PSA_ALG_RSA_PSS(hash_alg) \
+    ((psa_algorithm_t)(0x06000300 | ((hash_alg) & 0x000000ff)))
+
+#define PSA_ALG_TLS12_PRF(hash_alg) \
+    ((psa_algorithm_t) (0x08000200 | ((hash_alg) & 0x000000ff)))
+
+#define PSA_ALG_TLS12_PSK_TO_MS(hash_alg) \
+    ((psa_algorithm_t) (0x08000300 | ((hash_alg) & 0x000000ff)))
+
 #define PSA_ALG_TRUNCATED_MAC(mac_alg, mac_length) \
-/* specification-defined value */
-
+    ((psa_algorithm_t) (((mac_alg) & ~0x003f0000) | (((mac_length) & 0x3f) << 16)))
 
 #define PSA_ASYMMETRIC_DECRYPT_OUTPUT_MAX_SIZE \
 /* implementation-defined value */
@@ -292,7 +384,6 @@
 #define PSA_ECC_FAMILY_SECT_R2 ((psa_ecc_family_t) 0x2b)
 
 #define PSA_HASH_BLOCK_LENGTH(alg) /* implementation-defined value */
-#define PSA_HASH_MAX_SIZE   (64)
 #define PSA_HASH_SUSPEND_ALGORITHM_FIELD_LENGTH ((size_t)4)
 #define PSA_HASH_SUSPEND_HASH_STATE_FIELD_LENGTH(alg) \
 /* specification-defined value */
@@ -367,10 +458,18 @@
 #define PSA_KEY_TYPE_CHACHA20 ((psa_key_type_t)0x2004)
 #define PSA_KEY_TYPE_DERIVE ((psa_key_type_t)0x1200)
 #define PSA_KEY_TYPE_DES ((psa_key_type_t)0x2301)
-#define PSA_KEY_TYPE_DH_GET_FAMILY(type) /* specification-defined value */
-#define PSA_KEY_TYPE_DH_KEY_PAIR(group) /* specification-defined value */
-#define PSA_KEY_TYPE_DH_PUBLIC_KEY(group) /* specification-defined value */
-#define PSA_KEY_TYPE_ECC_GET_FAMILY(type) /* specification-defined value */
+
+#define PSA_KEY_TYPE_DH_GET_FAMILY(type) \
+    ((psa_dh_family_t) ((type) & 0x00ff))
+
+#define PSA_KEY_TYPE_DH_KEY_PAIR(group) \
+    ((psa_key_type_t) (0x7200 | (group)))
+
+#define PSA_KEY_TYPE_DH_PUBLIC_KEY(group) \
+    ((psa_key_type_t) (0x4200 | (group)))
+
+#define PSA_KEY_TYPE_ECC_GET_FAMILY(type) \
+    ((psa_ecc_family_t) ((type) & 0x00ff))
 
 #define PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE            ((psa_key_type_t)0x4100)
 #define PSA_KEY_TYPE_ECC_KEY_PAIR_BASE              ((psa_key_type_t)0x7100)
@@ -408,19 +507,15 @@
     (PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE | (curve))
 
 /** Whether a key type is an elliptic curve key (pair or public-only). */
-#define PSA_KEY_TYPE_IS_ECC(type)                                       \
-    ((PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) &                        \
-      ~PSA_KEY_TYPE_ECC_CURVE_MASK) == PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
+#define PSA_KEY_TYPE_IS_ECC(type) \
+    ((PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) & 0xff00) == 0x4100)
 
 /** Whether a key type is an elliptic curve key pair. */
-#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type)                               \
-    (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
-     PSA_KEY_TYPE_ECC_KEY_PAIR_BASE)
+#define PSA_KEY_TYPE_IS_ECC_KEY_PAIR(type) \
+    (((type) & 0xff00) == 0x7100)
 
-/** Whether a key type is an elliptic curve public key. */
-#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)                            \
-    (((type) & ~PSA_KEY_TYPE_ECC_CURVE_MASK) ==                         \
-     PSA_KEY_TYPE_ECC_PUBLIC_KEY_BASE)
+#define PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type) \
+    (((type) & 0xff00) == 0x4100)
 
 /**
  * @brief   The public key type corresponding to a key pair type.
@@ -432,8 +527,8 @@
  *                  If type is not a public key or a key pair,
  *                  the return value is undefined.
  */
-#define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type)        \
-    ((type) & ~PSA_KEY_TYPE_CATEGORY_FLAG_PAIR)
+#define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) \
+    ((psa_key_type_t) ((type) & ~0x3000))
 
 #define PSA_KEY_TYPE_HMAC ((psa_key_type_t)0x1100)
 
@@ -443,13 +538,16 @@
  * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_ASYMMETRIC(type) \
-            (PSA_KEY_TYPE_IS_RSA(type) ? 1 : \
-             PSA_KEY_TYPE_IS_ECC(type) ? 1 : \
-            0)
+        (((type) & 0x4000) == 0x4000)
 
-#define PSA_KEY_TYPE_IS_DH(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_DH_KEY_PAIR(type) /* specification-defined value */
-#define PSA_KEY_TYPE_IS_DH_PUBLIC_KEY(type) /* specification-defined value */
+#define PSA_KEY_TYPE_IS_DH(type) \
+    ((PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) & 0xff00) == 0x4200)
+
+#define PSA_KEY_TYPE_IS_DH_KEY_PAIR(type) \
+    (((type) & 0xff00) == 0x7200)
+
+#define PSA_KEY_TYPE_IS_DH_PUBLIC_KEY(type) \
+    (((type) & 0xff00) == 0x4200)
 
 /**
  * @brief Whether a key type is a key pair containing a private part and a public part.
@@ -457,17 +555,16 @@
  * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_KEY_PAIR(type) \
-    (   (type == PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1)) || \
-        (type == PSA_KEY_TYPE_RSA_KEY_PAIR))
+    (((type) & 0x7000) == 0x7000)
 
 /**
  * @brief Whether a key type is the public part of a key pair.
  *
  * @param type  A key type (value of type psa_key_type_t).
  */
+
 #define PSA_KEY_TYPE_IS_PUBLIC_KEY(type) \
-        ((PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(type)) || \
-         (type == PSA_KEY_TYPE_RSA_PUBLIC_KEY))
+    (((type) & 0x7000) == 0x4000)
 
 /**
  * @brief Whether a key type is an RSA key. This includes both key pairs and public keys.
@@ -475,8 +572,7 @@
  * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_RSA(type) \
-        ((type == PSA_KEY_TYPE_RSA_KEY_PAIR) || \
-         (type == PSA_KEY_TYPE_RSA_PUBLIC_KEY) )
+    (PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) == 0x4001)
 
 /**
  * @brief   Whether a key type is an unstructured array of bytes.
@@ -485,11 +581,11 @@
  * @param type  A key type (value of type psa_key_type_t).
  */
 #define PSA_KEY_TYPE_IS_UNSTRUCTURED(type) \
-    (((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_RAW || \
-     ((type) & PSA_KEY_TYPE_CATEGORY_MASK) == PSA_KEY_TYPE_CATEGORY_SYMMETRIC)
+    (((type) & 0x7000) == 0x1000 || ((type) & 0x7000) == 0x2000)
 
 #define PSA_KEY_TYPE_KEY_PAIR_OF_PUBLIC_KEY(type) \
-/* specification-defined value */
+    ((psa_key_type_t) ((type) | 0x3000))
+
 #define PSA_KEY_TYPE_NONE ((psa_key_type_t)0x0000)
 
 #define PSA_KEY_TYPE_RAW_DATA ((psa_key_type_t)0x1001)
@@ -508,9 +604,7 @@
 #define PSA_KEY_USAGE_VERIFY_HASH ((psa_key_usage_t)0x00002000)
 #define PSA_KEY_USAGE_VERIFY_MESSAGE ((psa_key_usage_t)0x00000800)
 
-#define PSA_MAC_LENGTH(key_type, key_bits, alg) \
-/* implementation-defined value */
-#define PSA_MAC_MAX_SIZE /* implementation-defined value */
+
 #define PSA_MAC_OPERATION_INIT /* implementation-defined value */
 #define PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE \
 /* implementation-defined value */
