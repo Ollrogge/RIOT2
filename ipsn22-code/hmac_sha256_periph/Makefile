@@ -1,7 +1,7 @@
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../..
 
-APPLICATION = aes-cbc
+APPLICATION = hmac_sha256_periph
 
 ifeq (1, $(SOFTWARE))
 	KCONFIG_ADD_CONFIG += $(APPDIR)/app.config.test.software

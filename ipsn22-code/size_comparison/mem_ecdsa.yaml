@@ -4,28 +4,27 @@ meta:
   export: "comb-ecdsa.png"
   ylim_rom: 42
   ylim_ram: 12
-  type: "bar"
-  cols: 2
+  cols: 3
 
 boards:
   - "nrf52840dk"
 
 profiles:
-  ecdsa-bl-se:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes"
-    label: "ATECC608A"
-    flags: "-DSE_ECDSA"
+  # ecdsa-bl-se:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.se ../baseline/app.config.test.riot.hashes"
+  #   label: "ATECC608A"
+  #   flags: "-DSE_ECDSA"
   ecdsa-psa-se:
     dir_path: "../ecdsa-se"
     config: "../ecdsa-se/app.config.test ../ecdsa-se/app.config.test.multiple"
     label: "PSA \\& ATECC608A"
     flags: "-DUSE_MULTIPLE_BACKENDS"
-  ecdsa-bl-cc:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.riot.hashes"
-    label: "CryptoCell 310"
-    flags: "-DCC_ECDSA"
+  # ecdsa-bl-cc:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.riot.hashes"
+  #   label: "CryptoCell 310"
+  #   flags: "-DCC_ECDSA"
   ecdsa-psa-cc:
     dir_path: "../ecdsa_periph"
     config: "../ecdsa_periph/app.config.test"
@@ -58,6 +57,7 @@ groups:
       - ["~", "pkg", "cryptoauthlib", "psa_se_driver"]
 
     config:
+      backend: True
       hatch: "\\"
 
   ? "CryptoCell Library"
@@ -68,20 +68,68 @@ groups:
       - ["cpu", "nrf52", "cryptocell_lib"]
 
     config:
+      backend: True
       hatch: "."
+
+  ? "PSA Crypto Glue Code"
+  :
+    modules:
+      - ["cpu", "nrf52", "periph", "aes_cbc"]
+      - ["cpu", "nrf52", "periph", "aes_common"]
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["cpu", "nrf52", "periph", "hashes_common"]
+      - ["cpu", "nrf52", "periph", "hashes_sha256"]
+      - ["pkg", "cryptoauthlib", "psa_se_driver"]
+      - ["sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "hashes", "psa_riot_hashes"]
+      - ["sys", "nrf52", "periph", "ecc_common"]
+      - ["sys", "nrf52", "periph", "ecc_p256"]
+
+    config:
+      backend: False
+      hatch: "X"
+
+
+  ? "PSA Crypto Dispatcher"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_algorithm_dispatch"]
+      - ["sys", "psa_crypto", "psa_crypto_location_dispatch"]
+
+    config:
+      backend: False
+      hatch: "X"
+
+
+  ? "PSA Crypto Key Slot Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_key_slot_mgmt"]
+
+    config:
+      backend: False
+      hatch: "X"
+
 
   ? "PSA Crypto"
   :
     modules:
-      - ["sys", "psa_crypto"]
+      - ["sys", "psa_crypto", "psa_crypto"]
+      - ["cpu", "nrf52", "periph", "aes_cbc"]
+      - ["cpu", "nrf52", "periph", "aes_common"]
       - ["cpu", "nrf52", "periph", "psa_error"]
-      - ["cpu", "nrf52", "periph", "ecc_common"]
-      - ["cpu", "nrf52", "periph", "ecc_p256"]
+      - ["cpu", "nrf52", "periph", "hashes_common"]
+      - ["cpu", "nrf52", "periph", "hashes_sha256"]
       - ["pkg", "cryptoauthlib", "psa_se_driver"]
+      - ["sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "hashes", "psa_riot_hashes"]
+      - ["sys", "nrf52", "periph", "ecc_common"]
+      - ["sys", "nrf52", "periph", "ecc_p256"]
 
     config:
-      color: [1.0, 0.9294117647058824, 0.43529411764705883]
-      hatch: "/"
+      backend: False
+      hatch: "X"
+      # color: [1.0, 0.9294117647058824, 0.43529411764705883]
 
 # # some plot configuration
 plots:

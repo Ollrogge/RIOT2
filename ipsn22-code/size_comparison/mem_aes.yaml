@@ -2,30 +2,29 @@
 meta:
   title: "AES 128 CBC"
   export: "comb-aes.png"
-  type: "bar"
-  ylim_rom: 10
-  ylim_ram: 10
-  cols: 2
+  ylim_rom: 12
+  ylim_ram: 12
+  cols: 3
 
 boards:
   - "nrf52840dk"
 
 profiles:
-  aes-cbc-bl-cc:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.random"
-    label: "CryptoCell"
-    flags: "-DCRYPTOCELL_CIPHER"
+  # aes-cbc-bl-cc:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.random"
+  #   label: "CryptoCell"
+  #   flags: "-DCRYPTOCELL_CIPHER"
   aes-cbc-psa-cc:
     dir_path: "../aes-cbc"
     config: "../aes-cbc/app.config.test"
     label: "PSA \\& CryptoCell"
     flags: ""
-  aes-cbc-bl-riot:
-    dir_path: "../baseline"
-    config: "../baseline/app.config.test.riot ../baseline/app.config.test.random"
-    label: "RIOT"
-    flags: "-DRIOT_CIPHER"
+  # aes-cbc-bl-riot:
+  #   dir_path: "../baseline"
+  #   config: "../baseline/app.config.test.riot ../baseline/app.config.test.random"
+  #   label: "RIOT"
+  #   flags: "-DRIOT_CIPHER"
   aes-cbc-psa-riot:
     dir_path: "../aes-cbc"
     config: "../aes-cbc/app.config.test ../aes-cbc/app.config.test.software"
@@ -42,6 +41,7 @@ groups:
       - ["cpu", "nrf52", "cryptocell_lib"]
 
     config:
+      backend: True
       hatch: "."
 
 
@@ -52,7 +52,9 @@ groups:
       - ["~", "sys", "crypto", "psa_riot_cipher"]
 
     config:
+      backend: True
       hatch: "-"
+
 
   ? "RIOT Random"
   :
@@ -61,12 +63,13 @@ groups:
       - ["sys", "hashes"]
 
     config:
+      backend: True
       hatch: "\\"
 
-  ? "PSA Crypto"
+
+  ? "PSA Crypto Glue Code"
   :
     modules:
-      - ["sys", "psa_crypto"]
       - ["cpu", "nrf52", "periph", "aes_cbc"]
       - ["cpu", "nrf52", "periph", "aes_common"]
       - ["cpu", "nrf52", "periph", "psa_error"]
@@ -79,8 +82,50 @@ groups:
       - ["sys", "nrf52", "periph", "ecc_p256"]
 
     config:
-      color: [1.0, 0.9294117647058824, 0.43529411764705883]
+      backend: False
       hatch: "X"
+
+
+  ? "PSA Crypto Dispatcher"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_algorithm_dispatch"]
+      - ["sys", "psa_crypto", "psa_crypto_location_dispatch"]
+
+    config:
+      backend: False
+      hatch: "X"
+
+
+  ? "PSA Crypto Key Slot Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_key_slot_mgmt"]
+
+    config:
+      backend: False
+      hatch: "X"
+
+
+  ? "PSA Crypto"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto"]
+      - ["cpu", "nrf52", "periph", "aes_cbc"]
+      - ["cpu", "nrf52", "periph", "aes_common"]
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["cpu", "nrf52", "periph", "hashes_common"]
+      - ["cpu", "nrf52", "periph", "hashes_sha256"]
+      - ["pkg", "cryptoauthlib", "psa_se_driver"]
+      - ["sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "hashes", "psa_riot_hashes"]
+      - ["sys", "nrf52", "periph", "ecc_common"]
+      - ["sys", "nrf52", "periph", "ecc_p256"]
+
+    config:
+      backend: False
+      hatch: "X"
+      # color: [1.0, 0.9294117647058824, 0.43529411764705883]
 
 # # some plot configuration
 plots:

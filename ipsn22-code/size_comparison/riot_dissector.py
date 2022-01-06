@@ -163,72 +163,11 @@ def get_sizes_and_runs(results):
 
     return sizes, sizes_sum, runs
 
-
-def plot_psa_sizes(results, export_path=None):
-    sizes, sizes_sum, runs = get_sizes_and_runs(results)
-
-    flash_sizes_hw = {}
-    flash_sizes_sw = {}
-
-    colors = plt.get_cmap("Set3").colors
-
-    for g in sizes:
-        if len(sizes[g]['flash']) == 4:
-            flash_sizes_hw[g] = sizes[g]['flash'][1]
-            flash_sizes_sw[g] = sizes[g]['flash'][3]
-        else:
-            flash_sizes_hw[g] = sizes[g]['flash'][1]
-
-    width = 0.7
-    wedgeprops={"edgecolor":"dimgray",'linewidth': 1, 'linestyle': 'solid', 'antialiased': True}
-    legend_coords = (0,0)
-    plt.style.use('styles.mplstyle')
-
-    if CONFIG['meta']['num'] == 2:
-        legend_coords = (0.5, 0.15)
-        fig, [hw_ax, sw_ax] = plt.subplots(nrows=1, ncols=2,
-                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
-                                        pt2inch(1.6*LATEX_FIG_HEIGHT_PT)))
-        hw_ax.set_title(CONFIG['meta']['hw_subtitle'], y=0.95)
-        sw_ax.set_title(CONFIG['meta']['sw_subtitle'], y=0.95)
-
-        hw_sizes = [flash_sizes_hw[s] for s in flash_sizes_hw]
-        sw_sizes = [flash_sizes_sw[s] for s in flash_sizes_sw]
-        hw_sizes.reverse()
-        sw_sizes.reverse()
-
-        hw_ax.pie(hw_sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
-        sw_ax.pie(sw_sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
-
-        axs = {"hw" : hw_ax, "sw" : sw_ax}
-    else:
-        legend_coords = (0.5, 0.05)
-        fig, ax = plt.subplots(nrows=1, ncols=1,
-                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
-                                        pt2inch(1.6*LATEX_FIG_HEIGHT_PT)))
-        ax.set_title(CONFIG['meta']['hw_subtitle'], y=1)
-        sizes = [flash_sizes_hw[s] for s in flash_sizes_hw]
-        sizes.reverse()
-        ax.pie(sizes, counterclock=False, wedgeprops=wedgeprops, colors=colors, autopct='%1.2f%%')
-
-    labels = [k for k in flash_sizes_hw]
-
-    # LEGEND
-    # - in the middle
-    fig.legend(labels[::-1], ncol=2, bbox_to_anchor=legend_coords, loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
-
-    export_path = CONFIG['meta']['export']
-    if export_path is not None:
-        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0.85, x=0.5)
-        plt.savefig(export_path, bbox_inches='tight')
-    else:
-        plt.show()
-
 def plot_for_board(results, export_path=None):
     # sizes is a dictionary where the keys are the module groups and the values
     # are maps containing arrays containing the sizes of the corresponding modules, one per configuration
     sizes, sizes_sum, runs = get_sizes_and_runs(results)
-
+    print(f'Sizes: {sizes}\nSizes_Sum: {sizes_sum}\nRuns: {runs}')
     width = 0.7
 
     plt.style.use('styles.mplstyle')
@@ -266,7 +205,7 @@ def plot_for_board(results, export_path=None):
     }
 
     colors = plt.get_cmap("Set3").colors
-    colors = colors[::2]
+    # colors = colors[::2]
 
     i = 0
 
@@ -301,7 +240,7 @@ def plot_for_board(results, export_path=None):
         }
         logging.info("{}:{} ({})".format(group, size, percentage))
 
-        if group == "PSA Crypto":
+        if group == "PSA Crypto" or group == "PSA Crypto Key Slot Management":
             accumulated_percentage['flash'] += percentage['flash']
             accumulated_percentage['ram'] += percentage['ram']
 
@@ -345,7 +284,7 @@ def plot_for_board(results, export_path=None):
         'flash': 0,
         'ram': 0
     }
-    x= sizes['PSA Crypto']
+    x = sizes['PSA Crypto Key Slot Management']
 
     # draw percentage of total size
     for key, ax in axs.items():
@@ -518,10 +457,7 @@ def main():
         board_test['runs'] = board_test_runs
         result.append(board_test)
 
-        if CONFIG['meta']['type'] == 'pie':
-            plot_psa_sizes(board_test, args.export_plot)
-        else:
-            plot_for_board(board_test, args.export_plot)
+        plot_for_board(board_test, args.export_plot)
 
 if __name__ == "__main__":
     main()

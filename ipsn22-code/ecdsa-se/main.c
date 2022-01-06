@@ -8,7 +8,6 @@
 #include "ps.h"
 #endif
 
-#include "xtimer.h"
 #include "periph/gpio.h"
 gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
@@ -22,7 +21,6 @@ static void _test_init(void)
 
     gpio_set(external_gpio);
     gpio_clear(internal_gpio);
-    xtimer_sleep(1);
 }
 
 static void ecdsa_prim_se(void)
@@ -101,7 +99,7 @@ static void ecdsa_sec_se(void)
     psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
     psa_key_bits_t bits = 256;
 
-    uint8_t public_key[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE] = { 0 };
+    uint8_t public_key[PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1), 256)] = { 0 };
     size_t pubkey_length;
 
     uint8_t signature[PSA_SIGN_OUTPUT_SIZE(type, bits, alg)];
