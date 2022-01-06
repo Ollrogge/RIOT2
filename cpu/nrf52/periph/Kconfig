@@ -65,6 +65,16 @@ config MODULE_PERIPH_HASHES_SHA256
 config MODULE_PERIPH_HASHES_SHA512
     bool
 
+# HMAC Related Symbols
+config PERIPH_HMAC
+    bool
+    select MODULE_LIB_CRYPTOCELL
+    select MODULE_PERIPH_HMAC
+    select MODULE_PERIPH_PSA_ERROR
+
+config MODULE_PERIPH_HMAC
+    bool
+
 #Cipher Related Symbols
 config PERIPH_CIPHER_MODE_CBC
     bool

@@ -1,4 +1,25 @@
-#include "include/psa_crypto_slot_management.h"
+/*
+ * Copyright (C) 2021 HAW Hamburg
+ *
+ * This file is subject to the terms and conditions of the GNU Lesser
+ * General Public License v2.1. See the file LICENSE in the top level
+ * directory for more details.
+ */
+
+/**
+ * @ingroup     sys_psa_crypto
+ * @{
+ *
+ * @file
+ * @brief       PSA Crypto Key Slot Management implementation
+ *
+ * @author      Lena Boeckmann <lena.boeckmann@haw-hamburg.de>
+ *
+ * @}
+ */
+
+#include "psa_crypto_slot_management.h"
+#include "tlsf.h"
 
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
@@ -10,24 +31,15 @@ typedef struct
 
 static psa_global_data_t global_data;
 
-// #if PSA_KEY_SLOT_COUNT
-#include "tlsf.h"
-
-// #define PSA_TLSF_HEAP_SIZE      (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE)
 #define TLSF_SIZE               (3188)
+#if IS_ACTIVE(CONFIG_PSA_ECC) || IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT_ECC)
+#define PSA_TLSF_HEAP_SIZE      (TLSF_SIZE + (PSA_KEY_SLOT_COUNT * PSA_EXPORT_PUBLIC_KEY_MAX_SIZE))
+#else
 #define PSA_TLSF_HEAP_SIZE      (TLSF_SIZE + (PSA_KEY_SLOT_COUNT * PSA_MAX_KEY_DATA_SIZE))
+#endif
 
-static uint32_t _tlsf_heap[PSA_TLSF_HEAP_SIZE];
+static uint8_t _tlsf_heap[PSA_TLSF_HEAP_SIZE];
 static tlsf_t _tlsf;
-// static tlsf_size_container_t _tlsf_container;
-
-void psa_init_key_slots(void)
-{
-    psa_wipe_all_key_slots();
-    memset(_tlsf_heap, 0, sizeof(_tlsf_heap));
-    _tlsf = tlsf_create_with_pool(_tlsf_heap, sizeof(_tlsf_heap));
-    DEBUG("%s: TLSF Heap Size: %d\n", __FILE__, PSA_TLSF_HEAP_SIZE);
-}
 
 void * psa_malloc(size_t s)
 {
@@ -38,7 +50,14 @@ void psa_free(void *p)
 {
     return tlsf_free(_tlsf, p);
 }
-// #endif
+
+void psa_init_key_slots(void)
+{
+    psa_wipe_all_key_slots();
+    memset(_tlsf_heap, 0, sizeof(_tlsf_heap));
+    _tlsf = tlsf_create_with_pool(_tlsf_heap, sizeof(_tlsf_heap));
+    DEBUG("Key Slot Count: %d\nMax Key Data Size: %d\nTLSF Heap Size: %d\nGlobal Data Size: %d\n", PSA_KEY_SLOT_COUNT, PSA_MAX_KEY_DATA_SIZE, sizeof(_tlsf_heap), sizeof(global_data));
+}
 
 int psa_is_valid_key_id(psa_key_id_t id, int vendor_ok)
 {
@@ -136,7 +155,6 @@ void psa_wipe_all_key_slots(void)
 psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-#if PSA_KEY_SLOT_COUNT
     psa_key_slot_t *selected_slot, *unlocked_persistent_slot;
 
     selected_slot = unlocked_persistent_slot = NULL;
@@ -174,7 +192,6 @@ psa_status_t psa_get_empty_key_slot(psa_key_id_t *id, psa_key_slot_t **p_slot)
     }
 
     status = PSA_ERROR_INSUFFICIENT_MEMORY;
-#endif
     *p_slot = NULL;
     *id = 0;
     return status;
@@ -226,7 +243,6 @@ psa_status_t psa_validate_key_location(psa_key_lifetime_t lifetime, psa_se_drv_d
         return PSA_SUCCESS;
     }
 }
-
 
 psa_status_t psa_validate_key_persistence(psa_key_lifetime_t lifetime)
 {

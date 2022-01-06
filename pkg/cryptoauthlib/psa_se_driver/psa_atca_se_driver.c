@@ -3,7 +3,7 @@
 #include "psa_crypto_se_driver.h"
 #include "periph/gpio.h"
 
-#define ENABLE_DEBUG    (0)
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
 
 // extern gpio_t internal_gpio;
@@ -17,9 +17,10 @@
         (alg == PSA_ALG_ECDSA(PSA_ALG_SHA_256)) || \
         (alg == PSA_ALG_HMAC(PSA_ALG_SHA_256)))
 
-#define KEY_SIZE_IS_SUPPORTED(size) \
-    (   (size == AES_128_KEY_SIZE) || \
-        (size == (ECC_P256_PUB_KEY_SIZE + 1)))
+#define KEY_SIZE_IS_SUPPORTED(size, type) \
+    (   (type == PSA_KEY_TYPE_AES && size == AES_128_KEY_SIZE) || \
+        (PSA_KEY_TYPE_IS_ECC(type) && size == (ECC_P256_PUB_KEY_SIZE + 1)) || \
+        (type == PSA_KEY_TYPE_HMAC && size == 32))
 
 static psa_status_t atca_to_psa_error(ATCA_STATUS error)
 {
@@ -172,7 +173,7 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    if (!KEY_SIZE_IS_SUPPORTED(data_length)) {
+    if (!KEY_SIZE_IS_SUPPORTED(data_length, attributes->type)) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 

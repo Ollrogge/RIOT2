@@ -61,12 +61,23 @@ psa_status_t psa_algorithm_dispatch_generate_key(   const psa_key_attributes_t *
                                                 uint8_t *key_buffer, size_t key_buffer_size,
                                                 size_t *key_buffer_length, uint8_t *pubkey_buffer, size_t pubkey_buffer_size, size_t *pubkey_buffer_length);
 
-psa_status_t psa_algorithm_dispatch_cipher_encrypt( psa_key_slot_t *slot,
-                                            psa_algorithm_t alg,
-                                            const uint8_t * input,
-                                            size_t input_length,
-                                            uint8_t * output,
-                                            size_t output_size,
-                                            size_t * output_length);
+psa_status_t psa_algorithm_dispatch_cipher_encrypt( const psa_key_attributes_t * attributes,
+                                                    psa_algorithm_t alg,
+                                                    const uint8_t * key_buffer,
+                                                    size_t key_buffer_size,
+                                                    const uint8_t * input,
+                                                    size_t input_length,
+                                                    uint8_t * output,
+                                                    size_t output_size,
+                                                    size_t * output_length);
 
+psa_status_t psa_algorithm_dispatch_mac_compute(const psa_key_attributes_t *attributes,
+                                                psa_algorithm_t alg,
+                                                const uint8_t * key_buffer,
+                                                size_t key_buffer_size,
+                                                const uint8_t * input,
+                                                size_t input_length,
+                                                uint8_t * mac,
+                                                size_t mac_size,
+                                                size_t * mac_length);
 #endif /* PSA_ALGORITHM_DISPATCH_H */

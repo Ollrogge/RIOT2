@@ -27,4 +27,8 @@ typedef sha224_context_t psa_hashes_sha224_ctx_t;
 typedef sha256_context_t psa_hashes_sha256_ctx_t;
 #endif
 
+#if IS_ACTIVE(CONFIG_RIOT_HMAC_SHA256)
+#include "hashes/sha256.h"
+#endif
+
 #endif /* RIOT_HASHES_H */

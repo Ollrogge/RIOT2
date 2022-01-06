@@ -5,6 +5,12 @@
 # directory for more details.
 #
 
+menuconfig PSA_CIPHERS
+    bool "PSA Cipher"
+    select MODULE_PSA_KEY_SLOT_MGMT
+
+if PSA_CIPHERS
+
 menuconfig CIPHER_AES_128_ECB
     bool "AES-128 ECB"
     select PSA_CIPHER_MODE_ECB
@@ -108,6 +114,8 @@ config RIOT_CIPHER_AES_256_CBC
 endchoice
 
 endif # CIPHER_AES_256_CBC
+
+endif # PSA_CIPHERS
 
 config PSA_CIPHER_MODE_ECB
     bool

@@ -9,43 +9,16 @@ menuconfig MODULE_PSA_CRYPTO
     bool "PSA Crypto"
     depends on TEST_KCONFIG
     select MODULE_RANDOM
-    select PACKAGE_TLSF
 
 if MODULE_PSA_CRYPTO
 
-menuconfig PSA_HASHES
-    bool "PSA Hashes"
-
-if PSA_HASHES
+rsource "Kconfig.mac"
 rsource "Kconfig.hashes"
-endif # PSA_HASHES
-
-menuconfig PSA_CIPHERS
-    bool "PSA Cipher"
-
-if PSA_CIPHERS
 rsource "Kconfig.ciphers"
-endif # PSA_CIPHERS
-
-menuconfig PSA_ASYMMETRIC
-    bool "PSA Asymmetric Crypto"
-
-if PSA_ASYMMETRIC
 rsource "Kconfig.asymmetric"
-endif # PSA_ASYMMETRIC
-
-menuconfig PSA_SECURE_ELEMENT
-    bool "PSA Secure Element Configuration"
-
-if PSA_SECURE_ELEMENT
-rsource "Kconfig.se"
-endif # PSA_SECURE_ELEMENT
-
 rsource "Kconfig.keysizes"
 
-config PSA_ECC
-    bool
-    help
-        Indicates that an elliptic curve operation is being used
+rsource "psa_se_mgmt/Kconfig"
+rsource "psa_key_slot_mgmt/Kconfig"
 
 endif # MODULE_PSA_CRYPTO

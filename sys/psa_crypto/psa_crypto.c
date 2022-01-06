@@ -20,11 +20,11 @@
 
 #include <stdio.h>
 #include "psa/crypto.h"
-#include "include/psa_crypto_se_driver.h"
-#include "include/psa_crypto_se_management.h"
-#include "include/psa_crypto_slot_management.h"
-#include "include/psa_crypto_location_dispatch.h"
-#include "include/psa_crypto_algorithm_dispatch.h"
+#include "psa_crypto_se_driver.h"
+#include "psa_crypto_se_management.h"
+#include "psa_crypto_slot_management.h"
+#include "psa_crypto_location_dispatch.h"
+#include "psa_crypto_algorithm_dispatch.h"
 
 #include "random.h"
 #include "kernel_defines.h"
@@ -459,7 +459,7 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
         return status;
     }
 
-    return psa_location_dispatch_cipher_encrypt(slot, alg, input, input_length, output, output_size, output_length);
+    return psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
 }
 
 psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,
@@ -782,6 +782,11 @@ static psa_status_t psa_validate_unstructured_key_size(psa_key_type_t type, size
                 return PSA_ERROR_INVALID_ARGUMENT;
             }
             break;
+        case PSA_KEY_TYPE_HMAC:
+            if (bits % 8 != 0) {
+                return PSA_ERROR_INVALID_ARGUMENT;
+            }
+            break;
         default:
             (void) bits;
             return PSA_ERROR_NOT_SUPPORTED;
@@ -862,16 +867,21 @@ static void psa_allocate_key_storage(const psa_key_attributes_t * attr, psa_key_
     if (PSA_KEY_TYPE_IS_ASYMMETRIC(type)) {
         if (PSA_KEY_TYPE_IS_PUBLIC_KEY(type)) {
             /* If key is only public key, allocate memory for public key*/
+            DEBUG("Allocating Public Key: %d\n", bytes);
             slot->key.pubkey_data = psa_malloc(bytes);
             slot->key.pubkey_bytes = bytes;
             return;
         }
         /* If key is key pair, allocate space for private key and public key */
+        DEBUG("Allocating Key Pair: %d / %d\n", bytes, PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits));
         slot->key.pubkey_data = psa_malloc(PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits));
         slot->key.pubkey_bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(type, bits);
         slot->key.data = psa_malloc(bytes);
-        slot->key.bytes = bytes;return;
+        slot->key.bytes = bytes;
+        return;
     }
+    /* If key is not asymmetric, only allocate key.data */
+    DEBUG("Allocating unstructured key: %d\n", bytes);
     slot->key.pubkey_data = NULL;
     slot->key.pubkey_bytes = 0;
     slot->key.data = psa_malloc(bytes);
@@ -1222,7 +1232,6 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
 
     /* Find empty slot */
     status = psa_start_key_creation(PSA_KEY_CREATION_IMPORT, attributes, &slot, &driver);
-
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
         return status;
@@ -1615,7 +1624,8 @@ psa_status_t psa_verify_hash(psa_key_id_t key,
         return status;
     }
 
-    if (!PSA_KEY_TYPE_IS_ECC_PUBLIC_KEY(slot->attr.type)) {
+    /* When key location is a secure element, this implementation only supports the use of public keys stored on the secure element, not key pairs in which the public key is stored locally. */
+    if ((PSA_KEY_LIFETIME_GET_LOCATION(slot->attr.lifetime) != PSA_KEY_LOCATION_LOCAL_STORAGE) &&PSA_KEY_TYPE_IS_ECC_KEY_PAIR(slot->attr.type)) {
         unlock_status = psa_unlock_key_slot(slot);
         return PSA_ERROR_NOT_SUPPORTED;
     }

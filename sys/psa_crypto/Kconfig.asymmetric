@@ -5,6 +5,13 @@
 # directory for more details.
 #
 
+
+menuconfig PSA_ASYMMETRIC
+    bool "PSA Asymmetric Crypto"
+    select MODULE_PSA_KEY_SLOT_MGMT
+
+if PSA_ASYMMETRIC
+
 menuconfig PSA_ECC_P192
     bool "NIST P192"
     select PSA_KEY_SIZE_192
@@ -59,6 +66,13 @@ config MICRO_ECC_CURVE_P256
 endchoice
 
 endif # PSA_ECC_P256
+
+endif # PSA_ASYMMETRIC
+
+config PSA_ECC
+    bool
+    help
+        Indicates that an elliptic curve operation is being used
 
 config PSA_ECC_P256_DRIVER
     bool

@@ -5,6 +5,11 @@
 # directory for more details.
 #
 
+menuconfig PSA_HASHES
+    bool "PSA Hashes"
+
+if PSA_HASHES
+
 menuconfig HASHES_MD5
     bool "MD5"
 
@@ -119,3 +124,5 @@ config PERIPH_HASHES_SHA512
 
 endchoice
 endif # HASHES_SHA512
+
+endif # PSA_HASHES

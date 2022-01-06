@@ -18,7 +18,6 @@
  * @}
  */
 
-#include <stdio.h>
 #include "kernel_defines.h"
 #include "psa_periph_hashes_ctx.h"
 #include "psa_periph_hashes_common.h"

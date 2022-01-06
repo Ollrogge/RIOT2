@@ -1,5 +1,5 @@
-#include "include/psa_crypto_se_management.h"
-#include "include/psa_crypto_se_driver.h"
+#include "psa_crypto_se_management.h"
+#include "psa_crypto_se_driver.h"
 
 #if IS_ACTIVE(CONFIG_PSA_MULTIPLE_SECURE_ELEMENTS)
 static psa_se_drv_data_t driver_table[PSA_MAX_SE_COUNT];

@@ -21,10 +21,10 @@
 #include <stdio.h>
 #include "kernel_defines.h"
 #include "psa/crypto.h"
-#include "include/psa_crypto_algorithm_dispatch.h"
-#include "include/psa_crypto_slot_management.h"
-#include "include/psa_crypto_se_management.h"
-#include "include/psa_crypto_se_driver.h"
+#include "psa_crypto_algorithm_dispatch.h"
+#include "psa_crypto_slot_management.h"
+#include "psa_crypto_se_management.h"
+#include "psa_crypto_se_driver.h"
 
 psa_status_t psa_location_dispatch_export_public_key(  const psa_key_attributes_t *attributes,
                                                     uint8_t *key_buffer,
@@ -141,27 +141,29 @@ psa_status_t psa_location_dispatch_cipher_decrypt_setup(psa_cipher_operation_t *
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-psa_status_t psa_location_dispatch_cipher_encrypt( psa_key_slot_t *slot,
-                                                psa_algorithm_t alg,
-                                                const uint8_t * input,
-                                                size_t input_length,
-                                                uint8_t * output,
-                                                size_t output_size,
-                                                size_t * output_length)
+psa_status_t psa_location_dispatch_cipher_encrypt(  const psa_key_attributes_t * attributes,
+                                                    psa_algorithm_t alg,
+                                                    const uint8_t * key_buffer,
+                                                    size_t key_buffer_size,
+                                                    const uint8_t * input,
+                                                    size_t input_length,
+                                                    uint8_t * output,
+                                                    size_t output_size,
+                                                    size_t * output_length)
 {
 #if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     const psa_drv_se_t *drv;
     psa_drv_se_context_t *drv_context;
 
-    if (psa_get_se_driver(slot->attr.lifetime, &drv, &drv_context)) {
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
         if (alg != PSA_ALG_ECB_NO_PADDING) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
         if (drv->cipher == NULL || drv->cipher->p_ecb == NULL) {
             return PSA_ERROR_NOT_SUPPORTED;
         }
-        status = drv->cipher->p_ecb(drv_context, *((psa_key_slot_number_t *) slot->key.data), alg, PSA_CRYPTO_DRIVER_ENCRYPT, input, input_length, output, output_size);
+        status = drv->cipher->p_ecb(drv_context, *((psa_key_slot_number_t *) key_buffer), alg, PSA_CRYPTO_DRIVER_ENCRYPT, input, input_length, output, output_size);
         if (status != PSA_SUCCESS) {
             return status;
         }
@@ -169,7 +171,7 @@ psa_status_t psa_location_dispatch_cipher_encrypt( psa_key_slot_t *slot,
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */
 
-    return psa_algorithm_dispatch_cipher_encrypt(slot, alg, input, input_length, output, output_size, output_length);
+    return psa_algorithm_dispatch_cipher_encrypt(attributes, alg, key_buffer, key_buffer_size, input, input_length, output, output_size, output_length);
 }
 
 psa_status_t psa_location_dispatch_sign_hash(  const psa_key_attributes_t *attributes,
@@ -245,8 +247,8 @@ psa_status_t psa_location_dispatch_mac_compute(const psa_key_attributes_t *attri
         return drv->mac->p_mac(drv_context, input, input_length, *((psa_key_slot_number_t *) key_buffer), alg, mac, mac_size, mac_length);
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */
-    (void) key_buffer_size;
-    return PSA_SUCCESS;
+
+    return psa_algorithm_dispatch_mac_compute(attributes, alg, key_buffer, key_buffer_size, input, input_length, mac, mac_size, mac_length);
 }
 
 psa_status_t psa_location_dispatch_generate_random(uint8_t * output,

@@ -1,9 +1,20 @@
-# Copyright (c) 2021 HAW Hamburg
+# Copyright (c) 2022 HAW Hamburg
 #
 # This file is subject to the terms and conditions of the GNU Lesser
 # General Public License v2.1. See the file LICENSE in the top level
 # directory for more details.
 #
+
+
+menuconfig PSA_SECURE_ELEMENT
+    bool "PSA Secure Element Configuration"
+    select MODULE_PSA_KEY_SLOT_MGMT
+    select MODULE_PSA_SE_MGMT
+
+if PSA_SECURE_ELEMENT
+
+config MODULE_PSA_SE_MGMT
+    bool
 
 config PSA_SE_ATECCX08A
     bool "Microchip Cryptoauthlib Driver"
@@ -19,3 +30,5 @@ config PSA_SECURE_ELEMENT_ECC
     bool
     help
         Indicate that an ECC Curve Algorithm on a Secure Element is present
+
+endif # PSA_SECURE_ELEMENT

@@ -530,6 +530,17 @@
 #define PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(type) \
     ((psa_key_type_t) ((type) & ~0x3000))
 
+/**
+ * @brief HMAC key.
+ *
+ * The key policy determines which underlying hash algorithm the key can be used for.
+ *
+ * The bit size of an HMAC key must be a non-zero multiple of 8. An HMAC key is typically the same
+ * size as the output of the underlying hash algorithm.
+ *
+ * @note PSA_HASH_LENGTH(alg) provides the output size of hash algorithm alg, in bytes.
+ * PSA_HASH_BLOCK_LENGTH(alg) provides the block size of hash algorithm alg, in bytes.
+ */
 #define PSA_KEY_TYPE_HMAC ((psa_key_type_t)0x1100)
 
 /**

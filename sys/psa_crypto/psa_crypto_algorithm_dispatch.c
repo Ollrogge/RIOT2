@@ -21,11 +21,11 @@
 #include <stdio.h>
 #include "kernel_defines.h"
 #include "psa/crypto.h"
-#include "include/psa_ecc.h"
-#include "include/psa_hashes.h"
-#include "include/psa_ciphers.h"
-#include "include/psa_crypto_operation_encoder.h"
-#include "include/psa_crypto_slot_management.h"
+#include "psa_mac.h"
+#include "psa_hashes.h"
+#include "psa_ecc.h"
+#include "psa_ciphers.h"
+#include "psa_crypto_operation_encoder.h"
 
 
 psa_status_t psa_algorithm_dispatch_hash_setup(psa_hash_operation_t * operation,
@@ -280,15 +280,16 @@ psa_status_t psa_algorithm_dispatch_cipher_set_iv(  psa_cipher_operation_t *oper
                                                 const uint8_t *iv,
                                                 size_t iv_length);
 
-psa_status_t psa_algorithm_dispatch_cipher_encrypt( psa_key_slot_t *slot,
-                                            psa_algorithm_t alg,
-                                            const uint8_t * input,
-                                            size_t input_length,
-                                            uint8_t * output,
-                                            size_t output_size,
-                                            size_t * output_length)
+psa_status_t psa_algorithm_dispatch_cipher_encrypt( const psa_key_attributes_t * attributes,
+                                                    psa_algorithm_t alg,
+                                                    const uint8_t * key_buffer,
+                                                    size_t key_buffer_size,
+                                                    const uint8_t * input,
+                                                    size_t input_length,
+                                                    uint8_t * output,
+                                                    size_t output_size,
+                                                    size_t * output_length)
 {
-    psa_key_attributes_t * attributes = &slot->attr;
     psa_cipher_op_t op = PSA_ENCODE_CIPHER_OPERATION(alg, attributes->bits, attributes->type);
 
     if (op == PSA_INVALID_OPERATION) {
@@ -298,17 +299,19 @@ psa_status_t psa_algorithm_dispatch_cipher_encrypt( psa_key_slot_t *slot,
     switch(op) {
 #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_128)
         case PSA_CBC_NO_PAD_AES_128:
-            return psa_cipher_cbc_aes_128_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
+            return psa_cipher_cbc_aes_128_encrypt(attributes, key_buffer, key_buffer_size, alg, input, input_length, output, output_size, output_length);
 #endif
 #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_192)
         case PSA_CBC_NO_PAD_AES_192:
-            return psa_cipher_cbc_aes_192_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
+            return psa_cipher_cbc_aes_192_encrypt(attributes, key_buffer, key_buffer_size, alg, input, input_length, output, output_size, output_length);
 #endif
 #if IS_ACTIVE(CONFIG_PSA_CIPHER_AES_256)
         case PSA_CBC_NO_PAD_AES_256:
-            return psa_cipher_cbc_aes_256_encrypt(attributes, slot->key.data, slot->key.bytes, alg, input, input_length, output, output_size, output_length);
+            return psa_cipher_cbc_aes_256_encrypt(attributes, key_buffer, key_buffer_size, alg, input, input_length, output, output_size, output_length);
 #endif
         default:
+            (void) key_buffer;
+            (void) key_buffer_size;
             (void) input;
             (void) input_length;
             (void) output;
@@ -316,4 +319,41 @@ psa_status_t psa_algorithm_dispatch_cipher_encrypt( psa_key_slot_t *slot,
             (void) output_length;
             return PSA_ERROR_NOT_SUPPORTED;
     }
+}
+
+psa_status_t psa_algorithm_dispatch_mac_compute(const psa_key_attributes_t * attributes,
+                                                psa_algorithm_t alg,
+                                                const uint8_t * key_buffer,
+                                                size_t key_buffer_size,
+                                                const uint8_t * input,
+                                                size_t input_length,
+                                                uint8_t * mac,
+                                                size_t mac_size,
+                                                size_t * mac_length)
+{
+    psa_status_t status = PSA_ERROR_NOT_SUPPORTED;
+
+    switch(alg) {
+    #if IS_ACTIVE(CONFIG_PSA_MAC_HMAC_SHA_256)
+        case PSA_ALG_HMAC(PSA_ALG_SHA_256):
+            status = psa_mac_compute_hmac_sha256(attributes, key_buffer, key_buffer_size, input, input_length, mac, mac_size, mac_length);
+            if (status != PSA_SUCCESS) {
+                return status;
+            }
+            break;
+    #endif
+        default:
+            (void) status;
+            return PSA_ERROR_NOT_SUPPORTED;
+    }
+
+    (void) attributes;
+    (void) key_buffer;
+    (void) key_buffer_size;
+    (void) input;
+    (void) input_length;
+    (void) mac;
+    (void) mac_size;
+    (void) mac_length;
+    return PSA_SUCCESS;
 }
