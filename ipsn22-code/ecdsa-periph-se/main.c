@@ -4,25 +4,13 @@
 #include "psa/crypto.h"
 #include "atca_params.h"
 
-#ifdef TEST_STACK
-#include "ps.h"
-#endif
-
-#include "periph/gpio.h"
-gpio_t external_gpio = GPIO_PIN(1, 8);
-gpio_t internal_gpio = GPIO_PIN(1, 7);
-
 #define ECDSA_MESSAGE_SIZE  (127)
 #define ECC_P256_BITS       (256)
 #define PUB_KEY_BYTES       (PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),ECC_P256_BITS))
 
 static void _test_init(void)
 {
-    gpio_init(external_gpio, GPIO_OUT);
-    gpio_init(internal_gpio, GPIO_OUT);
-
-    gpio_set(external_gpio);
-    gpio_clear(internal_gpio);
+    psa_crypto_init();
 }
 
 static void ecdsa(void)
@@ -67,9 +55,7 @@ static void ecdsa(void)
         return;
     }
 
-    gpio_clear(external_gpio);
     status = psa_hash_compute(PSA_ALG_SHA_256, msg, sizeof(msg), hash, sizeof(hash), &hash_length);
-    gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
         printf("Hash Generation failed: %ld\n", status);
         return;
@@ -106,11 +92,7 @@ static void ecdsa(void)
 int main(void)
 {
     _test_init();
-    psa_crypto_init();
     ecdsa();
 
-#ifdef TEST_STACK
-    ps();
-#endif
     return 0;
 }

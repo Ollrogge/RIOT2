@@ -2,8 +2,8 @@
 meta:
   title: "PSA Memory Overhead"
   export: "comb-psa-mem.png"
-  ylim_rom: 5
-  ylim_ram: 5
+  ylim_rom: 7
+  ylim_ram: 7
   cols: 3
 
 boards:
@@ -33,12 +33,17 @@ profiles:
   hmac-psa-se:
     dir_path: "../hmac_sha256_se"
     config: "../hmac_sha256_se/app.config.test"
-    label: "HMAC SHA 256 ATECC608A"
+    label: "HMAC SHA-256 ATECC608A"
     flags: ""
   hmac-psa-cc:
-    dir_path: "../hmac_sha256_periph"
-    config: "../hmac_sha256_periph/app.config.test"
-    label: "HMAC SHA 256 CryptoCell"
+    dir_path: "../hmac_sha256"
+    config: "../hmac_sha256/app.config.test"
+    label: "HMAC SHA-256 CryptoCell"
+    flags: ""
+  all-backends:
+    dir_path: "../backend-combination"
+    config: "../backend-combination/app.config.test"
+    label: "Multiple Backends"
     flags: ""
 
 groups:
@@ -60,7 +65,7 @@ groups:
     config:
       backend: True
       color: [0.8509803921568627, 0.8509803921568627, 0.8509803921568627]
-      hatch: "."
+      hatch: ""
 
 
   # ? "CryptoCell Library"
@@ -139,7 +144,7 @@ groups:
     config:
       backend: False
       color: [1.0, 1.0, 0.7019607843137254]
-      hatch: "X"
+      hatch: "+"
 
 
   ? "PSA Crypto Key Slot Management"
@@ -150,7 +155,7 @@ groups:
     config:
       backend: False
       color: [0.7450980392156863, 0.7294117647058823, 0.8549019607843137]
-      hatch: "X"
+      hatch: "\\"
 
   ? "PSA Crypto SE Management"
   :
@@ -160,7 +165,7 @@ groups:
     config:
       backend: False
       color: [0.984313725490196, 0.5019607843137255, 0.4470588235294118]
-      hatch: "X"
+      hatch: "/"
 
 
   ? "PSA Crypto"
@@ -171,7 +176,7 @@ groups:
     config:
       backend: False
       color: [0.5019607843137255, 0.6941176470588235, 0.8274509803921568]
-      hatch: "X"
+      hatch: "."
 
 # # some plot configuration
 plots:
@@ -179,4 +184,4 @@ plots:
     hatch:
       linewidth: 0.2
     label:
-      width: 10
+      width: 14

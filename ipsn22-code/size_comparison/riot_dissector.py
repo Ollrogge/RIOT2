@@ -176,17 +176,18 @@ def plot_for_board(results, export_path=None):
     #                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
     #                                                 pt2inch(5*LATEX_FIG_HEIGHT_PT)))
 
-    fig, [flash_ax, ram_ax] = plt.subplots(nrows=2, ncols=1,
-                                           figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
-                                                    pt2inch(5*LATEX_FIG_HEIGHT_PT)))
+    gs_kw = dict(width_ratios=[1, 1], height_ratios=[3, 1])
+    # fig, [flash_ax, low, ram_ax] = plt.subplots(nrows=3, ncols=1, gridspec_kw={'height_ratios': [2, 1,2]}, figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT), pt2inch(3*LATEX_FIG_HEIGHT_PT)))
+    fig, axes = plt.subplot_mosaic([['flash_ax', 'ram_ax'],
+                                    ['f_low', 'r_low']], gridspec_kw=gs_kw, figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT), pt2inch(1.6*LATEX_FIG_HEIGHT_PT)), constrained_layout=True)
 
     # PLOTS Position
     # - on the right
-    plt.subplots_adjust(right=1.2, wspace=0.4, hspace=0.2)
+    plt.subplots_adjust(right=1.2, wspace=0.2, hspace=0.05)
     # - split
     #plt.subplots_adjust(wspace=0.25, hspace=None, right=0.89)
 
-    axs = {'flash': flash_ax, 'ram': ram_ax}
+    axs = {'flash': axes['flash_ax'], 'f_low' : axes['f_low'], 'ram': axes['ram_ax'], 'r_low': axes['r_low']}
 
     # Accumulated plotted values, used as base for next stacked plot
     accumulated = {
@@ -266,7 +267,11 @@ def plot_for_board(results, export_path=None):
 
             axs['flash'].bar(runs, values['flash'], width, bottom=bottom['flash'],
                             edgecolor=edge_color, label=group, color=color, hatch=hatch, zorder=2)
+            axs['f_low'].bar(runs, values['flash'], width, bottom=bottom['flash'],
+                            edgecolor=edge_color, label=group, color=color, hatch=hatch, zorder=2)
             axs['ram'].bar(runs, values['ram'], width, bottom=bottom['ram'], edgecolor=edge_color,
+                        label=group, color=color, hatch=hatch, zorder=2)
+            axs['r_low'].bar(runs, values['ram'], width, bottom=bottom['ram'], edgecolor=edge_color,
                         label=group, color=color, hatch=hatch, zorder=2)
             bottom['flash'] = np.add(bottom['flash'], values['flash']).tolist()
             bottom['ram'] = np.add(bottom['ram'], values['ram']).tolist()
@@ -291,17 +296,16 @@ def plot_for_board(results, export_path=None):
 
     # draw percentage of total size
     for key, ax in axs.items():
-        percentage_offset = max_value[key] * 0.05
-        for i, run in enumerate(runs):
-            value = f'{int(psa_acc[key][i]*1024)} B\n ({round(accumulated_percentage[key][i], 1)} \%)'
-
-            axs[key].text(run, psa_acc[key][i] + percentage_offset, value, ha='center',
-                          backgroundcolor='white', fontsize='small')
-            # if accumulated_percentage[key][i] != 0:
-            #     acc = flash_acc[i] if key == 'flash' else ram_acc[i]
-            #     value = f'{acc} Byte\n({round(accumulated_percentage[key][i], 1)} \%)'
-            #     axs[key].text(run, accumulated[key][i] + percentage_offset, value, ha='center',
-            #                 backgroundcolor='white', fontsize='small')
+        if key != 'f_low' and key != 'r_low':
+            if key == 'flash':
+                percentage_offset = max_value[key] + 0.3
+            else:
+                percentage_offset = max_value[key] * 0.07
+            for i, run in enumerate(runs):
+                # value = f'{int(psa_acc[key][i]*1024)}\n ({round(accumulated_percentage[key][i], 1)} \%)'
+                value = f'{int(psa_acc[key][i]*1024)} B'
+                axs[key].text(run, psa_acc[key][i] + percentage_offset, value, ha='center',
+                            backgroundcolor='white', fontsize='small')
 
     # set the minimum to the base
     if get_plot_configuration('base/offset', False):
@@ -312,33 +316,61 @@ def plot_for_board(results, export_path=None):
     y_min['ram'] = np.min(np.subtract(backend_acc['ram'], 1))
 
     # set maximum and minimum values for Y axis
-    axs['flash'].set_ylim(y_min['flash'], CONFIG['meta']['ylim_rom'])
-    axs['ram'].set_ylim(y_min['ram'], CONFIG['meta']['ylim_ram'])
+    axs['flash'].set_ylim(-0.5, CONFIG['meta']['ylim_rom'])
+    axs['f_low'].set_ylim(y_min['flash'] - 1, -0.5)
+    axs['ram'].set_ylim(-0.5, CONFIG['meta']['ylim_ram'])
+    axs['r_low'].set_ylim(y_min['ram'], -0.5)
 
     # set labels and legends
     axs['flash'].set_ylabel('ROM [KiB]')
     axs['ram'].set_ylabel('RAM [KiB]')
 
+    # hide the spines between flash and f_low
+    axs['flash'].spines.bottom.set_visible(False)
+    axs['f_low'].spines.top.set_visible(False)
+    axs['flash'].xaxis.tick_top()
+    axs['flash'].tick_params(labeltop=False)  # don't put tick labels at the top
+    axs['f_low'].xaxis.tick_bottom()
+
+    # hide the spines between ram and r_low
+    axs['ram'].spines.bottom.set_visible(False)
+    axs['r_low'].spines.top.set_visible(False)
+    axs['ram'].xaxis.tick_top()
+    axs['ram'].tick_params(labeltop=False)  # don't put tick labels at the top
+    axs['r_low'].xaxis.tick_bottom()
+
     axs['flash'].yaxis.set_major_locator(MultipleLocator(2))
+    axs['f_low'].yaxis.set_major_locator(MultipleLocator(12))
     axs['ram'].yaxis.set_major_locator(MultipleLocator(2))
+    axs['r_low'].yaxis.set_major_locator(MultipleLocator(6))
 
     # auto-locate minor tick
     axs['flash'].yaxis.set_minor_locator(AutoMinorLocator())
+    axs['f_low'].yaxis.set_minor_locator(AutoMinorLocator())
     axs['ram'].yaxis.set_minor_locator(AutoMinorLocator())
+    axs['r_low'].yaxis.set_minor_locator(AutoMinorLocator())
 
     # show label on left of primary axes, put ticks inside
     axs['flash'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
+    axs['f_low'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
     axs['flash'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
+    axs['f_low'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
 
     axs['ram'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
+    axs['r_low'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
     axs['ram'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
+    axs['r_low'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
 
     # show grid only on the y axis
     axs['flash'].grid(linestyle='-.', linewidth=1, zorder=0, which='major', axis='y')
+    axs['f_low'].grid(linestyle='-.', linewidth=1, zorder=0, which='major', axis='y')
     axs['ram'].grid(linestyle='-.', linewidth=1, zorder=0, which='major', axis='y')
+    axs['r_low'].grid(linestyle='-.', linewidth=1, zorder=0, which='major', axis='y')
 
     axs['flash'].margins(x=0.08)
+    axs['f_low'].margins(x=0.08)
     axs['ram'].margins(x=0.08)
+    axs['r_low'].margins(x=0.08)
 
     # set a formatter to avoid serif tabels
     for ax in axs.values():
@@ -349,16 +381,16 @@ def plot_for_board(results, export_path=None):
 
     # LEGEND
     # - in the middle
-    fig.legend(handles[::-1], labels[::-1], ncol=CONFIG['meta']['cols'], bbox_to_anchor=(0.63, 0.9), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
+    fig.legend(handles[::-1], labels[::-1], ncol=CONFIG['meta']['cols'], bbox_to_anchor=(0.63, 0.95), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
     # - to the right
     #fig.legend(handles[::-1], labels[::-1], ncol=1, bbox_to_anchor=(1.02, 0.5), loc='center', handletextpad=0.5, frameon=False)
 
-    axs['flash'].set_xticklabels(runs, rotation=45, va='top', ha='right')
-    axs['ram'].set_xticklabels(runs, rotation=45, va='top', ha='right')
+    axs['f_low'].set_xticklabels(runs, rotation=45, va='top', ha='right')
+    axs['r_low'].set_xticklabels(runs, rotation=45, va='top', ha='right')
 
     export_path = CONFIG['meta']['export']
     if export_path is not None:
-        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0.05, x=0.65)
+        # plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=-0.05, x=0.65)
         plt.savefig(export_path, bbox_inches='tight')
     else:
         plt.show()

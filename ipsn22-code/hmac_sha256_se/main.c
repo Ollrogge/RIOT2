@@ -1,18 +1,14 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "periph/gpio.h"
 #include "psa/crypto.h"
 #include "atca_params.h"
 
-#ifdef TEST_STACK
-#include "ps.h"
-#endif
-
-#include "xtimer.h"
-
+#if TEST_TIME
+#include "periph/gpio.h"
 gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
+#endif
 
 static const uint8_t HMAC_KEY[] = {
     0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
@@ -32,11 +28,14 @@ static size_t HMAC_MSG_LEN = 32;
 
 static void _test_init(void)
 {
+#if TEST_TIME
     gpio_init(external_gpio, GPIO_OUT);
     gpio_init(internal_gpio, GPIO_OUT);
 
     gpio_set(external_gpio);
     gpio_clear(internal_gpio);
+#endif
+    psa_crypto_init();
 }
 
 static void psa_hmac_sha256(void)
@@ -58,23 +57,29 @@ static void psa_hmac_sha256(void)
     psa_set_key_bits(&attr, PSA_BYTES_TO_BITS(HMAC_KEY_LEN));
     psa_set_key_type(&attr, PSA_KEY_TYPE_HMAC);
 
+#if TEST_TIME
     gpio_clear(external_gpio);
     status = psa_import_key(&attr, HMAC_KEY, HMAC_KEY_LEN, &key_id);
     gpio_set(external_gpio);
+
+    gpio_clear(external_gpio);
+    status = psa_mac_compute(key_id, PSA_ALG_HMAC(PSA_ALG_SHA_256), HMAC_MSG, HMAC_MSG_LEN, digest, digest_size, &output_len);
+    gpio_set(external_gpio);
+#else
+
+    status = psa_import_key(&attr, HMAC_KEY, HMAC_KEY_LEN, &key_id);
     if (status != PSA_SUCCESS) {
         printf("MAC Key Import failed: %ld\n", status);
         return;
     }
 
-    gpio_clear(external_gpio);
     status = psa_mac_compute(key_id, PSA_ALG_HMAC(PSA_ALG_SHA_256), HMAC_MSG, HMAC_MSG_LEN, digest, digest_size, &output_len);
-    gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
         printf("MAC Compute failed: %ld\n", status);
         return;
     }
-
-    puts("MAC Compute Success");
+#endif
+    puts("SE MAC Compute Done");
 }
 
 int main(void)
@@ -83,8 +88,5 @@ int main(void)
     psa_crypto_init();
     psa_hmac_sha256();
 
-#ifdef TEST_STACK
-    ps();
-#endif
     return 0;
 }

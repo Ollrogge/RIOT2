@@ -3,26 +3,25 @@
 
 #include "psa/crypto.h"
 
-#ifdef TEST_STACK
-#include "ps.h"
-#endif
-
-#include "xtimer.h"
+#if TEST_TIME
 #include "periph/gpio.h"
 gpio_t external_gpio = GPIO_PIN(1, 8);
 gpio_t internal_gpio = GPIO_PIN(1, 7);
+#endif
 
 #define ECDSA_MESSAGE_SIZE  (127)
 #define ECC_KEY_SIZE    (256)
 
 static void _test_init(void)
 {
+#if TEST_TIME
     gpio_init(external_gpio, GPIO_OUT);
     gpio_init(internal_gpio, GPIO_OUT);
 
     gpio_set(external_gpio);
     gpio_clear(internal_gpio);
-    xtimer_sleep(1);
+#endif
+    psa_crypto_init();
 }
 
 static void ecdsa_periph(void)
@@ -48,49 +47,54 @@ static void ecdsa_periph(void)
     psa_set_key_type(&privkey_attr, type);
     psa_set_key_bits(&privkey_attr, bits);
 
+#if TEST_TIME
     gpio_clear(external_gpio);
     status = psa_generate_key(&privkey_attr, &privkey_id);
     gpio_set(external_gpio);
+
+    gpio_clear(external_gpio);
+    status = psa_hash_compute(PSA_ALG_SHA_256, msg, sizeof(msg), hash, sizeof(hash), &hash_length);
+    gpio_set(external_gpio);
+
+    gpio_clear(external_gpio);
+    status = psa_sign_hash(privkey_id, alg, hash, sizeof(hash), signature, sizeof(signature), &sig_length);
+    gpio_set(external_gpio);
+
+    gpio_clear(external_gpio);
+    status = psa_verify_hash(privkey_id, alg, hash, sizeof(hash), signature, sig_length);
+    gpio_set(external_gpio);
+#else
+    status = psa_generate_key(&privkey_attr, &privkey_id);
     if (status != PSA_SUCCESS) {
         printf("Local Generate Key failed: %ld\n", status);
         return;
     }
 
-    gpio_clear(external_gpio);
     status = psa_hash_compute(PSA_ALG_SHA_256, msg, sizeof(msg), hash, sizeof(hash), &hash_length);
-    gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
         printf("Hash Generation failed: %ld\n", status);
         return;
     }
 
-    gpio_clear(external_gpio);
     status = psa_sign_hash(privkey_id, alg, hash, sizeof(hash), signature, sizeof(signature), &sig_length);
-    gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
         printf("Periph Sign hash failed: %ld\n", status);
         return;
     }
 
-    gpio_clear(external_gpio);
     status = psa_verify_hash(privkey_id, alg, hash, sizeof(hash), signature, sig_length);
-    gpio_set(external_gpio);
     if (status != PSA_SUCCESS) {
         printf("Periph Verify hash failed: %ld\n", status);
         return;
     }
-
-    puts("ECDSA Periph Success");
+#endif
+    puts("ECDSA Periph Done");
 }
 
 int main(void)
 {
     _test_init();
-    psa_crypto_init();
     ecdsa_periph();
 
-#ifdef TEST_STACK
-    ps();
-#endif
     return 0;
 }

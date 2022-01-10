@@ -32,8 +32,10 @@
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
 
+#if TEST_TIME
 #include "periph/gpio.h"
-// extern gpio_t internal_gpio;
+extern gpio_t internal_gpio;
+#endif
 
 static uint8_t lib_initialized = 0;
 
@@ -429,9 +431,13 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
                                 size_t * output_length)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    // gpio_set(internal_gpio);
+#if TEST_TIME
+    gpio_set(internal_gpio);
     psa_key_attributes_t attr = psa_key_attributes_init();
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
+#else
+    psa_key_attributes_t attr = psa_key_attributes_init();
+#endif
     psa_status_t unlock_status = PSA_ERROR_CORRUPTION_DETECTED;
     psa_key_slot_t *slot;
 
@@ -442,15 +448,16 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     if (!PSA_ALG_IS_CIPHER(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-    // gpio_set(internal_gpio);
+#if TEST_TIME
+    gpio_set(internal_gpio);
     status = psa_get_key_attributes(key, &attr);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (status != PSA_SUCCESS) {
         return PSA_ERROR_INVALID_HANDLE;
     }
-    // gpio_set(internal_gpio);
+    gpio_set(internal_gpio);
     status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
     if (status != PSA_SUCCESS) {
         unlock_status = psa_unlock_key_slot(slot);
         if (unlock_status != PSA_SUCCESS) {
@@ -458,6 +465,20 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
         }
         return status;
     }
+#else
+    status = psa_get_key_attributes(key, &attr);
+    if (status != PSA_SUCCESS) {
+        return PSA_ERROR_INVALID_HANDLE;
+    }
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        if (unlock_status != PSA_SUCCESS) {
+            status = unlock_status;
+        }
+        return status;
+    }
+#endif
 
     return psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
 }
@@ -714,9 +735,13 @@ psa_status_t psa_hash_compute(psa_algorithm_t alg,
                               size_t hash_size,
                               size_t * hash_length)
 {
-    // gpio_set(internal_gpio);
+#if TEST_TIME
+    gpio_set(internal_gpio);
     psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
-    // gpio_clear(internal_gpio);
+    gpio_clear(internal_gpio);
+#else
+    psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
+#endif
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
     if (!lib_initialized) {
@@ -1245,7 +1270,6 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     else {
         status = psa_location_dispatch_import_key(attributes, data, data_length, slot->key.data, slot->key.bytes, &slot->key.bytes, &bits);
     }
-
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
         return status;
@@ -1260,7 +1284,6 @@ psa_status_t psa_import_key(const psa_key_attributes_t * attributes,
     }
 
     status = psa_finish_key_creation(slot, driver, key);
-
     if (status != PSA_SUCCESS) {
         psa_fail_key_creation(slot, driver);
     }

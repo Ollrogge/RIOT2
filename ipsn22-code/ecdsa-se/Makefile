@@ -9,10 +9,8 @@ ifeq (1, $(USE_MULTIPLE_BACKENDS))
 	KCONFIG_ADD_CONFIG += $(APPDIR)/app.config.test.multiple
 endif
 
-ifeq (1, $(TEST_STACK))
-	CFLAGS += -DTEST_STACK
-	CFLAGS += -DDEVELHELP=1
-	KCONFIG_ADD_CONFIG += $(APPDIR)/app.config.test.stack
+ifeq (1, $(TEST_TIME))
+	CFLAGS += -DTEST_TIME
 endif
 
 export TEST_KCONFIG ?= 1

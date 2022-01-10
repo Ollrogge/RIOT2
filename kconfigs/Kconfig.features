@@ -99,6 +99,11 @@ config HAS_PERIPH_HASH_SHA512
     help
         Indicates that there is SHA-512 hardware acceleration present.
 
+config HAS_PERIPH_HMAC_SHA256
+    bool
+    help
+        Indicates that there is HMAC SHA-256 hardware acceleration present.
+
 # Cipher AES related features
 config HAS_PERIPH_CIPHER_AES_128_CBC
     bool

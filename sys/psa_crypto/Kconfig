@@ -16,7 +16,7 @@ rsource "Kconfig.mac"
 rsource "Kconfig.hashes"
 rsource "Kconfig.ciphers"
 rsource "Kconfig.asymmetric"
-rsource "Kconfig.keysizes"
+rsource "Kconfig.keys"
 
 rsource "psa_se_mgmt/Kconfig"
 rsource "psa_key_slot_mgmt/Kconfig"
