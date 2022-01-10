@@ -1,0 +1,182 @@
+# configuration file for run.py
+meta:
+  title: "PSA Memory Overhead"
+  export: "comb-psa-mem.png"
+  ylim_rom: 5
+  ylim_ram: 5
+  cols: 3
+
+boards:
+  - "nrf52840dk"
+
+profiles:
+  aes-cbc-psa-cc:
+    dir_path: "../aes-cbc"
+    config: "../aes-cbc/app.config.test"
+    label: "AES CryptoCell"
+    flags: ""
+  aes-cbc-psa-riot:
+    dir_path: "../aes-cbc"
+    config: "../aes-cbc/app.config.test ../aes-cbc/app.config.test.software"
+    label: "AES RIOT Cipher"
+    flags: "-DSOFTWARE"
+  ecdsa-psa-se:
+    dir_path: "../ecdsa-se"
+    config: "../ecdsa-se/app.config.test ../ecdsa-se/app.config.test.multiple"
+    label: "ECDSA ATECC608A"
+    flags: "-DUSE_MULTIPLE_BACKENDS"
+  ecdsa-psa-cc:
+    dir_path: "../ecdsa_periph"
+    config: "../ecdsa_periph/app.config.test"
+    label: "ECDSA CryptoCell"
+    flags: ""
+  hmac-psa-se:
+    dir_path: "../hmac_sha256_se"
+    config: "../hmac_sha256_se/app.config.test"
+    label: "HMAC SHA 256 ATECC608A"
+    flags: ""
+  hmac-psa-cc:
+    dir_path: "../hmac_sha256_periph"
+    config: "../hmac_sha256_periph/app.config.test"
+    label: "HMAC SHA 256 CryptoCell"
+    flags: ""
+
+groups:
+  ? "Backend"
+  :
+    modules:
+      - ["sys", "crypto"]
+      - ["~", "sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "random"]
+      - ["sys", "hashes"]
+      - ["cpu", "nrf52", "periph", "cryptocell_setup"]
+      - ["cpu", "nrf52", "periph", "cryptocell_util"]
+      - ["cpu", "nrf52", "cryptocell_lib"]
+      - ["pkg", "cryptoauthlib", "contrib"]
+      - ["sys", "auto_init", "auto_init_security", "auto_init_atca"]
+      - ["pkg", "cryptoauthlib"]
+      - ["~", "pkg", "cryptoauthlib", "psa_se_driver"]
+
+    config:
+      backend: True
+      color: [0.8509803921568627, 0.8509803921568627, 0.8509803921568627]
+      hatch: "."
+
+
+  # ? "CryptoCell Library"
+  # :
+  #   modules:
+  #     - ["cpu", "nrf52", "periph", "cryptocell_setup"]
+  #     - ["cpu", "nrf52", "periph", "cryptocell_util"]
+  #     - ["cpu", "nrf52", "cryptocell_lib"]
+
+  #   config:
+  #     backend: True
+  #     color: [0.8509803921568627, 0.8509803921568627, 0.8509803921568627]
+  #     hatch: "."
+
+  # ? "Cryptoauth Library"
+  # :
+  #   modules:
+  #     - ["pkg", "cryptoauthlib", "contrib"]
+  #     - ["sys", "auto_init", "auto_init_security", "auto_init_atca"]
+  #     - ["pkg", "cryptoauthlib"]
+  #     - ["~", "pkg", "cryptoauthlib", "psa_se_driver"]
+
+  #   config:
+  #     backend: True
+  #     color: [0.8509803921568627, 0.8509803921568627, 0.8509803921568627]
+  #     hatch: "\\"
+
+
+  # ? "RIOT Cipher Module"
+  # :
+  #   modules:
+  #     - ["sys", "crypto"]
+  #     - ["~", "sys", "crypto", "psa_riot_cipher"]
+
+  #   config:
+  #     backend: True
+  #     color: [0.7411764705882353, 0.7411764705882353, 0.7411764705882353]
+  #     hatch: "-"
+
+  # ? "RIOT Random"
+  # :
+  #   modules:
+  #     - ["sys", "random"]
+  #     - ["sys", "hashes"]
+
+  #   config:
+  #     backend: True
+  #     color: [0.5882352941176471, 0.5882352941176471, 0.5882352941176471]
+  #     hatch: "\\"
+
+
+  ? "PSA Crypto Glue Code"
+  :
+    modules:
+      - ["cpu", "nrf52", "periph", "aes_cbc"]
+      - ["cpu", "nrf52", "periph", "aes_common"]
+      - ["cpu", "nrf52", "periph", "psa_error"]
+      - ["pkg", "cryptoauthlib", "psa_se_driver"]
+      - ["sys", "crypto", "psa_riot_cipher"]
+      - ["sys", "nrf52", "periph", "ecc_common"]
+      - ["sys", "nrf52", "periph", "ecc_p256"]
+      - ["sys", "nrf52", "periph", "hmac"]
+
+    config:
+      backend: False
+      color: [0.5529411764705883, 0.8274509803921568, 0.7803921568627451]
+      hatch: "X"
+
+
+  ? "PSA Crypto Dispatcher"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto_algorithm_dispatch"]
+      - ["sys", "psa_crypto", "psa_crypto_location_dispatch"]
+
+    config:
+      backend: False
+      color: [1.0, 1.0, 0.7019607843137254]
+      hatch: "X"
+
+
+  ? "PSA Crypto Key Slot Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_key_slot_mgmt"]
+
+    config:
+      backend: False
+      color: [0.7450980392156863, 0.7294117647058823, 0.8549019607843137]
+      hatch: "X"
+
+  ? "PSA Crypto SE Management"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_se_mgmt"]
+
+    config:
+      backend: False
+      color: [0.984313725490196, 0.5019607843137255, 0.4470588235294118]
+      hatch: "X"
+
+
+  ? "PSA Crypto"
+  :
+    modules:
+      - ["sys", "psa_crypto", "psa_crypto"]
+
+    config:
+      backend: False
+      color: [0.5019607843137255, 0.6941176470588235, 0.8274509803921568]
+      hatch: "X"
+
+# # some plot configuration
+plots:
+  config:
+    hatch:
+      linewidth: 0.2
+    label:
+      width: 10

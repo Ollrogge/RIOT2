@@ -2,29 +2,19 @@
 meta:
   title: "AES 128 CBC"
   export: "comb-aes.png"
-  ylim_rom: 12
-  ylim_ram: 12
-  cols: 3
+  ylim_rom: 4
+  ylim_ram: 4
+  cols: 4
 
 boards:
   - "nrf52840dk"
 
 profiles:
-  # aes-cbc-bl-cc:
-  #   dir_path: "../baseline"
-  #   config: "../baseline/app.config.test.cryptocell ../baseline/app.config.test.random"
-  #   label: "CryptoCell"
-  #   flags: "-DCRYPTOCELL_CIPHER"
   aes-cbc-psa-cc:
     dir_path: "../aes-cbc"
     config: "../aes-cbc/app.config.test"
     label: "PSA \\& CryptoCell"
     flags: ""
-  # aes-cbc-bl-riot:
-  #   dir_path: "../baseline"
-  #   config: "../baseline/app.config.test.riot ../baseline/app.config.test.random"
-  #   label: "RIOT"
-  #   flags: "-DRIOT_CIPHER"
   aes-cbc-psa-riot:
     dir_path: "../aes-cbc"
     config: "../aes-cbc/app.config.test ../aes-cbc/app.config.test.software"
@@ -42,6 +32,7 @@ groups:
 
     config:
       backend: True
+      color: [0.8509803921568627, 0.8509803921568627, 0.8509803921568627]
       hatch: "."
 
 
@@ -53,6 +44,7 @@ groups:
 
     config:
       backend: True
+      color: [0.7411764705882353, 0.7411764705882353, 0.7411764705882353]
       hatch: "-"
 
 
@@ -64,6 +56,7 @@ groups:
 
     config:
       backend: True
+      color: [0.5882352941176471, 0.5882352941176471, 0.5882352941176471]
       hatch: "\\"
 
 
@@ -83,6 +76,7 @@ groups:
 
     config:
       backend: False
+      color: [0.7764705882352941, 0.8588235294117647, 0.9372549019607843]
       hatch: "X"
 
 
@@ -94,6 +88,7 @@ groups:
 
     config:
       backend: False
+      color: [0.6196078431372549, 0.792156862745098, 0.8823529411764706]
       hatch: "X"
 
 
@@ -104,6 +99,7 @@ groups:
 
     config:
       backend: False
+      color: [0.4196078431372549, 0.6823529411764706, 0.8392156862745098]
       hatch: "X"
 
 
@@ -124,8 +120,8 @@ groups:
 
     config:
       backend: False
+      color: [0.19215686274509805, 0.5098039215686274, 0.7411764705882353]
       hatch: "X"
-      # color: [1.0, 0.9294117647058824, 0.43529411764705883]
 
 # # some plot configuration
 plots:

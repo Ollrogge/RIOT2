@@ -135,6 +135,7 @@ def aggregate_group_sizes(group, dump):
 
     return (flash_size, ram_size)
 
+
 def get_sizes_and_runs(results):
     sizes = {}
     for group in CONFIG['groups'].keys():
@@ -167,28 +168,45 @@ def plot_for_board(results, export_path=None):
     # sizes is a dictionary where the keys are the module groups and the values
     # are maps containing arrays containing the sizes of the corresponding modules, one per configuration
     sizes, sizes_sum, runs = get_sizes_and_runs(results)
-    print(f'Sizes: {sizes}\nSizes_Sum: {sizes_sum}\nRuns: {runs}')
     width = 0.7
 
     plt.style.use('styles.mplstyle')
 
-    fig, [flash_ax, ram_ax] = plt.subplots(nrows=1, ncols=2,
+    # fig, [flash_ax, f_ax_low, ram_ax, r_ax_low] = plt.subplots(nrows=4, ncols=1,
+    #                                        figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
+    #                                                 pt2inch(5*LATEX_FIG_HEIGHT_PT)))
+
+    fig, [flash_ax, ram_ax] = plt.subplots(nrows=2, ncols=1,
                                            figsize=(pt2inch(3*LATEX_COLUM_WIDTH_PT),
-                                                    pt2inch(1.6*LATEX_FIG_HEIGHT_PT)))
+                                                    pt2inch(5*LATEX_FIG_HEIGHT_PT)))
 
     # PLOTS Position
     # - on the right
-    plt.subplots_adjust(right=1.2, wspace=0.4)
+    plt.subplots_adjust(right=1.2, wspace=0.4, hspace=0.2)
     # - split
     #plt.subplots_adjust(wspace=0.25, hspace=None, right=0.89)
 
     axs = {'flash': flash_ax, 'ram': ram_ax}
 
+    # Accumulated plotted values, used as base for next stacked plot
     accumulated = {
         'flash': np.zeros(len(runs)),
         'ram': np.zeros(len(runs))
     }
 
+    # Accumulated sizes of PSA overhead, positive bars
+    psa_acc = {
+        'flash': np.zeros(len(runs)),
+        'ram': np.zeros(len(runs))
+    }
+
+    # Accumulated sizes of backends, negative bars
+    backend_acc = {
+        'flash': np.zeros(len(runs)),
+        'ram': np.zeros(len(runs))
+    }
+
+    # Accumulated percentage of PSA overhead
     accumulated_percentage = {
         'flash': np.zeros(len(runs)),
         'ram': np.zeros(len(runs)),
@@ -205,42 +223,20 @@ def plot_for_board(results, export_path=None):
     }
 
     colors = plt.get_cmap("Set3").colors
-    # colors = colors[::2]
+    print(f'Colors: {colors}')
 
     i = 0
 
     logging.info("Total: {}".format(sizes_sum))
 
-    if len(sizes['PSA Crypto']['flash']) == 4:
-        flash_acc = [1, 0, 1, 0]
-        ram_acc = [1, 0, 1, 0]
-    else:
-        flash_acc = [0, 0]
-        ram_acc = [0, 0]
-
     for (group, size) in sizes.items():
-        if len(sizes[group]['flash']) == 4:
-            flash_acc[1] += sizes[group]['flash'][1]
-            flash_acc[3] += sizes[group]['flash'][3]
-            ram_acc[1] += sizes[group]['ram'][1]
-            ram_acc[3] += sizes[group]['ram'][3]
-        else:
-            flash_acc[0] += sizes[group]['flash'][0]
-            flash_acc[1] += sizes[group]['flash'][1]
-            ram_acc[0] += sizes[group]['ram'][0]
-            ram_acc[1] += sizes[group]['ram'][1]
-
-        # percentage = {
-        #     'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), sizes_sum['flash']),
-        #     'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), sizes_sum['ram'])
-        # }
         percentage = {
-            'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), flash_acc),
-            'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), ram_acc)
+            'flash': np.divide(np.multiply(size['flash'], np.full(len(size['flash']), 100)), sizes_sum['flash']),
+            'ram': np.divide(np.multiply(size['ram'], np.full(len(size['ram']), 100)), sizes_sum['ram'])
         }
         logging.info("{}:{} ({})".format(group, size, percentage))
 
-        if group == "PSA Crypto" or group == "PSA Crypto Key Slot Management":
+        if not CONFIG['groups'][group]['config']['backend']:
             accumulated_percentage['flash'] += percentage['flash']
             accumulated_percentage['ram'] += percentage['ram']
 
@@ -255,19 +251,27 @@ def plot_for_board(results, export_path=None):
         if is_base and get_plot_configuration('base/show', False) or not is_base:
             # load group plot configuration
             hatch = get_group_configuration(group, 'hatch', get_hatch(i))
-            color = get_group_configuration(group, 'color', colors[0])
+            color = CONFIG['groups'][group]['config']['color']
             edge_color = get_group_configuration(group, 'edge-color', 'dimgray')
 
-            # add new bars
-            axs['flash'].bar(runs, values['flash'], width, bottom=accumulated['flash'],
+            # Set Bar Bottom to PSA values
+            bottom = psa_acc
+
+            if CONFIG['groups'][group]['config']['backend']:
+                # If group is a backend transform to negative values to plot negative bars
+                values['flash'] = np.multiply(values['flash'], -1)
+                values['ram'] = np.multiply(values['ram'], -1)
+                # Set bottom to backend values
+                bottom = backend_acc
+
+            axs['flash'].bar(runs, values['flash'], width, bottom=bottom['flash'],
                             edgecolor=edge_color, label=group, color=color, hatch=hatch, zorder=2)
-            axs['ram'].bar(runs, values['ram'], width, bottom=accumulated['ram'], edgecolor=edge_color,
+            axs['ram'].bar(runs, values['ram'], width, bottom=bottom['ram'], edgecolor=edge_color,
                         label=group, color=color, hatch=hatch, zorder=2)
+            bottom['flash'] = np.add(bottom['flash'], values['flash']).tolist()
+            bottom['ram'] = np.add(bottom['ram'], values['ram']).tolist()
 
-            #remove last used color
-            colors = colors[1:]
-
-        # update the maximum and the accumulated array
+        # update the maximum and the accumulated array (consists of backend and psa values)
         accumulated['flash'] = np.add(accumulated['flash'], values['flash']).tolist()
         accumulated['ram'] = np.add(accumulated['ram'], values['ram']).tolist()
         max_value['flash'] = np.max([np.max(accumulated['flash']), max_value['flash']])
@@ -284,24 +288,28 @@ def plot_for_board(results, export_path=None):
         'flash': 0,
         'ram': 0
     }
-    x = sizes['PSA Crypto Key Slot Management']
 
     # draw percentage of total size
     for key, ax in axs.items():
-        percentage_offset = max_value[key] * 0.03
+        percentage_offset = max_value[key] * 0.05
         for i, run in enumerate(runs):
-            if accumulated_percentage[key][i] != 0:
-                psa_size = x['flash'][i] if key == 'flash' else x['ram'][i]
-                acc = flash_acc[i] if key == 'flash' else ram_acc[i]
-                value = f'{psa_size} Byte\n({round(accumulated_percentage[key][i], 1)} \%)'
-                axs[key].text(run, accumulated[key][i] + percentage_offset, value, ha='center',
-                            backgroundcolor='white', fontsize='small')
+            value = f'{int(psa_acc[key][i]*1024)} B\n ({round(accumulated_percentage[key][i], 1)} \%)'
 
-    # # set the minimum to the base
+            axs[key].text(run, psa_acc[key][i] + percentage_offset, value, ha='center',
+                          backgroundcolor='white', fontsize='small')
+            # if accumulated_percentage[key][i] != 0:
+            #     acc = flash_acc[i] if key == 'flash' else ram_acc[i]
+            #     value = f'{acc} Byte\n({round(accumulated_percentage[key][i], 1)} \%)'
+            #     axs[key].text(run, accumulated[key][i] + percentage_offset, value, ha='center',
+            #                 backgroundcolor='white', fontsize='small')
+
+    # set the minimum to the base
     if get_plot_configuration('base/offset', False):
         y_min['flash'] = np.min(axis_base['flash'])
         y_min['ram'] = np.min(axis_base['ram'])
 
+    y_min['flash'] = np.min(np.subtract(backend_acc['flash'], 1))
+    y_min['ram'] = np.min(np.subtract(backend_acc['ram'], 1))
 
     # set maximum and minimum values for Y axis
     axs['flash'].set_ylim(y_min['flash'], CONFIG['meta']['ylim_rom'])
@@ -311,30 +319,19 @@ def plot_for_board(results, export_path=None):
     axs['flash'].set_ylabel('ROM [KiB]')
     axs['ram'].set_ylabel('RAM [KiB]')
 
-    axs['flash_sec'] = axs['flash'].secondary_yaxis('right')
-    axs['ram_sec'] = axs['ram'].secondary_yaxis('right')
-
     axs['flash'].yaxis.set_major_locator(MultipleLocator(2))
-    axs['flash_sec'].yaxis.set_major_locator(MultipleLocator(2))
     axs['ram'].yaxis.set_major_locator(MultipleLocator(2))
-    axs['ram_sec'].yaxis.set_major_locator(MultipleLocator(2))
 
     # auto-locate minor tick
     axs['flash'].yaxis.set_minor_locator(AutoMinorLocator())
-    axs['flash_sec'].yaxis.set_minor_locator(AutoMinorLocator())
     axs['ram'].yaxis.set_minor_locator(AutoMinorLocator())
-    axs['ram_sec'].yaxis.set_minor_locator(AutoMinorLocator())
 
     # show label on left of primary axes, put ticks inside
     axs['flash'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
     axs['flash'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
-    axs['flash_sec'].tick_params(axis='y', direction='in', length=8, labelright=False)
-    axs['flash_sec'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
 
     axs['ram'].tick_params(axis='y', which='major', direction='in', length=8, labelleft=True)
     axs['ram'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
-    axs['ram_sec'].tick_params(axis='y', direction='in', length=8, labelright=False)
-    axs['ram_sec'].tick_params(axis='y', which='minor', direction='in', length=5, labelleft=False)
 
     # show grid only on the y axis
     axs['flash'].grid(linestyle='-.', linewidth=1, zorder=0, which='major', axis='y')
@@ -352,7 +349,7 @@ def plot_for_board(results, export_path=None):
 
     # LEGEND
     # - in the middle
-    fig.legend(handles[::-1], labels[::-1], ncol=CONFIG['meta']['cols'], bbox_to_anchor=(0.63, 0.95), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
+    fig.legend(handles[::-1], labels[::-1], ncol=CONFIG['meta']['cols'], bbox_to_anchor=(0.63, 0.9), loc='center',handletextpad=0.5, frameon=False, handlelength=1.5)
     # - to the right
     #fig.legend(handles[::-1], labels[::-1], ncol=1, bbox_to_anchor=(1.02, 0.5), loc='center', handletextpad=0.5, frameon=False)
 
@@ -361,7 +358,7 @@ def plot_for_board(results, export_path=None):
 
     export_path = CONFIG['meta']['export']
     if export_path is not None:
-        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0, x=0.65)
+        plt.suptitle(CONFIG['meta']['title'],fontsize=16, y=0.05, x=0.65)
         plt.savefig(export_path, bbox_inches='tight')
     else:
         plt.show()
