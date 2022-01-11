@@ -465,10 +465,7 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     status = psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
 
     unlock_status = psa_unlock_key_slot(slot);
-    if (unlock_status != PSA_SUCCESS) {
-        status = unlock_status;
-    }
-    return status;
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
 psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,
@@ -1447,7 +1444,11 @@ psa_status_t psa_mac_compute(psa_key_id_t key,
         return status;
     }
 
-    return psa_location_dispatch_mac_compute(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, mac, mac_size, mac_length);
+    status = psa_location_dispatch_mac_compute(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, mac, mac_size, mac_length);
+
+    unlock_status = psa_unlock_key_slot(slot);
+    return ((status == PSA_SUCCESS) ? unlock_status : status);
+
 }
 
 psa_mac_operation_t psa_mac_operation_init(void)

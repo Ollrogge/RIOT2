@@ -5,6 +5,10 @@ APPLICATION = ecdsa-periph
 
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
 
+ifeq (1, $(TEST_TIME))
+	CFLAGS += -DTEST_TIME
+endif
+
 export TEST_KCONFIG ?= 1
 
 include $(RIOTBASE)/Makefile.include

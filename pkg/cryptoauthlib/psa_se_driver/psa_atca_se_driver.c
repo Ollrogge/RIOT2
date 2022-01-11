@@ -377,7 +377,7 @@ psa_status_t atca_generate_mac( psa_drv_se_context_t *drv_context,
 #if TEST_TIME
     gpio_set(internal_gpio);
     status = calib_sha_hmac(dev, p_input, input_length, key_slot, p_mac, SHA_MODE_TARGET_OUT_ONLY);
-    gpio_clear(interal_gpio);
+    gpio_clear(internal_gpio);
 #else
     status = calib_sha_hmac(dev, p_input, input_length, key_slot, p_mac, SHA_MODE_TARGET_OUT_ONLY);
 #endif

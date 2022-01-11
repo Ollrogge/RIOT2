@@ -26,8 +26,6 @@ static void _test_init(void)
 
 static void ecdsa_prim_se(void)
 {
-    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
-
     psa_key_id_t privkey_id;
     psa_key_attributes_t privkey_attr = psa_key_attributes_init();
     psa_key_id_t pubkey_id;
@@ -56,15 +54,15 @@ static void ecdsa_prim_se(void)
 
 #if TEST_TIME
     gpio_clear(external_gpio);
-    status = psa_generate_key(&privkey_attr, &privkey_id);
+    psa_generate_key(&privkey_attr, &privkey_id);
     gpio_set(external_gpio);
 
     gpio_clear(external_gpio);
-    status = psa_export_public_key(privkey_id, public_key, sizeof(public_key), &pubkey_length);
+    psa_export_public_key(privkey_id, public_key, sizeof(public_key), &pubkey_length);
     gpio_set(external_gpio);
 
     gpio_clear(external_gpio);
-    status = psa_hash_compute(PSA_ALG_SHA_256, msg, sizeof(msg), hash, sizeof(hash), &hash_length);
+    psa_hash_compute(PSA_ALG_SHA_256, msg, sizeof(msg), hash, sizeof(hash), &hash_length);
     gpio_set(external_gpio);
 
     uint8_t bytes = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1),bits);
@@ -76,17 +74,18 @@ static void ecdsa_prim_se(void)
     psa_set_key_type(&pubkey_attr, PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1));
 
     gpio_clear(external_gpio);
-    status = psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id);
+    psa_import_key(&pubkey_attr, public_key, pubkey_length, &pubkey_id);
     gpio_set(external_gpio);
 
     gpio_clear(external_gpio);
-    status = psa_sign_hash(privkey_id, alg, hash, sizeof(hash), signature, sizeof(signature), &sig_length);
+    psa_sign_hash(privkey_id, alg, hash, sizeof(hash), signature, sizeof(signature), &sig_length);
     gpio_set(external_gpio);
 
     gpio_clear(external_gpio);
-    status = psa_verify_hash(pubkey_id, alg, hash, sizeof(hash), signature, sig_length);
+    psa_verify_hash(pubkey_id, alg, hash, sizeof(hash), signature, sig_length);
     gpio_set(external_gpio);
 #else
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     status = psa_generate_key(&privkey_attr, &privkey_id);
     if (status != PSA_SUCCESS) {
         printf("Primary SE Generate Key failed: %ld\n", status);
@@ -131,7 +130,8 @@ static void ecdsa_prim_se(void)
         return;
     }
 #endif
-    puts("ECDSA Primary SE Done");
+    psa_destroy_key(privkey_id);
+    psa_destroy_key(pubkey_id);
 }
 
 #ifdef MULTIPLE_BACKENDS
@@ -217,10 +217,14 @@ int main(void)
 {
     _test_init();
 
-    ecdsa_prim_se();
+    for (int i = 0; i < 100; i++) {
+        ecdsa_prim_se();
+    }
+
 #ifdef MULTIPLE_BACKENDS
     ecdsa_sec_se();
 #endif
 
+    puts("ECDSA Primary SE Done");
     return 0;
 }

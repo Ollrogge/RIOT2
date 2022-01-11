@@ -44,8 +44,6 @@ static void _test_init(void)
 
 static void psa_hmac_sha256(void)
 {
-    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
-
     psa_key_attributes_t attr = psa_key_attributes_init();
     psa_key_id_t key_id = 0;
     psa_key_usage_t usage = PSA_KEY_USAGE_SIGN_MESSAGE;
@@ -70,6 +68,7 @@ static void psa_hmac_sha256(void)
     psa_mac_compute(key_id, PSA_ALG_HMAC(PSA_ALG_SHA_256), HMAC_MSG, HMAC_MSG_LEN, digest, digest_size, &output_len);
     gpio_set(external_gpio);
 #else
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
     status = psa_import_key(&attr, HMAC_KEY, HMAC_KEY_LEN, &key_id);
     if (status != PSA_SUCCESS) {
         printf("MAC Key Import failed: %ld\n", status);
@@ -82,8 +81,7 @@ static void psa_hmac_sha256(void)
         return;
     }
 #endif
-    (void) status;
-    puts("MAC Compute Done");
+    psa_destroy_key(key_id);
 }
 
 #ifdef MULTIPLE_BACKENDS
@@ -125,11 +123,15 @@ static void psa_hmac_sha256_se(void)
 int main(void)
 {
     _test_init();
-    psa_hmac_sha256();
+
+    for (int i = 0; i < 100; i++) {
+        psa_hmac_sha256();
+    }
 
 #ifdef MULTIPLE_BACKENDS
     psa_hmac_sha256_se();
 #endif
 
+    puts("MAC Compute Done");
     return 0;
 }
