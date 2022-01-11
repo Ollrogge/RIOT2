@@ -448,39 +448,27 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
     if (!PSA_ALG_IS_CIPHER(alg)) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
-#if TEST_TIME
-    gpio_set(internal_gpio);
-    status = psa_get_key_attributes(key, &attr);
-    gpio_clear(internal_gpio);
-    if (status != PSA_SUCCESS) {
-        return PSA_ERROR_INVALID_HANDLE;
-    }
-    gpio_set(internal_gpio);
-    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
-    gpio_clear(internal_gpio);
-    if (status != PSA_SUCCESS) {
-        unlock_status = psa_unlock_key_slot(slot);
-        if (unlock_status != PSA_SUCCESS) {
-            status = unlock_status;
-        }
-        return status;
-    }
-#else
-    status = psa_get_key_attributes(key, &attr);
-    if (status != PSA_SUCCESS) {
-        return PSA_ERROR_INVALID_HANDLE;
-    }
-    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
-    if (status != PSA_SUCCESS) {
-        unlock_status = psa_unlock_key_slot(slot);
-        if (unlock_status != PSA_SUCCESS) {
-            status = unlock_status;
-        }
-        return status;
-    }
-#endif
 
-    return psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
+    status = psa_get_key_attributes(key, &attr);
+    if (status != PSA_SUCCESS) {
+        return PSA_ERROR_INVALID_HANDLE;
+    }
+    status = psa_get_and_lock_key_slot_with_policy(key, &slot, attr.policy.usage, alg);
+    if (status != PSA_SUCCESS) {
+        unlock_status = psa_unlock_key_slot(slot);
+        if (unlock_status != PSA_SUCCESS) {
+            status = unlock_status;
+        }
+        return status;
+    }
+
+    status = psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
+
+    unlock_status = psa_unlock_key_slot(slot);
+    if (unlock_status != PSA_SUCCESS) {
+        status = unlock_status;
+    }
+    return status;
 }
 
 psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,
@@ -1008,11 +996,13 @@ psa_status_t psa_destroy_key(psa_key_id_t key)
     psa_status_t status;
     psa_key_slot_t *slot;
 
+    DEBUG("Destroying Key\n");
     status = psa_get_and_lock_key_slot(key, &slot);
     if (status != PSA_SUCCESS) {
         return status;
     }
     if (slot->lock_count > 1) {
+        DEBUG("Lock Count: %d\n", slot->lock_count);
         return PSA_ERROR_GENERIC_ERROR;
     }
 

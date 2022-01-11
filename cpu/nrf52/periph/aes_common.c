@@ -5,6 +5,9 @@
 #include "psa_periph_error.h"
 #include "cryptocell_util.h"
 
+#define ENABLE_DEBUG    (1)
+#include "debug.h"
+
 #define CC310_MAX_AES_INPUT_BLOCK       (0xFFF0)
 
 psa_status_t common_aes_setup(  SaSiAesUserContext_t *ctx,
@@ -18,6 +21,7 @@ psa_status_t common_aes_setup(  SaSiAesUserContext_t *ctx,
 
     int ret = SaSi_AesInit(ctx, direction, mode, padding);
     if (ret != SASI_OK) {
+        DEBUG("AES Setup SaSi Error: %x\n", ret);
         return SaSi_to_psa_error(ret);
     }
     key.keySize = key_buffer_size;
@@ -25,11 +29,13 @@ psa_status_t common_aes_setup(  SaSiAesUserContext_t *ctx,
 
     ret = SaSi_AesSetKey(ctx, SASI_AES_USER_KEY, &key, sizeof(key));
     if (ret != SASI_OK) {
+        DEBUG("AES Setup SaSi Error: %x\n", ret);
         return SaSi_to_psa_error(ret);
     }
 
     ret = SaSi_AesSetIv(ctx, iv);
     if (ret != SASI_OK) {
+        DEBUG("AES Setup SaSi Error: %x\n", ret);
         return SaSi_to_psa_error(ret);
     }
 
@@ -57,7 +63,8 @@ psa_status_t common_aes_encrypt(SaSiAesUserContext_t *ctx, const uint8_t *input,
         ret = SaSi_AesBlock(ctx, (uint8_t*)(input + offset), size, output + offset);
         cryptocell_disable();
         if (ret != SASI_OK) {
-        return SaSi_to_psa_error(ret);
+            DEBUG("AES Encrypt SaSi Error: %x\n", ret);
+            return SaSi_to_psa_error(ret);
         }
 
         offset += size;
@@ -67,6 +74,7 @@ psa_status_t common_aes_encrypt(SaSiAesUserContext_t *ctx, const uint8_t *input,
     ret = SaSi_AesFinish(ctx, length, (uint8_t*)(input + offset), input_length, output, output_length);
     cryptocell_disable();
     if (ret != SASI_OK) {
+        DEBUG("AES Encrypt SaSi Error: %x\n", ret);
         return SaSi_to_psa_error(ret);
     }
 

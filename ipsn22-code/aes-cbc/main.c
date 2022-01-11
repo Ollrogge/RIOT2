@@ -78,7 +78,11 @@ static void cipher_aes_128(void)
         return;
     }
 #endif
-    (void) status;
+    status = psa_destroy_key(key_id);
+    if (status != PSA_SUCCESS) {
+        printf("Destroy Key failed: %ld\n", status);
+        return;
+    }
     puts("AES 128 CBC Done");
 }
 

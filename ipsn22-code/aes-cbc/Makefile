@@ -3,6 +3,8 @@ RIOTBASE ?= $(CURDIR)/../..
 
 APPLICATION = aes-cbc
 
+# CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(12*THREAD_STACKSIZE_DEFAULT\)
+
 ifeq (1, $(SOFTWARE))
 	KCONFIG_ADD_CONFIG += $(APPDIR)/app.config.test.software
 endif
