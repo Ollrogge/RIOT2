@@ -2,7 +2,7 @@
 #include "psa/crypto.h"
 #include "psa_crypto_se_driver.h"
 
-#define ENABLE_DEBUG    (1)
+#define ENABLE_DEBUG    (0)
 #include "debug.h"
 
 #if TEST_TIME
@@ -23,6 +23,9 @@ extern gpio_t internal_gpio;
     (   (type == PSA_KEY_TYPE_AES && size == AES_128_KEY_SIZE) || \
         (PSA_KEY_TYPE_IS_ECC(type) && size == (ECC_P256_PUB_KEY_SIZE + 1)) || \
         (type == PSA_KEY_TYPE_HMAC && size == 32))
+
+static uint8_t ecc_key_slot_cnt = 0;
+
 
 static psa_status_t atca_to_psa_error(ATCA_STATUS error)
 {
@@ -141,7 +144,9 @@ psa_status_t atca_allocate (
 
     if (attributes->type == PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1)) {
         /* At the time of the implementation we are using an SE in which key slot 1 is configured for ECC private keys, so we return key slot nr. 1 */
-        *key_slot = (psa_key_slot_number_t) 1;
+        *key_slot = (psa_key_slot_number_t) ecc_key_slot_cnt;
+        ecc_key_slot_cnt = (ecc_key_slot_cnt + 1) % 4;
+        DEBUG("ECC Key Slot: %d\n", ecc_key_slot_cnt);
     }
     else if (attributes->type == PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1)) {
         /* Slots 9-14 on device are configured to hold public keys */
@@ -213,19 +218,46 @@ psa_status_t atca_import (  psa_drv_se_context_t *drv_context,
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
-                                psa_key_slot_number_t key_slot,
-                                const psa_key_attributes_t *attributes,
-                                uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
+static psa_status_t _atca_generate_unstructured_key(ATCADevice dev,
+                                                    psa_key_slot_number_t key_slot,
+                                                    const psa_key_attributes_t *attributes)
 {
     ATCA_STATUS status;
-    ATCADevice dev = (ATCADevice) drv_context->drv_data;
 
-    if (!PSA_KEY_TYPE_IS_ECC(attributes->type)) {
+    /* To generate an AES key, we just generate a random number and then load it into a key slot.
+    The random function of the ATECC608A always returns a 32 Byte number, of which be use the first
+    16 Bytes */
+    uint8_t random_number[32];
+
+    if (attributes->type != PSA_KEY_TYPE_AES || attributes->bits != PSA_BYTES_TO_BITS(AES_128_KEY_SIZE)) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    if (pubkey_size > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) {
+    status = calib_random(dev, random_number);
+    if (status != PSA_SUCCESS) {
+        DEBUG("ATCA Error: %d\n", status);
+        return atca_to_psa_error(status);
+    }
+
+    (void) key_slot;
+    status = calib_nonce_load(dev, NONCE_MODE_TARGET_TEMPKEY, random_number, sizeof(random_number));
+    // status = calib_write_bytes_zone(dev, ATCA_ZONE_DATA, key_slot, 0, random_number, AES_128_KEY_SIZE);
+    if (status != PSA_SUCCESS) {
+        DEBUG("ATCA Error: %d\n", status);
+        return atca_to_psa_error(status);
+    }
+
+    return PSA_SUCCESS;
+}
+
+static psa_status_t _atca_generate_ecc_key( ATCADevice dev,
+                                            psa_key_slot_number_t key_slot,
+                                            const psa_key_attributes_t *attributes,
+                                            uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
+{
+    ATCA_STATUS status;
+
+    if (!KEY_SIZE_IS_SUPPORTED(pubkey_size, attributes->type)) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
@@ -252,6 +284,25 @@ psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
     *pubkey_length = PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(attributes->type, attributes->bits);
 
     return PSA_SUCCESS;
+}
+
+
+psa_status_t atca_generate_key( psa_drv_se_context_t *drv_context,
+                                psa_key_slot_number_t key_slot,
+                                const psa_key_attributes_t *attributes,
+                                uint8_t *pubkey, size_t pubkey_size, size_t *pubkey_length)
+{
+    ATCADevice dev = (ATCADevice) drv_context->drv_data;
+
+    if (PSA_KEY_TYPE_IS_ECC(attributes->type)) {
+        return _atca_generate_ecc_key(dev, key_slot, attributes, pubkey, pubkey_size, pubkey_length);
+    }
+
+    pubkey = NULL;
+    pubkey_size = 0;
+    *pubkey_length = 0;
+
+    return _atca_generate_unstructured_key(dev, key_slot, attributes);
 }
 
 psa_status_t atca_export_public_key(psa_drv_se_context_t *drv_context,

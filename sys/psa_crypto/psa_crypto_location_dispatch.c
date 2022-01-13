@@ -167,6 +167,8 @@ psa_status_t psa_location_dispatch_cipher_encrypt(  const psa_key_attributes_t *
         if (status != PSA_SUCCESS) {
             return status;
         }
+
+        *output_length = output_size;
         return PSA_SUCCESS;
     }
 #endif /* CONFIG_PSA_SECURE_ELEMENT */

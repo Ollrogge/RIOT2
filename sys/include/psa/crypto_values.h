@@ -615,14 +615,8 @@
 #define PSA_KEY_USAGE_VERIFY_HASH ((psa_key_usage_t)0x00002000)
 #define PSA_KEY_USAGE_VERIFY_MESSAGE ((psa_key_usage_t)0x00000800)
 
-
 #define PSA_MAC_OPERATION_INIT /* implementation-defined value */
-#define PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE \
-/* implementation-defined value */
-#define PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(key_type, key_bits) \
-/* implementation-defined value */
-#define PSA_SIGNATURE_MAX_SIZE /* implementation-defined value */
-#define PSA_TLS12_PSK_TO_MS_PSK_MAX_SIZE /* implementation-defined value */
+
 
 /**
  * @brief The action was completed successfully.
