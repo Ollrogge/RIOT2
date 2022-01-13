@@ -82,13 +82,10 @@ static void ecdsa_prim_se(void)
 
     /* Generate a key pair. This stores both the reference to the private key and the public key
     in the same key slot and returns the key identifier which can be used to access those keys */
-
-    for (int i= 0; i < 4; i++) {
-        status = psa_generate_key(&privkey_attr, &privkey_id);
-        if (status != PSA_SUCCESS) {
-            printf("Primary SE Generate Key failed: %ld\n", status);
-            return;
-        }
+    status = psa_generate_key(&privkey_attr, &privkey_id);
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Generate Key failed: %ld\n", status);
+        return;
     }
 
     /* Export public key from the stored key pair. This implementation only supports the use of secure elements, when keys are stored on the device. This means that public keys need to be imported to another slot on the SE. */
