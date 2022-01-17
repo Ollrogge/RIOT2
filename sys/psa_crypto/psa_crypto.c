@@ -397,38 +397,14 @@ static psa_status_t psa_cipher_setup(   psa_cipher_operation_t * operation,
     return ((status == PSA_SUCCESS) ? unlock_status : status);
 }
 
-psa_status_t psa_cipher_decrypt(psa_key_id_t key,
-                                psa_algorithm_t alg,
-                                const uint8_t * input,
-                                size_t input_length,
-                                uint8_t * output,
-                                size_t output_size,
-                                size_t * output_length)
-{
-    (void) key;
-    (void) alg;
-    (void) input;
-    (void) input_length;
-    (void) output;
-    (void) output_size;
-    (void) output_length;
-    return PSA_ERROR_NOT_SUPPORTED;
-}
-
-psa_status_t psa_cipher_decrypt_setup(psa_cipher_operation_t * operation,
-                                      psa_key_id_t key,
-                                      psa_algorithm_t alg)
-{
-    return psa_cipher_setup(operation, key, alg, PSA_CIPHER_DECRYPT);
-}
-
-psa_status_t psa_cipher_encrypt(psa_key_id_t key,
-                                psa_algorithm_t alg,
-                                const uint8_t * input,
-                                size_t input_length,
-                                uint8_t * output,
-                                size_t output_size,
-                                size_t * output_length)
+static psa_status_t psa_cipher_operation(   psa_key_id_t key,
+                                            psa_algorithm_t alg,
+                                            const uint8_t * input,
+                                            size_t input_length,
+                                            uint8_t * output,
+                                            size_t output_size,
+                                            size_t * output_length,
+                                            cipher_operation_t cipher_operation)
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 #if TEST_TIME
@@ -462,10 +438,44 @@ psa_status_t psa_cipher_encrypt(psa_key_id_t key,
         return status;
     }
 
-    status = psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
+    if (cipher_operation == PSA_CIPHER_ENCRYPT) {
+        status = psa_location_dispatch_cipher_encrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
+    }
+    else {
+        status = psa_location_dispatch_cipher_decrypt(&slot->attr, alg, slot->key.data, slot->key.bytes, input, input_length, output, output_size, output_length);
+    }
 
     unlock_status = psa_unlock_key_slot(slot);
     return ((status == PSA_SUCCESS) ? unlock_status : status);
+}
+
+psa_status_t psa_cipher_decrypt(psa_key_id_t key,
+                                psa_algorithm_t alg,
+                                const uint8_t * input,
+                                size_t input_length,
+                                uint8_t * output,
+                                size_t output_size,
+                                size_t * output_length)
+{
+    return psa_cipher_operation(key, alg, input, input_length, output, output_size, output_length, PSA_CIPHER_DECRYPT);
+}
+
+psa_status_t psa_cipher_decrypt_setup(psa_cipher_operation_t * operation,
+                                      psa_key_id_t key,
+                                      psa_algorithm_t alg)
+{
+    return psa_cipher_setup(operation, key, alg, PSA_CIPHER_DECRYPT);
+}
+
+psa_status_t psa_cipher_encrypt(psa_key_id_t key,
+                                psa_algorithm_t alg,
+                                const uint8_t * input,
+                                size_t input_length,
+                                uint8_t * output,
+                                size_t output_size,
+                                size_t * output_length)
+{
+    return psa_cipher_operation(key, alg, input, input_length, output, output_size, output_length, PSA_CIPHER_ENCRYPT);
 }
 
 psa_status_t psa_cipher_encrypt_setup(psa_cipher_operation_t * operation,

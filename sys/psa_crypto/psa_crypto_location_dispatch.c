@@ -127,17 +127,47 @@ psa_status_t psa_location_dispatch_cipher_encrypt_setup(   psa_cipher_operation_
     return PSA_ERROR_NOT_SUPPORTED;
 }
 
-psa_status_t psa_location_dispatch_cipher_decrypt_setup(psa_cipher_operation_t *operation,
-                                                    const psa_key_attributes_t *attributes,
-                                                    const uint8_t *key_buffer,
+psa_status_t psa_location_dispatch_cipher_decrypt(  const psa_key_attributes_t * attributes,
+                                                    psa_algorithm_t alg,
+                                                    const uint8_t * key_buffer,
                                                     size_t key_buffer_size,
-                                                    psa_algorithm_t alg)
+                                                    const uint8_t * input,
+                                                    size_t input_length,
+                                                    uint8_t * output,
+                                                    size_t output_size,
+                                                    size_t * output_length)
 {
-    (void) operation;
+#if IS_ACTIVE(CONFIG_PSA_SECURE_ELEMENT)
+    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
+    const psa_drv_se_t *drv;
+    psa_drv_se_context_t *drv_context;
+
+    if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
+        if (alg != PSA_ALG_ECB_NO_PADDING) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+        if (drv->cipher == NULL || drv->cipher->p_ecb == NULL) {
+            return PSA_ERROR_NOT_SUPPORTED;
+        }
+        status = drv->cipher->p_ecb(drv_context, *((psa_key_slot_number_t *) key_buffer), alg, PSA_CRYPTO_DRIVER_DECRYPT, input, input_length, output, output_size);
+        if (status != PSA_SUCCESS) {
+            return status;
+        }
+
+        *output_length = output_size;
+        return PSA_SUCCESS;
+    }
+#endif /* CONFIG_PSA_SECURE_ELEMENT */
+
     (void) attributes;
+    (void) alg;
     (void) key_buffer;
     (void) key_buffer_size;
-    (void) alg;
+    (void) input;
+    (void) input_length;
+    (void) output;
+    (void) output_size;
+    (void) output_length;
     return PSA_ERROR_NOT_SUPPORTED;
 }
 

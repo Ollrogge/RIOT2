@@ -86,6 +86,16 @@ psa_status_t psa_location_dispatch_cipher_set_iv(  psa_cipher_operation_t *opera
                                                 const uint8_t *iv,
                                                 size_t iv_length);
 
+psa_status_t psa_location_dispatch_cipher_decrypt(  const psa_key_attributes_t * attributes,
+                                                    psa_algorithm_t alg,
+                                                    const uint8_t * key_buffer,
+                                                    size_t key_buffer_size,
+                                                    const uint8_t * input,
+                                                    size_t input_length,
+                                                    uint8_t * output,
+                                                    size_t output_size,
+                                                    size_t * output_length);
+
 psa_status_t psa_location_dispatch_cipher_encrypt(  const psa_key_attributes_t * attributes,
                                                     psa_algorithm_t alg,
                                                     const uint8_t * key_buffer,

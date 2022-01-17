@@ -39,6 +39,7 @@ static void aes_ecb_prim_se(void)
     psa_key_lifetime_t lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_VOLATILE, PSA_ATCA_LOCATION_DEV0);
 
     uint8_t cipher_out[AES_CIPHER_LEN];
+    uint8_t plain_out[AES_CIPHER_LEN];
     size_t output_len = 0;
 
     psa_set_key_lifetime(&attr, lifetime);
@@ -58,6 +59,13 @@ static void aes_ecb_prim_se(void)
         printf("AES 128 ECB Encrypt failed: %ld\nOutput Length: %d\n", status, output_len);
         return;
     }
+
+    status = psa_cipher_decrypt(key_id, PSA_ALG_ECB_NO_PADDING, cipher_out, AES_CIPHER_LEN, plain_out, PLAINTEXT_LEN, &output_len);
+    if (status != PSA_SUCCESS || output_len != AES_CIPHER_LEN) {
+        printf("AES 128 ECB Decrypt failed: %ld\nOutput Length: %d\n", status, output_len);
+        return;
+    }
+
     puts("AES 128 ECB Success");
 }
 

@@ -104,7 +104,7 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
-    if (algorithm != PSA_ALG_ECB_NO_PADDING || direction != PSA_CRYPTO_DRIVER_ENCRYPT) {
+    if (algorithm != PSA_ALG_ECB_NO_PADDING) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
@@ -114,7 +114,13 @@ psa_status_t atca_cipher_ecb(   psa_drv_se_context_t *drv_context,
 
     offset = 0;
     do {
-        status = calib_aes_encrypt(dev, key_slot, 0, p_input + offset, p_output + offset);
+        if (direction == PSA_CRYPTO_DRIVER_ENCRYPT) {
+            status = calib_aes_encrypt(dev, key_slot, 0, p_input + offset, p_output + offset);
+        }
+        else {
+            status = calib_aes_decrypt(dev, key_slot, 0, p_input + offset, p_output + offset);
+        }
+
         if (status != ATCA_SUCCESS) {
             DEBUG("ATCA Error: %d\n", status);
             return atca_to_psa_error(status);
