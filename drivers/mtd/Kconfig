@@ -33,7 +33,7 @@ config HAVE_MTD_SD_SCARD
 
 config HAVE_MTD_SPI_NOR
     bool
-    imply MODULE_MTD_SPI_NOR if MODULE_MTD
+    #imply MODULE_MTD_SPI_NOR if MODULE_MTD
     help
         Indicates that a spi-nor MTD is present
 

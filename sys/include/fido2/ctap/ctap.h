@@ -34,6 +34,10 @@
 #include "timex.h"
 #include "board.h"
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+#include "psa/crypto.h"
+#endif
+
 #include "fido2/ctap.h"
 #include "fido2/ctap/ctap_crypto.h"
 
@@ -483,7 +487,12 @@ struct __attribute__((packed)) ctap_resident_key {
     uint8_t rp_id_hash[SHA256_DIGEST_LENGTH];   /**< hash of rp domain string */
     uint8_t user_id[CTAP_USER_ID_MAX_SIZE];     /**< id of user */
     uint8_t user_id_len;                        /**< length of the user id */
-    uint8_t priv_key[CTAP_CRYPTO_KEY_SIZE];     /**< private key */
+    union {
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+        psa_key_id_t priv_key_id;                   /**< id of private key stored in SE */
+#endif
+        uint8_t priv_key[CTAP_CRYPTO_KEY_SIZE];     /**< private key */
+    };
     uint32_t sign_count;                        /**< signature counter.
                                                    See webauthn specification
                                                    (version 20190304) section 6.1.1

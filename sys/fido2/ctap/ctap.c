@@ -34,7 +34,7 @@
 #include "fido2/ctap/transport/hid/ctap_hid.h"
 #endif
 
-#define ENABLE_DEBUG    (0)
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
 
 /**
@@ -1664,9 +1664,25 @@ static int _make_auth_data_attest(ctap_make_credential_req_t *req,
 
     memcpy(cred_header->aaguid, aaguid, sizeof(cred_header->aaguid));
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    /* using SE if key is not a resident credential makes no sense */
+    if (rk) {
+        psa_key_id_t key_id;
+        ret = fido2_ctap_crypto_gen_keypair_se(&cred_data->key.pubkey, &key_id,
+        sizeof(cred_data->key.pubkey));
+
+        k->priv_key_id = key_id;
+    }
+    else {
+        DEBUG("_make_auth_data_attest: no resident credential with SE \n");
+        return CTAP1_ERR_OTHER;
+    }
+
+#else
     ret =
         fido2_ctap_crypto_gen_keypair(&cred_data->key.pubkey, k->priv_key,
                                       sizeof(_state.ag_key.priv));
+#endif
 
     if (ret != CTAP2_OK) {
         return ret;
@@ -1816,9 +1832,39 @@ int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,
     assert(sig);
     assert(sig_len);
 
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
+    size_t hash_length;
+
+    status = psa_hash_setup(&operation, PSA_ALG_SHA_256);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_update(&operation, auth_data, auth_data_len);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_update(&operation, client_data_hash, SHA256_DIGEST_LENGTH);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_finish(&operation, hash, sizeof(hash), &hash_length);
+     if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    return fido2_ctap_crypto_get_sig_se(hash, sizeof(hash), sig, sig_len,
+                                        rk->priv_key_id);
+
+#else
     int ret;
     sha256_context_t ctx;
-    uint8_t hash[SHA256_DIGEST_LENGTH];
 
     ret = fido2_ctap_crypto_sha256_init(&ctx);
 
@@ -1847,4 +1893,5 @@ int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,
     return fido2_ctap_crypto_get_sig(hash, sizeof(hash), sig, sig_len,
                                      rk->priv_key,
                                      sizeof(rk->priv_key));
+#endif
 }

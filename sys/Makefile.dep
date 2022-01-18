@@ -848,8 +848,13 @@ ifneq (,$(filter fido2_ctap,$(USEMODULE)))
   USEMODULE += event_timeout
   USEMODULE += prng_sha256prng
   USEMODULE += cipher_modes
+  USEMODULE += cipher_modes_cbc
+  USEMODULE += cipher_modes_ccm
+  USEMODULE += cipher_modes_ctr
   USEMODULE += crypto_aes_256
   USEMODULE += hashes
+  USEMODULE += hashes_sha2xx_common
+  USEMODULE += hashes_sha256
   USEMODULE += fido2
 endif
 

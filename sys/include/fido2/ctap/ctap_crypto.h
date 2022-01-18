@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "hashes/sha256.h"
+#include "psa/crypto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,9 @@ extern "C" {
  * @brief Elliptic curve public key
  */
 typedef struct {
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    uint8_t b1;  /* psa stores the byte 0x04 before the coordinates for idk what reason */
+#endif
     uint8_t x[CTAP_CRYPTO_KEY_SIZE];    /**< x coordinate of curve point */
     uint8_t y[CTAP_CRYPTO_KEY_SIZE];    /**< y coordinate of curve point */
 } ctap_crypto_pub_key_t;
@@ -186,6 +190,10 @@ int fido2_ctap_crypto_hmac_sha256(const void *key,
  */
 int fido2_ctap_crypto_gen_keypair(ctap_crypto_pub_key_t *pub_key, uint8_t *priv_key, size_t len);
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+int fido2_ctap_crypto_gen_keypair_se(ctap_crypto_pub_key_t *pub_key, psa_key_id_t *key_id, size_t len);
+#endif
+
 /**
  * @brief Elliptic-curve Diffie-Hellmann
  *
@@ -214,6 +222,12 @@ int fido2_ctap_crypto_ecdh(uint8_t *out, size_t len,
  */
 int fido2_ctap_crypto_get_sig(uint8_t *hash, size_t hash_len, uint8_t *sig,
                               size_t *sig_len, const uint8_t *key, size_t key_len);
+
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+int fido2_ctap_crypto_get_sig_se(uint8_t* hash, size_t hash_len, uint8_t *sig,
+                                 size_t* sig_len, psa_key_id_t key_id);
+#endif
 
 /**
  * @brief Encrypt data using AES-256-CBC
