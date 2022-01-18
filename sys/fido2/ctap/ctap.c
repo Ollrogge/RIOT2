@@ -1467,7 +1467,21 @@ static int _find_matching_rks(ctap_resident_key_t *rks, size_t rks_len,
             return CTAP1_ERR_OTHER;
         }
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+        uint8_t buf[CTAP_FLASH_RK_SZ] = {0};
+        uint8_t rk_pad[CTAP_FLASH_RK_SZ] = {0};
+
+        ret = fido2_ctap_mem_read(buf, page_num, offset_into_page, sizeof(buf));
+
+        if (ret != CTAP2_OK) {
+            return ret;
+        }
+
+        ret = fido2_ctap_crypto_aes_dec_se(rk_pad, sizeof(rk_pad), buf, sizeof(buf));
+        memcpy(&rk, rk_pad, sizeof(rk));
+#else
         ret = fido2_ctap_mem_read(&rk, page_num, offset_into_page, sizeof(rk));
+#endif
 
         if (ret != CTAP2_OK) {
             return ret;
@@ -1556,7 +1570,21 @@ static int _save_rk(ctap_resident_key_t *rk)
                 break;
             }
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+            uint8_t buf[CTAP_FLASH_RK_SZ] = {0};
+            uint8_t rk_pad[CTAP_FLASH_RK_SZ] = {0};
+
+            ret = fido2_ctap_mem_read(buf, page_num, offset_into_page, sizeof(buf));
+
+            if (ret != CTAP2_OK) {
+                return ret;
+            }
+
+            ret = fido2_ctap_crypto_aes_dec_se(rk_pad, sizeof(rk_pad), buf, sizeof(buf));
+            memcpy(&rk_tmp, rk_pad, sizeof(rk_tmp));
+#else
             ret = fido2_ctap_mem_read(&rk_tmp, page_num, offset_into_page, sizeof(rk_tmp));
+#endif
 
             if (ret != CTAP2_OK) {
                 return CTAP1_ERR_OTHER;
@@ -1818,7 +1846,22 @@ static int _read_state_from_flash(ctap_state_t *state)
 
 static int _write_rk_to_flash(const ctap_resident_key_t *rk, int page, int offset)
 {
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+    int ret;
+    uint8_t c[CTAP_FLASH_RK_SZ] = {0};
+    uint8_t rk_pad[CTAP_FLASH_RK_SZ] = {0};
+
+    memcpy(rk_pad, rk, sizeof(*rk));
+
+    ret = fido2_ctap_crypto_aes_enc_se(c, sizeof(c), rk_pad, sizeof(rk_pad));
+
+    if (ret != CTAP2_OK) {
+        return ret;
+    }
+    return fido2_ctap_mem_write(c, page, offset, sizeof(c));
+#else
     return fido2_ctap_mem_write(rk, page, offset, CTAP_FLASH_RK_SZ);
+#endif
 }
 
 int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,

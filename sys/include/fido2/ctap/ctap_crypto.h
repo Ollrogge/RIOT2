@@ -194,6 +194,10 @@ int fido2_ctap_crypto_gen_keypair(ctap_crypto_pub_key_t *pub_key, uint8_t *priv_
 int fido2_ctap_crypto_gen_keypair_se(ctap_crypto_pub_key_t *pub_key, psa_key_id_t *key_id, size_t len);
 #endif
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+int fido2_ctap_crypto_gen_aeskey_se(psa_key_id_t *key_id);
+#endif
+
 /**
  * @brief Elliptic-curve Diffie-Hellmann
  *
@@ -258,6 +262,14 @@ int fido2_ctap_crypto_aes_enc(uint8_t *out, size_t *out_len, uint8_t * in,
  */
 int fido2_ctap_crypto_aes_dec(uint8_t *out, size_t *out_len, uint8_t * in,
                               size_t in_len, const uint8_t * key, size_t key_len);
+
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+int fido2_ctap_crypto_aes_enc_se(uint8_t *out, size_t out_len, uint8_t *in,
+                                size_t in_len);
+int fido2_ctap_crypto_aes_dec_se(uint8_t *out, size_t out_len, uint8_t *in,
+                                size_t in_len);
+#endif
 
 /**
  * @brief Encrypt data using AES-128-CCM

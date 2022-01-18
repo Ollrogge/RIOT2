@@ -23,6 +23,7 @@
 #include "crypto/ciphers.h"
 #include "crypto/modes/ccm.h"
 #include "crypto/modes/cbc.h"
+#include "crypto/aes.h"
 
 #include "uECC.h"
 #include "tiny-asn1.h"
@@ -31,7 +32,7 @@
 #include "fido2/ctap.h"
 #include "fido2/ctap/ctap_utils.h"
 
-#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS) || IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
 #include "atca_params.h"
 #endif
 
@@ -55,9 +56,16 @@ static int _RNG(uint8_t *dest, unsigned size);
 
 static void _configure_psa(void);
 
+/**
+ * @brief AES key id to encrypt credentials
+ */
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+static psa_key_id_t _key_id;
+#endif
+
 int fido2_ctap_crypto_init(void)
 {
-#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS) || IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
     psa_status_t status = psa_crypto_init();
 
     if (status != PSA_SUCCESS) {
@@ -66,6 +74,14 @@ int fido2_ctap_crypto_init(void)
     }
 
     DEBUG("ctap_crypto_init: PSA initialized \n");
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+    int ret = fido2_ctap_crypto_gen_aeskey_se(&_key_id);
+
+    if (ret != CTAP2_OK) {
+        return ret;
+    }
+    DEBUG("ctap_crypto_init: AES key generated \n");
+#endif
 #else
     DEBUG("IS_ACTIVE doesn't work \n");
 #endif
@@ -207,6 +223,42 @@ int fido2_ctap_crypto_aes_dec(uint8_t *out, size_t *out_len, uint8_t *in,
     return CTAP2_OK;
 }
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+int fido2_ctap_crypto_aes_enc_se(uint8_t *out, size_t out_len, uint8_t *in,
+                                size_t in_len)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    size_t _out_len;
+
+    status = psa_cipher_encrypt(_key_id, PSA_ALG_ECB_NO_PADDING, in, in_len,
+                                out, out_len, &_out_len);
+
+    if (status != PSA_SUCCESS) {
+        DEBUG("AES 128 ECB Encrypt failed: %ld\nOutput Length: %d\n", status, _out_len);
+        return CTAP1_ERR_OTHER;
+    }
+
+    return CTAP2_OK;
+}
+
+int fido2_ctap_crypto_aes_dec_se(uint8_t *out, size_t out_len, uint8_t *in,
+                                size_t in_len)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    size_t _out_len;
+
+    status = psa_cipher_decrypt(_key_id, PSA_ALG_ECB_NO_PADDING, in, in_len,
+                                out, out_len, &_out_len);
+
+    if (status != PSA_SUCCESS) {
+        printf("AES 128 ECB Decrypt failed: %ld\nOutput Length: %d\n", status, _out_len);
+        return CTAP1_ERR_OTHER;
+    }
+
+    return CTAP2_OK;
+}
+#endif
+
 int fido2_ctap_crypto_aes_ccm_enc(uint8_t *out, size_t out_len,
                                   const uint8_t *in, size_t in_len,
                                   uint8_t *auth_data, size_t auth_data_len,
@@ -310,8 +362,8 @@ int fido2_ctap_crypto_gen_keypair_se(ctap_crypto_pub_key_t *pub_key, psa_key_id_
         return CTAP1_ERR_OTHER;
     }
 
-    DEBUG("fido2_ctap_crypto_gen_keypair_se: success \n");
-    DEBUG("public key length: %u, key_id: %lu \n", (unsigned)pubkey_len, *key_id);
+    DEBUG("fido2_ctap_crypto_gen_keypair_se success: public key length: %u, key_id: %lu \n",
+        (unsigned)pubkey_len, *key_id);
 
     return CTAP2_OK;
 }
@@ -357,6 +409,31 @@ int fido2_ctap_crypto_get_sig_se(uint8_t* hash, size_t hash_len, uint8_t *sig,
 
     if (ret != CTAP2_OK) {
         return ret;
+    }
+
+    return CTAP2_OK;
+}
+#endif
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+int fido2_ctap_crypto_gen_aeskey_se(psa_key_id_t *key_id)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_key_attributes_t attr = psa_key_attributes_init();
+    psa_key_lifetime_t lifetime = PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_VOLATILE, PSA_ATCA_LOCATION_DEV0);
+    psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT;
+
+    psa_set_key_lifetime(&attr, lifetime);
+    psa_set_key_algorithm(&attr, PSA_ALG_ECB_NO_PADDING);
+    psa_set_key_usage_flags(&attr, usage);
+    psa_set_key_bits(&attr, PSA_BYTES_TO_BITS(AES_KEY_SIZE_128));
+    psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
+
+    status = psa_generate_key(&attr, key_id);
+
+    if (status != PSA_SUCCESS) {
+        DEBUG("AES 128 Key Generation failed: %ld\n", status);
+        return CTAP1_ERR_OTHER;
     }
 
     return CTAP2_OK;

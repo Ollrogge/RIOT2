@@ -34,7 +34,7 @@
 #include "timex.h"
 #include "board.h"
 
-#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS) || IS_ACTIVE(CONFIG_FIDO2_CTAP_ENC_CREDS)
 #include "psa/crypto.h"
 #endif
 

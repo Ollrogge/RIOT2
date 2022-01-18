@@ -75,9 +75,13 @@ extern "C" {
 /**
  * @brief Resident key size with alignment padding
  */
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+#define CTAP_FLASH_RK_SZ (((sizeof(ctap_resident_key_t) + \
+                          CTAP_FLASH_ALIGN_PAD(ctap_resident_key_t)) / 16 + 1) * 16)
+#else
 #define CTAP_FLASH_RK_SZ (sizeof(ctap_resident_key_t) + \
                           CTAP_FLASH_ALIGN_PAD(ctap_resident_key_t))
-
+#endif
 /**
  * @brief State struct size with alignment padding
  */
