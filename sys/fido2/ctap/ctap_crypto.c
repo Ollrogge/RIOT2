@@ -31,8 +31,14 @@
 #include "fido2/ctap.h"
 #include "fido2/ctap/ctap_utils.h"
 
-#define ENABLE_DEBUG    (0)
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+#include "atca_params.h"
+#endif
+
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
+
+#define ECC_CURVE_BITS      (256)
 
 /**
  * @brief Parse signature into ASN.1 DER format
@@ -47,9 +53,26 @@ static int _sig_to_der_format(uint8_t *r, uint8_t *s, uint8_t *sig,
  */
 static int _RNG(uint8_t *dest, unsigned size);
 
+static void _configure_psa(void);
+
 int fido2_ctap_crypto_init(void)
 {
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    psa_status_t status = psa_crypto_init();
+
+    if (status != PSA_SUCCESS) {
+        DEBUG("psa_crypto_init failed: %ld\n", status);
+        return CTAP1_ERR_OTHER;
+    }
+
+    DEBUG("ctap_crypto_init: PSA initialized \n");
+#else
+    DEBUG("IS_ACTIVE doesn't work \n");
+#endif
+
     uECC_set_rng(&_RNG);
+
+    DEBUG("ctap_crypto_init: initialization done \n");
 
     return CTAP2_OK;
 }
@@ -245,6 +268,7 @@ int fido2_ctap_crypto_aes_ccm_dec(uint8_t *out, size_t out_len,
 int fido2_ctap_crypto_gen_keypair(ctap_crypto_pub_key_t *pub_key,
                                   uint8_t *priv_key, size_t len)
 {
+
     assert(len == CTAP_CRYPTO_KEY_SIZE);
 
     int ret;
@@ -257,6 +281,87 @@ int fido2_ctap_crypto_gen_keypair(ctap_crypto_pub_key_t *pub_key,
 
     return CTAP2_OK;
 }
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+int fido2_ctap_crypto_gen_keypair_se(ctap_crypto_pub_key_t *pub_key, psa_key_id_t *key_id, size_t len)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    size_t pubkey_len;
+
+    psa_key_attributes_t key_attr = psa_key_attributes_init();
+    psa_set_key_lifetime(&key_attr, PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_VOLATILE, PSA_ATCA_LOCATION_DEV0));
+    psa_set_key_algorithm(&key_attr, PSA_ALG_ECDSA(PSA_ALG_SHA_256));
+    psa_set_key_usage_flags(&key_attr, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_VERIFY_HASH);
+    psa_set_key_type(&key_attr, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&key_attr, ECC_CURVE_BITS);
+    status = psa_generate_key(&key_attr, key_id);
+
+    if (status != PSA_SUCCESS) {
+        DEBUG("Primary SE Generate Key failed: %ld\n", status);
+        return CTAP1_ERR_OTHER;
+    }
+
+    uint8_t pu[PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1), ECC_CURVE_BITS)] = { 0 };
+
+    status = psa_export_public_key(*key_id, (uint8_t *)pub_key, len, &pubkey_len);
+
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Export Public Key failed: %ld\n", status);
+        return CTAP1_ERR_OTHER;
+    }
+
+    DEBUG("fido2_ctap_crypto_gen_keypair_se: success \n");
+    DEBUG("public key length: %u, key_id: %lu \n", (unsigned)pubkey_len, *key_id);
+
+    return CTAP2_OK;
+}
+
+int fido2_ctap_crypto_get_sig_se(uint8_t* hash, size_t hash_len, uint8_t *sig,
+                                 size_t* sig_len, psa_key_id_t key_id)
+{
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    size_t _sig_len;
+    /**
+     * +1 to pad with leading zero to prevent integer from being interpreted as
+     * negative (e.g. MSB of r >= 0x80)
+     */
+    uint8_t r[CTAP_CRYPTO_KEY_SIZE + 1] = { 0 };
+    uint8_t s[CTAP_CRYPTO_KEY_SIZE + 1] = { 0 };
+    int ret;
+
+    psa_key_type_t type = PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1);
+    psa_algorithm_t alg =  PSA_ALG_ECDSA(PSA_ALG_SHA_256);
+    psa_key_bits_t bits = ECC_CURVE_BITS;
+
+    /**
+     *  todo: find more elegant solution to avoid psa_error because sig_len
+     *  isn't exactly 64 bytes but CTAP_CRYPTO_ES256_DER_MAX_SIZE (72) bytes
+     */
+    size_t sig_len_psa = PSA_SIGN_OUTPUT_SIZE(type, bits, alg);
+    assert(*sig_len >= sig_len_psa);
+
+    status = psa_sign_hash(key_id, PSA_ALG_ECDSA(PSA_ALG_SHA_256), hash,
+                            hash_len, sig, sig_len_psa, &_sig_len);
+
+    if (status != PSA_SUCCESS) {
+        printf("Primary SE Sign hash failed: %ld\n", status);
+        return CTAP1_ERR_OTHER;
+    }
+
+    DEBUG("SE Sign success, sig_len: %u \n", (unsigned)_sig_len);
+
+    memcpy(r + 1, sig, CTAP_CRYPTO_KEY_SIZE);
+    memcpy(s + 1, sig + CTAP_CRYPTO_KEY_SIZE, CTAP_CRYPTO_KEY_SIZE);
+
+    ret = _sig_to_der_format(r, s, sig, sig_len);
+
+    if (ret != CTAP2_OK) {
+        return ret;
+    }
+
+    return CTAP2_OK;
+}
+#endif
 
 int fido2_ctap_crypto_get_sig(uint8_t *hash, size_t hash_len, uint8_t *sig,
                               size_t *sig_len, const uint8_t *key,
