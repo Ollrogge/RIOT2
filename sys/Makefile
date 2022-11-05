@@ -170,6 +170,9 @@ endif
 ifneq (,$(filter posix_sleep,$(USEMODULE)))
   DIRS += posix/sleep
 endif
+ifneq (,$(filter psa_crypto,$(USEMODULE)))
+    DIRS += psa_crypto
+endif
 ifneq (,$(filter pthread,$(USEMODULE)))
   DIRS += posix/pthread
 endif
