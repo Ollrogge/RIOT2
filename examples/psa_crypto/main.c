@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include "psa/crypto.h"
 
+#include "xtimer.h"
+
 extern void cipher_aes_128(void);
 extern void psa_hmac_sha256(void);
 extern void ecdsa(void);
@@ -29,6 +31,9 @@ extern void cipher_aes_128_sec_se(void);
 extern void hmac_sha256_sec_se(void);
 extern void ecdsa_sec_se(void);
 #endif /* MULTIPLE_SE */
+
+#define ENABLE_DEBUG    (1)
+#include "debug.h"
 
 int main(void)
 {

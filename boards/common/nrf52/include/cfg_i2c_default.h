@@ -33,19 +33,11 @@ extern "C" {
  */
 static const i2c_conf_t i2c_config[] = {
     {
-        .dev = NRF_TWIM1,
-        .scl = 27,
-        .sda = 26,
-        .speed = I2C_SPEED_NORMAL
-    }
-#ifdef BOARD_NRF52840DK
-    ,{
         .dev = NRF_TWIM0,
-        .scl = 28,
-        .sda = 29,
+        .scl = 17,
+        .sda = 18,
         .speed = I2C_SPEED_NORMAL
     }
-#endif
 };
 #define I2C_NUMOF           ARRAY_SIZE(i2c_config)
 /** @} */
