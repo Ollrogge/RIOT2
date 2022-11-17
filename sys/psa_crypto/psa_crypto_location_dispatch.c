@@ -168,7 +168,7 @@ psa_status_t psa_location_dispatch_cipher_decrypt_setup(psa_cipher_operation_t *
  * @param   output_length
  * @return  @ref psa_status_t
  */
-static psa_status_t +psa_se_cipher_encrypt_decrypt(  const psa_drv_se_t *drv,
+static psa_status_t psa_se_cipher_encrypt_decrypt(  const psa_drv_se_t *drv,
                                                     psa_drv_se_context_t *drv_context,
                                                     const psa_key_attributes_t *attributes,
                                                     psa_algorithm_t alg,
