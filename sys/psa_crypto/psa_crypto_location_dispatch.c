@@ -26,7 +26,7 @@
 #include "psa_crypto_se_management.h"
 #include "psa_crypto_se_driver.h"
 
-#define ENABLE_DEBUG    0
+#define ENABLE_DEBUG    1
 #include "debug.h"
 
 psa_status_t psa_location_dispatch_generate_key(const psa_key_attributes_t *attributes,
@@ -168,7 +168,7 @@ psa_status_t psa_location_dispatch_cipher_decrypt_setup(psa_cipher_operation_t *
  * @param   output_length
  * @return  @ref psa_status_t
  */
-static psa_status_t psa_se_cipher_encrypt_decrypt(  const psa_drv_se_t *drv,
+static psa_status_t +psa_se_cipher_encrypt_decrypt(  const psa_drv_se_t *drv,
                                                     psa_drv_se_context_t *drv_context,
                                                     const psa_key_attributes_t *attributes,
                                                     psa_algorithm_t alg,
@@ -263,6 +263,7 @@ psa_status_t psa_location_dispatch_cipher_encrypt(  const psa_key_attributes_t *
     if (psa_get_se_driver(attributes->lifetime, &drv, &drv_context)) {
         if (alg == PSA_ALG_ECB_NO_PADDING) {
             if (drv->cipher == NULL || drv->cipher->p_ecb == NULL) {
+                DEBUG("TEST \n");
                 return PSA_ERROR_NOT_SUPPORTED;
             }
             status = drv->cipher->p_ecb(drv_context, *slot_number, alg, PSA_CRYPTO_DRIVER_ENCRYPT,
@@ -271,13 +272,13 @@ psa_status_t psa_location_dispatch_cipher_encrypt(  const psa_key_attributes_t *
                 return status;
             }
         }
-
-        /* The SE interface does not support single part functions for other algorithms than ECB,
+        else {
+            /* The SE interface does not support single part functions for other algorithms than ECB,
            so we need to build one ourselves */
-        status = psa_se_cipher_encrypt_decrypt(drv, drv_context, attributes, alg,
+            status = psa_se_cipher_encrypt_decrypt(drv, drv_context, attributes, alg,
                                                PSA_CRYPTO_DRIVER_ENCRYPT, *slot_number, input,
                                                input_length, output, output_size, output_length);
-
+        }
         return status;
     }
 
@@ -313,10 +314,11 @@ psa_status_t psa_location_dispatch_cipher_decrypt(  const psa_key_attributes_t *
                 return status;
             }
         }
-
-        status = psa_se_cipher_encrypt_decrypt(drv, drv_context, attributes, alg,
+        else {
+            status = psa_se_cipher_encrypt_decrypt(drv, drv_context, attributes, alg,
                                                PSA_CRYPTO_DRIVER_DECRYPT, *slot_number, input,
                                                input_length, output, output_size, output_length);
+        }
 
         return status;
     }

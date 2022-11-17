@@ -24,6 +24,7 @@
 #include "fmt.h"
 #include "string_utils.h"
 #include "ztimer.h"
+#include "crypto/aes.h"
 
 #include "fido2/ctap/transport/ctap_transport.h"
 #include "fido2/ctap.h"
@@ -35,7 +36,7 @@
 #include "fido2/ctap/transport/hid/ctap_hid.h"
 #endif
 
-#define ENABLE_DEBUG    (0)
+#define ENABLE_DEBUG    (1)
 #include "debug.h"
 
 /**
@@ -181,7 +182,12 @@ static int _ctap_decrypt_rk(ctap_resident_key_t *rk, ctap_cred_id_t *id);
 /**
  * @brief Write credential to flash
  */
-static int _write_rk_to_flash(ctap_resident_key_t *rk);
+static int _save_rk(ctap_resident_key_t *rk);
+
+/**
+ * @brief Write resident key to flash
+ */
+static int _write_rk_to_flash(const ctap_resident_key_t *rk, int page, int offset);
 
 /**
  * @brief Save PIN to authenticator state and write the updated state to flash
@@ -273,12 +279,15 @@ int fido2_ctap_init(void)
         return -EPROTO;
     }
 
+
     /**
      * CTAP state information is stored at flashpage 0 of the memory area
      * dedicated for storing CTAP data
      */
     ret = fido2_ctap_mem_read(&_state, fido2_ctap_mem_flash_page(), 0,
                               sizeof(_state));
+
+    DEBUG("Output size: %u %u \n", CTAP_FLASH_RK_SZ, _state.rk_amount_stored);
 
     if (ret != CTAP2_OK) {
         return -EPROTO;
@@ -580,7 +589,7 @@ static int _make_credential(ctap_req_t *req_raw)
 
     /* if created credential is a resident credential, save it to flash */
     if (rk) {
-        ret = _write_rk_to_flash(&k);
+        ret = _save_rk(&k);
         if (ret != CTAP2_OK) {
             goto done;
         }
@@ -734,7 +743,7 @@ static int _get_assertion(ctap_req_t *req_raw)
      * therefore needs to be saved on the device.
      */
     if (!rk->cred_desc.has_nonce) {
-        ret = _write_rk_to_flash(rk);
+        ret = _save_rk(rk);
 
         if (ret != CTAP2_OK) {
             goto done;
@@ -820,7 +829,7 @@ static int _get_next_assertion(void)
      * therefore needs to be saved on the device.
      */
     if (!rk->cred_desc.has_nonce) {
-        ret = _write_rk_to_flash(rk);
+        ret = _save_rk(rk);
 
         if (ret != CTAP2_OK) {
             goto done;
@@ -1466,7 +1475,33 @@ static int _find_matching_rks(ctap_resident_key_t *rks, size_t rks_len,
             return CTAP1_ERR_OTHER;
         }
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+        uint8_t buf[CTAP_AES_ENC_SZ(ctap_resident_key_t)] = {0};
+        uint8_t rk_aligned[CTAP_AES_ENC_SZ(ctap_resident_key_t)] = {0};
+
+        ret = fido2_ctap_mem_read(buf, page_num, offset_into_page, sizeof(buf));
+
+        if (ret != CTAP2_OK) {
+            return ret;
+        }
+
+        DEBUG("BUF: \n");
+        for (size_t i = 0; i < sizeof(buf); i++) {
+            DEBUG("%02x", buf[i]);
+        }
+        DEBUG("\n");
+
+        ret = fido2_ctap_crypto_aes_dec_se(rk_aligned, sizeof(rk_aligned), buf, sizeof(buf));
+        memcpy(&rk, rk_aligned, sizeof(rk));
+
+        DEBUG("Decrypted key: \n");
+        for (size_t i = 0; i < sizeof(ctap_resident_key_t); i++) {
+            DEBUG("%02x", ((uint8_t*)&rk)[i]);
+        }
+        DEBUG("\n");
+#else
         ret = fido2_ctap_mem_read(&rk, page_num, offset_into_page, sizeof(rk));
+#endif
 
         if (ret != CTAP2_OK) {
             return ret;
@@ -1526,7 +1561,7 @@ static int _find_matching_rks(ctap_resident_key_t *rks, size_t rks_len,
  * so rk's can't be deleted, only overwritten => we can be sure that there are
  * no holes when reading keys from flash memory
  */
-static int _write_rk_to_flash(ctap_resident_key_t *rk)
+static int _save_rk(ctap_resident_key_t *rk)
 {
     int ret;
     int page_num = fido2_ctap_mem_flash_page() + CTAP_FLASH_RK_OFF;
@@ -1552,7 +1587,21 @@ static int _write_rk_to_flash(ctap_resident_key_t *rk)
                 break;
             }
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+            uint8_t buf[CTAP_AES_ENC_SZ(ctap_resident_key_t)] = {0};
+            uint8_t rk_aligned[CTAP_AES_ENC_SZ(ctap_resident_key_t)] = {0};
+
+            ret = fido2_ctap_mem_read(buf, page_num, offset_into_page, sizeof(buf));
+
+            if (ret != CTAP2_OK) {
+                return ret;
+            }
+
+            ret = fido2_ctap_crypto_aes_dec_se(rk_aligned, sizeof(rk_aligned), buf, sizeof(buf));
+            memcpy(&rk_tmp, rk_aligned, sizeof(rk_tmp));
+#else
             ret = fido2_ctap_mem_read(&rk_tmp, page_num, offset_into_page, sizeof(rk_tmp));
+#endif
 
             if (ret != CTAP2_OK) {
                 return CTAP1_ERR_OTHER;
@@ -1579,7 +1628,13 @@ static int _write_rk_to_flash(ctap_resident_key_t *rk)
         }
     }
 
-    return fido2_ctap_mem_write(rk, page_num, offset_into_page, CTAP_FLASH_RK_SZ);
+    DEBUG("Saving key(unenc): \n");
+    for (size_t i = 0; i < sizeof(ctap_resident_key_t); i++) {
+        DEBUG("%02x", ((uint8_t*)rk)[i]);
+    }
+    DEBUG("\n");
+
+    return _write_rk_to_flash(rk, page_num, offset_into_page);
 }
 
 static int _make_auth_data_assert(uint8_t *rp_id, size_t rp_id_len,
@@ -1664,9 +1719,25 @@ static int _make_auth_data_attest(ctap_make_credential_req_t *req,
 
     memcpy(cred_header->aaguid, aaguid, sizeof(cred_header->aaguid));
 
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    /* using SE if key is not a resident credential makes no sense */
+    if (rk) {
+        psa_key_id_t key_id;
+        ret = fido2_ctap_crypto_gen_keypair_se(&cred_data->key.pubkey, &key_id,
+        sizeof(cred_data->key.pubkey));
+
+        k->priv_key_id = key_id;
+    }
+    else {
+        DEBUG("_make_auth_data_attest: no resident credential with SE \n");
+        return CTAP1_ERR_OTHER;
+    }
+
+#else
     ret =
         fido2_ctap_crypto_gen_keypair(&cred_data->key.pubkey, k->priv_key,
                                       sizeof(_state.ag_key.priv));
+#endif
 
     if (ret != CTAP2_OK) {
         return ret;
@@ -1801,6 +1872,35 @@ static int _write_state_to_flash(const ctap_state_t *state)
                                 CTAP_FLASH_STATE_SZ);
 }
 
+static int _write_rk_to_flash(const ctap_resident_key_t *rk, int page, int offset)
+{
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+    int ret;
+    uint8_t c[CTAP_FLASH_RK_SZ] = {0};
+    uint8_t rk_aligned[CTAP_AES_BLOCK_ALIGNED_SZ(ctap_resident_key_t)] = {0};
+
+    memcpy(rk_aligned, rk, sizeof(*rk));
+
+    ret = fido2_ctap_crypto_aes_enc_se(c, CTAP_AES_ENC_SZ(ctap_resident_key_t),
+                                        rk_aligned, sizeof(rk_aligned));
+
+    if (ret != CTAP2_OK) {
+        return ret;
+    }
+
+    DEBUG("Saving key(enc): %u %u \n", (unsigned)sizeof(*rk), (unsigned)sizeof(c));
+    for (size_t i = 0; i < sizeof(c); i++) {
+        DEBUG("%02x", c[i]);
+    }
+    DEBUG("\n");
+
+    DEBUG("Writing encrypted credential to flash \n");
+    return fido2_ctap_mem_write(c, page, offset, sizeof(c));
+#else
+    return fido2_ctap_mem_write(rk, page, offset, CTAP_FLASH_RK_SZ);
+#endif
+}
+
 int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,
                        const uint8_t *client_data_hash,
                        const ctap_resident_key_t *rk,
@@ -1812,9 +1912,39 @@ int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,
     assert(sig);
     assert(sig_len);
 
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+
+#if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_CREDS)
+    psa_status_t status = PSA_ERROR_DOES_NOT_EXIST;
+    psa_hash_operation_t operation = PSA_HASH_OPERATION_INIT;
+    size_t hash_length;
+
+    status = psa_hash_setup(&operation, PSA_ALG_SHA_256);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_update(&operation, auth_data, auth_data_len);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_update(&operation, client_data_hash, SHA256_DIGEST_LENGTH);
+    if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    status = psa_hash_finish(&operation, hash, sizeof(hash), &hash_length);
+     if (status != PSA_SUCCESS) {
+        return status;
+    }
+
+    return fido2_ctap_crypto_get_sig_se(hash, sizeof(hash), sig, sig_len,
+                                        rk->priv_key_id);
+
+#else
     int ret;
     sha256_context_t ctx;
-    uint8_t hash[SHA256_DIGEST_LENGTH];
 
     ret = fido2_ctap_crypto_sha256_init(&ctx);
 
@@ -1843,4 +1973,5 @@ int fido2_ctap_get_sig(const uint8_t *auth_data, size_t auth_data_len,
     return fido2_ctap_crypto_get_sig(hash, sizeof(hash), sig, sig_len,
                                      rk->priv_key,
                                      sizeof(rk->priv_key));
+#endif
 }

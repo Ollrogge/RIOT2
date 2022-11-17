@@ -36,6 +36,7 @@ static ATCADevice atca_devs[ATCA_NUMOF];
 
 void auto_init_atca(void)
 {
+    DEBUG("Auto Init ATCA \n");
     for (unsigned i = 0; i < ATCA_NUMOF; i++) {
         atca_devs[i] = NULL;
         int status = atcab_init_ext(&atca_devs[i], (ATCAIfaceCfg *)&atca_params[i].cfg);
