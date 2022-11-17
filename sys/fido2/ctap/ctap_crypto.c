@@ -233,7 +233,7 @@ int fido2_ctap_crypto_gen_aeskey_se(psa_key_id_t *key_id)
     psa_key_usage_t usage = PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT;
 
     psa_set_key_lifetime(&attr, lifetime);
-    psa_set_key_algorithm(&attr,PSA_ALG_ECB_NO_PADDING);
+    psa_set_key_algorithm(&attr,PSA_ALG_CBC_NO_PADDING);
     psa_set_key_usage_flags(&attr, usage);
     psa_set_key_bits(&attr, PSA_BYTES_TO_BITS(AES_KEY_SIZE_128));
     psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
@@ -254,7 +254,7 @@ int fido2_ctap_crypto_aes_enc_se(uint8_t *out, size_t out_len, uint8_t *in,
                                 size_t in_len)
 {
     size_t _out_len = 0x0;
-    psa_status_t status = psa_cipher_encrypt(_key_id, PSA_ALG_ECB_NO_PADDING, in,
+    psa_status_t status = psa_cipher_encrypt(_key_id, PSA_ALG_CBC_NO_PADDING, in,
                             in_len, out, out_len, &_out_len);
 
     if (status != PSA_SUCCESS) {
@@ -262,7 +262,6 @@ int fido2_ctap_crypto_aes_enc_se(uint8_t *out, size_t out_len, uint8_t *in,
         return CTAP1_ERR_OTHER;
     }
 
-    DEBUG("psa aes enc success %u \n", (unsigned)_out_len);
     return CTAP2_OK;
 }
 
@@ -270,8 +269,7 @@ int fido2_ctap_crypto_aes_dec_se(uint8_t *out, size_t out_len, uint8_t *in,
                                 size_t in_len)
 {
     size_t _out_len = 0x0;
-    DEBUG("Ouput len: %u %u \n", (unsigned)out_len, (unsigned)in_len);
-    psa_status_t status = psa_cipher_decrypt(_key_id, PSA_ALG_ECB_NO_PADDING, in, in_len,
+    psa_status_t status = psa_cipher_decrypt(_key_id, PSA_ALG_CBC_NO_PADDING, in, in_len,
                                 out, out_len, &_out_len);
 
     if (status != PSA_SUCCESS) {
@@ -279,7 +277,6 @@ int fido2_ctap_crypto_aes_dec_se(uint8_t *out, size_t out_len, uint8_t *in,
         return CTAP1_ERR_OTHER;
     }
 
-    DEBUG("psa aes dec success %u \n", (unsigned)_out_len);
     return CTAP2_OK;
 }
 #endif /* CONFIG_FIDO2_CTAP_SE_ENC_CREDS */

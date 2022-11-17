@@ -279,15 +279,12 @@ int fido2_ctap_init(void)
         return -EPROTO;
     }
 
-
     /**
      * CTAP state information is stored at flashpage 0 of the memory area
      * dedicated for storing CTAP data
      */
     ret = fido2_ctap_mem_read(&_state, fido2_ctap_mem_flash_page(), 0,
                               sizeof(_state));
-
-    DEBUG("Output size: %u %u \n", CTAP_FLASH_RK_SZ, _state.rk_amount_stored);
 
     if (ret != CTAP2_OK) {
         return -EPROTO;
@@ -1485,20 +1482,8 @@ static int _find_matching_rks(ctap_resident_key_t *rks, size_t rks_len,
             return ret;
         }
 
-        DEBUG("BUF: \n");
-        for (size_t i = 0; i < sizeof(buf); i++) {
-            DEBUG("%02x", buf[i]);
-        }
-        DEBUG("\n");
-
         ret = fido2_ctap_crypto_aes_dec_se(rk_aligned, sizeof(rk_aligned), buf, sizeof(buf));
         memcpy(&rk, rk_aligned, sizeof(rk));
-
-        DEBUG("Decrypted key: \n");
-        for (size_t i = 0; i < sizeof(ctap_resident_key_t); i++) {
-            DEBUG("%02x", ((uint8_t*)&rk)[i]);
-        }
-        DEBUG("\n");
 #else
         ret = fido2_ctap_mem_read(&rk, page_num, offset_into_page, sizeof(rk));
 #endif
@@ -1627,12 +1612,6 @@ static int _save_rk(ctap_resident_key_t *rk)
             return ret;
         }
     }
-
-    DEBUG("Saving key(unenc): \n");
-    for (size_t i = 0; i < sizeof(ctap_resident_key_t); i++) {
-        DEBUG("%02x", ((uint8_t*)rk)[i]);
-    }
-    DEBUG("\n");
 
     return _write_rk_to_flash(rk, page_num, offset_into_page);
 }
@@ -1888,13 +1867,6 @@ static int _write_rk_to_flash(const ctap_resident_key_t *rk, int page, int offse
         return ret;
     }
 
-    DEBUG("Saving key(enc): %u %u \n", (unsigned)sizeof(*rk), (unsigned)sizeof(c));
-    for (size_t i = 0; i < sizeof(c); i++) {
-        DEBUG("%02x", c[i]);
-    }
-    DEBUG("\n");
-
-    DEBUG("Writing encrypted credential to flash \n");
     return fido2_ctap_mem_write(c, page, offset, sizeof(c));
 #else
     return fido2_ctap_mem_write(rk, page, offset, CTAP_FLASH_RK_SZ);

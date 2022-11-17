@@ -193,8 +193,8 @@ psa_status_t atca_cipher_update(void *op_context,
     size_t output_offset = 0;
 
     for (size_t data_block = 0; data_block < (input_size / AES_128_BLOCK_SIZE); data_block++) {
-        output_offset += data_block * AES_128_BLOCK_SIZE;
-        input_offset += data_block * AES_128_BLOCK_SIZE;
+        output_offset = data_block * AES_128_BLOCK_SIZE;
+        input_offset = data_block * AES_128_BLOCK_SIZE;
         if (ctx->direction == PSA_CRYPTO_DRIVER_ENCRYPT) {
             status = atcab_aes_cbc_encrypt_block(&ctx->drv_ctx.atca_aes_cbc, p_input + input_offset,
                                                  p_output + output_offset);

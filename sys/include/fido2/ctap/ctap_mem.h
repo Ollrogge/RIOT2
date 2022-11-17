@@ -71,7 +71,7 @@ extern "C" {
 #define CTAP_AES_BLOCK_ALIGNED_SZ(x) (sizeof(x) + CTAP_AES_ALIGN_PAD(x))
 
 #define CTAP_AES_ENC_SZ(x) (PSA_CIPHER_ENCRYPT_OUTPUT_SIZE(PSA_KEY_TYPE_AES, \
-                        PSA_ALG_ECB_NO_PADDING, \
+                        PSA_ALG_CBC_NO_PADDING, \
                         CTAP_AES_BLOCK_ALIGNED_SZ(x)))
 
 #define CTAP_FLASH_RK_SZ (CTAP_AES_ENC_SZ(ctap_resident_key_t) + \
