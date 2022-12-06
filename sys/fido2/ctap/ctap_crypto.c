@@ -75,6 +75,8 @@ int fido2_ctap_crypto_init(void)
 
     DEBUG("ctap_crypto_init: PSA initialized \n");
 #if IS_ACTIVE(CONFIG_FIDO2_CTAP_SE_ENC_CREDS)
+    // initialize a new key every time because PSA only supports volatile key
+    // storage at the moment
     int ret = fido2_ctap_crypto_gen_aeskey_se(&_key_id);
 
     if (ret != CTAP2_OK) {
@@ -273,7 +275,7 @@ int fido2_ctap_crypto_aes_dec_se(uint8_t *out, size_t out_len, uint8_t *in,
                                 out, out_len, &_out_len);
 
     if (status != PSA_SUCCESS) {
-        printf("AES 128 CBC Decrypt failed: %ld\nOutput Length: %d\n", status, _out_len);
+        DEBUG("AES 128 CBC Decrypt failed: %ld\nOutput Length: %d\n", status, _out_len);
         return CTAP1_ERR_OTHER;
     }
 
